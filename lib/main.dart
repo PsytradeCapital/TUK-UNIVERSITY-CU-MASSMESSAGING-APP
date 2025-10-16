@@ -9,6 +9,7 @@ import 'providers/app_state_provider.dart';
 import 'providers/navigation_provider.dart';
 import 'services/error_handling_service.dart';
 import 'services/recovery_service.dart';
+import 'theme/app_theme.dart';
 
 void main() {
   // Set up global error handling
@@ -64,20 +65,7 @@ class ChristianUnionAttendanceApp extends StatelessWidget {
         builder: (context, appState, child) {
           return MaterialApp(
             title: 'Christian Union Attendance',
-            theme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-              useMaterial3: true,
-              appBarTheme: AppBarTheme(
-                backgroundColor: Colors.blue[700],
-                foregroundColor: Colors.white,
-              ),
-              // Add consistent error styling
-              errorColor: Colors.red[700],
-              // Add loading indicator theme
-              progressIndicatorTheme: ProgressIndicatorThemeData(
-                color: Colors.blue[700],
-              ),
-            ),
+            theme: AppTheme.lightTheme,
             // Add global error handling and loading overlay
             home: GlobalErrorHandler(
               child: LoadingOverlay(

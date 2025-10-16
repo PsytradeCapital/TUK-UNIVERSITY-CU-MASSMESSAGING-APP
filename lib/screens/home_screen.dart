@@ -44,10 +44,45 @@ class _HomeScreenState extends State<HomeScreen> {
         canNavigateToMessaging: sessionProvider.hasActiveService && sessionProvider.attendeeCount > 0,
       );
       
+      // Create recovery checkpoint
+      final recoveryService = RecoveryService();
+      await recoveryService.createRecoveryCheckpoint(sessionProvider: sessionProvider);
+      
     } catch (e) {
       appState.setGlobalError('Failed to initialize app: $e', context: 'HomeScreen');
+      
+      // Try recovery if initialization fails
+      await _performRecovery();
     } finally {
       appState.setGlobalLoading(false);
+    }
+  }
+
+  Future<void> _performRecovery() async {
+    final appState = context.read<AppStateProvider>();
+    final sessionProvider = context.read<ServiceSessionProvider>();
+    
+    try {
+      final recoveryService = RecoveryService();
+      final result = await recoveryService.performRecovery(
+        appStateProvider: appState,
+        sessionProvider: sessionProvider,
+      );
+      
+      if (result.success) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('App recovered successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else {
+        appState.setGlobalError('Recovery failed: ${result.errors}', context: 'HomeScreen');
+      }
+    } catch (e) {
+      appState.setGlobalError('Recovery process failed: $e', context: 'HomeScreen');
     }
   }
 
