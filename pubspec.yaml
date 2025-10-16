@@ -1,0 +1,47 @@
+name: christian_union_attendance_app
+description: A mobile app for Technical University of Kenya Christian Union to automate attendee registration and mass SMS messaging.
+
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: ">=3.10.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # Database
+  sqflite: ^2.3.0
+  path: ^1.8.3
+  
+  # SMS functionality
+  telephony: ^0.2.0
+  
+  # State management
+  provider: ^6.1.1
+  
+  # Security and encryption
+  crypto: ^3.0.3
+  flutter_secure_storage: ^9.0.0
+  local_auth: ^2.1.6
+  
+  # File system access
+  path_provider: ^2.1.1
+  
+  # CSV export and sharing
+  csv: ^5.0.2
+  share_plus: ^7.2.1
+  
+  # UI
+  cupertino_icons: ^1.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
