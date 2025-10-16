@@ -156,77 +156,10 @@ class _HomeScreenState extends State<HomeScreen> {
               index: navigationProvider.currentIndex,
               children: screens,
             ),
-            bottomNavigationBar: BottomNavigationBar(
-              type: BottomNavigationBarType.fixed,
-              currentIndex: navigationProvider.currentIndex,
-              onTap: (index) {
-                navigationProvider.navigateToTab(index);
-              },
-              selectedItemColor: Colors.blue[700],
-              unselectedItemColor: Colors.grey[600],
-              items: [
-                const BottomNavigationBarItem(
-                  icon: Icon(Icons.person_add),
-                  label: 'Registration',
-                ),
-                BottomNavigationBarItem(
-                  icon: Stack(
-                    children: [
-                      Icon(
-                        Icons.message,
-                        color: navigationProvider.canNavigateToMessaging 
-                          ? null 
-                          : Colors.grey[400],
-                      ),
-                      if (sessionProvider.attendeeCount > 0)
-                        Positioned(
-                          right: 0,
-                          top: 0,
-                          child: Container(
-                            padding: const EdgeInsets.all(2),
-                            decoration: BoxDecoration(
-                              color: navigationProvider.canNavigateToMessaging 
-                                ? Colors.red 
-                                : Colors.grey,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            constraints: const BoxConstraints(
-                              minWidth: 16,
-                              minHeight: 16,
-                            ),
-                            child: Text(
-                              '${sessionProvider.attendeeCount}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                  label: 'Messaging',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(
-                    Icons.analytics,
-                    color: navigationProvider.canNavigateToReports 
-                      ? null 
-                      : Colors.grey[400],
-                  ),
-                  label: 'Reports',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(
-                    Icons.settings,
-                    color: navigationProvider.canNavigateToSettings 
-                      ? null 
-                      : Colors.grey[400],
-                  ),
-                  label: 'Settings',
-                ),
-              ],
+            bottomNavigationBar: _buildAccessibleBottomNavigationBar(
+              context, 
+              navigationProvider, 
+              sessionProvider
             ),
             // Add floating action button for quick actions
             floatingActionButton: _buildFloatingActionButton(context, sessionProvider, navigationProvider),
