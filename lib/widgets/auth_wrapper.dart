@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../services/security_service.dart';
 import '../screens/pin_auth_screen.dart';
 import '../screens/pin_setup_screen.dart';
+import '../providers/app_state_provider.dart';
 
 class AuthWrapper extends StatefulWidget {
   final Widget child;
@@ -37,6 +39,12 @@ class _AuthWrapperState extends State<AuthWrapper> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
     
+    // Update app state provider
+    if (mounted) {
+      final appState = Provider.of<AppStateProvider>(context, listen: false);
+      appState.updateAppLifecycleState(state == AppLifecycleState.resumed);
+    }
+    
     switch (state) {
       case AppLifecycleState.resumed:
         _checkAutoLock();
@@ -70,6 +78,12 @@ class _AuthWrapperState extends State<AuthWrapper> with WidgetsBindingObserver {
         _isAuthenticated = false;
         _isPinSet = false;
       });
+      
+      // Report error to app state provider
+      if (mounted) {
+        final appState = Provider.of<AppStateProvider>(context, listen: false);
+        appState.setGlobalError('Authentication check failed: $e', context: 'AuthWrapper');
+      }
     }
   }
 
