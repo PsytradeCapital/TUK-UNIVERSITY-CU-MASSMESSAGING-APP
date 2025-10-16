@@ -10,6 +10,9 @@ import '../providers/app_state_provider.dart';
 import '../widgets/global_error_handler.dart';
 import '../widgets/offline_handler.dart';
 import '../services/recovery_service.dart';
+import '../utils/accessibility_utils.dart';
+import '../utils/responsive_utils.dart';
+import '../theme/app_theme.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
