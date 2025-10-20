@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Christian Union Attendance - Simple Version</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .header {
+            background: #1976D2;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #1976D2;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background: #0D47A1;
+        }
+        .btn-success {
+            background: #4CAF50;
+        }
+        .btn-danger {
+            background: #f44336;
+        }
+        .attendee-item {
+            background: #f9f9f9;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #1976D2;
+        }
+        .stats {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .stat-box {
+            background: #1976D2;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            flex: 1;
+            min-width: 150px;
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+        }
+        .success-msg {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border: 1px solid #c3e6cb;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            background: #f5f5f5;
+            font-size: 16px;
+        }
+        .tab.active {
+            background: #1976D2;
+            color: white;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏛️ Christian Union Attendance</h1>
+        <p>Technical University of Kenya</p>
+    </div>
+
+    <div class="tabs">
+        <button class="tab active" onclick="showTab('registration')">📝 Registration</button>
+        <button class="tab" onclick="showTab('messaging')">💬 Messaging</button>
+        <button class="tab" onclick="showTab('reports')">📊 Reports</button>
+    </div>
+
+    <!-- Registration Tab -->
+    <div id="registration" class="tab-content active">
+        <div class="section">
+            <h2>Service Status</h2>
+            <p id="service-status">No active service</p>
+            <button id="service-btn" class="btn-success" onclick="toggleService()">Start Service</button>
+        </div>
+
+        <div class="section">
+            <h2>Register Attendee</h2>
+            <div class="form-group">
+                <label>Full Name *</label>
+                <input type="text" id="name" placeholder="Enter full name" required>
+            </div>
+            <div class="form-group">
+                <label>Phone Number *</label>
+                <input type="tel" id="phone" placeholder="Enter phone number" required>
+            </div>
+            <div class="form-group">
+                <label>Year of Study</label>
+                <select id="year">
+                    <option value="">Select Year</option>
+                    <option value="1st Year">1st Year</option>
+                    <option value="2nd Year">2nd Year</option>
+                    <option value="3rd Year">3rd Year</option>
+                    <option value="4th Year">4th Year</option>
+                    <option value="Graduate">Graduate</option>
+                    <option value="Staff">Staff</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Location</label>
+                <select id="location">
+                    <option value="">Select Location</option>
+                    <option value="Main Campus">Main Campus</option>
+                    <option value="City Campus">City Campus</option>
+                    <option value="Off Campus">Off Campus</option>
+                </select>
+            </div>
+            <button onclick="registerAttendee()">Register Attendee</button>
+            <button onclick="clearForm()">Clear Form</button>
+        </div>
+
+        <div class="section">
+            <h2>Today's Attendees (<span id="count">0</span>)</h2>
+            <div id="attendee-list">
+                <p>No attendees registered yet</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Messaging Tab -->
+    <div id="messaging" class="tab-content">
+        <div class="section">
+            <h2>Send Messages</h2>
+            <div class="form-group">
+                <label>Message Content</label>
+                <textarea id="message" rows="5" placeholder="Type your message here..."></textarea>
+            </div>
+            <p><strong>Recipients:</strong> <span id="recipient-count">0</span> attendees</p>
+            <button onclick="sendMessage()">Send Messages</button>
+            <button onclick="previewMessage()">Preview</button>
+            <div id="message-preview" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Reports Tab -->
+    <div id="reports" class="tab-content">
+        <div class="section">
+            <h2>Statistics</h2>
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="stat-number" id="total-attendees">0</div>
+                    <div>Total Attendees</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number" id="total-services">0</div>
+                    <div>Services Held</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number" id="messages-sent">0</div>
+                    <div>Messages Sent</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Export Data</h2>
+            <button onclick="exportCSV()">Download CSV</button>
+            <button onclick="clearAllData()" class="btn-danger">Clear All Data</button>
+        </div>
+    </div>
+
+    <script>
+        // Simple data storage
+        let attendees = [];
+        let serviceActive = false;
+        let totalServices = 0;
+        let messagesSent = 0;
+
+        // Load data from localStorage
+        function loadData() {
+            try {
+                attendees = JSON.parse(localStorage.getItem('attendees') || '[]');
+                serviceActive = localStorage.getItem('serviceActive') === 'true';
+                totalServices = parseInt(localStorage.getItem('totalServices') || '0');
+                messagesSent = parseInt(localStorage.getItem('messagesSent') || '0');
+            } catch (e) {
+                console.log('Error loading data:', e);
+            }
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            try {
+                localStorage.setItem('attendees', JSON.stringify(attendees));
+                localStorage.setItem('serviceActive', serviceActive.toString());
+                localStorage.setItem('totalServices', totalServices.toString());
+                localStorage.setItem('messagesSent', messagesSent.toString());
+            } catch (e) {
+                console.log('Error saving data:', e);
+            }
+        }
+
+        // Show tab
+        function showTab(tabName) {
+            // Hide all tabs
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            const tabButtons = document.querySelectorAll('.tab');
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Toggle service
+        function toggleService() {
+            serviceActive = !serviceActive;
+            if (serviceActive) {
+                totalServices++;
+                showMessage('Service started successfully!');
+            } else {
+                showMessage('Service ended!');
+            }
+            saveData();
+            updateUI();
+        }
+
+        // Register attendee
+        function registerAttendee() {
+            if (!serviceActive) {
+                alert('Please start a service first!');
+                return;
+            }
+
+            const name = document.getElementById('name').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            
+            if (!name || !phone) {
+                alert('Please enter name and phone number!');
+                return;
+            }
+
+            // Check for duplicate
+            const exists = attendees.find(a => a.phone === phone);
+            if (exists) {
+                if (!confirm(`${exists.name} is already registered. Add again?`)) {
+                    return;
+                }
+            }
+
+            const attendee = {
+                id: Date.now(),
+                name: name,
+                phone: phone,
+                year: document.getElementById('year').value,
+                location: document.getElementById('location').value,
+                date: new Date().toLocaleDateString()
+            };
+
+            attendees.push(attendee);
+            saveData();
+            clearForm();
+            updateUI();
+            showMessage(`${name} registered successfully!`);
+        }
+
+        // Clear form
+        function clearForm() {
+            document.getElementById('name').value = '';
+            document.getElementById('phone').value = '';
+            document.getElementById('year').value = '';
+            document.getElementById('location').value = '';
+        }
+
+        // Remove attendee
+        function removeAttendee(id) {
+            if (confirm('Remove this attendee?')) {
+                attendees = attendees.filter(a => a.id !== id);
+                saveData();
+                updateUI();
+                showMessage('Attendee removed!');
+            }
+        }
+
+        // Send message
+        function sendMessage() {
+            const message = document.getElementById('message').value.trim();
+            if (!message) {
+                alert('Please enter a message!');
+                return;
+            }
+            
+            if (attendees.length === 0) {
+                alert('No attendees to send messages to!');
+                return;
+            }
+
+            messagesSent += attendees.length;
+            saveData();
+            updateUI();
+            showMessage(`Messages sent to ${attendees.length} attendees!`);
+            document.getElementById('message').value = '';
+        }
+
+        // Preview message
+        function previewMessage() {
+            const message = document.getElementById('message').value.trim();
+            if (!message) {
+                alert('Please enter a message first!');
+                return;
+            }
+            
+            const preview = document.getElementById('message-preview');
+            preview.innerHTML = `<div class="success-msg"><strong>Preview:</strong><br>${message}</div>`;
+            preview.style.display = 'block';
+        }
+
+        // Export CSV
+        function exportCSV() {
+            if (attendees.length === 0) {
+                alert('No data to export!');
+                return;
+            }
+
+            let csv = 'Name,Phone,Year,Location,Date\n';
+            attendees.forEach(a => {
+                csv += `"${a.name}","${a.phone}","${a.year}","${a.location}","${a.date}"\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'attendance-report.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            showMessage('CSV exported successfully!');
+        }
+
+        // Clear all data
+        function clearAllData() {
+            if (confirm('Are you sure you want to clear all data? This cannot be undone!')) {
+                attendees = [];
+                serviceActive = false;
+                totalServices = 0;
+                messagesSent = 0;
+                localStorage.clear();
+                updateUI();
+                showMessage('All data cleared!');
+            }
+        }
+
+        // Update UI
+        function updateUI() {
+            // Service status
+            const statusEl = document.getElementById('service-status');
+            const btnEl = document.getElementById('service-btn');
+            
+            if (serviceActive) {
+                statusEl.textContent = `Active service - ${attendees.length} attendees`;
+                btnEl.textContent = 'End Service';
+                btnEl.className = 'btn-danger';
+            } else {
+                statusEl.textContent = 'No active service';
+                btnEl.textContent = 'Start Service';
+                btnEl.className = 'btn-success';
+            }
+
+            // Attendee count
+            document.getElementById('count').textContent = attendees.length;
+            document.getElementById('recipient-count').textContent = attendees.length;
+
+            // Attendee list
+            const listEl = document.getElementById('attendee-list');
+            if (attendees.length === 0) {
+                listEl.innerHTML = '<p>No attendees registered yet</p>';
+            } else {
+                listEl.innerHTML = attendees.map(a => `
+                    <div class="attendee-item">
+                        <strong>${a.name}</strong><br>
+                        📞 ${a.phone} • 🎓 ${a.year} • 📍 ${a.location}<br>
+                        📅 ${a.date}
+                        <button onclick="removeAttendee(${a.id})" class="btn-danger" style="float: right;">Remove</button>
+                    </div>
+                `).join('');
+            }
+
+            // Stats
+            document.getElementById('total-attendees').textContent = attendees.length;
+            document.getElementById('total-services').textContent = totalServices;
+            document.getElementById('messages-sent').textContent = messagesSent;
+        }
+
+        // Show message
+        function showMessage(text) {
+            const msg = document.createElement('div');
+            msg.className = 'success-msg';
+            msg.textContent = text;
+            msg.style.position = 'fixed';
+            msg.style.top = '20px';
+            msg.style.right = '20px';
+            msg.style.zIndex = '1000';
+            document.body.appendChild(msg);
+            
+            setTimeout(() => {
+                if (msg.parentNode) {
+                    msg.parentNode.removeChild(msg);
+                }
+            }, 3000);
+        }
+
+        // Initialize app
+        loadData();
+        updateUI();
+    </script>
+</body>
+</html>

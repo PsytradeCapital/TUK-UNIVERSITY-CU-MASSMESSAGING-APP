@@ -179,20 +179,38 @@ class _HomeScreenState extends State<HomeScreen> {
     switch (navigationProvider.currentIndex) {
       case 0: // Registration tab
         if (!sessionProvider.hasActiveService) {
-          return FloatingActionButton.extended(
-            onPressed: () => _startNewService(context),
-            icon: const Icon(Icons.play_arrow),
-            label: const Text('Start Service'),
-            backgroundColor: Colors.green[700],
+          return AccessibilityUtils.createAccessibleFAB(
+            child: ResponsiveUtils.isMobile(context) 
+              ? const Icon(Icons.play_arrow)
+              : Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Icon(Icons.play_arrow),
+                    SizedBox(width: 8),
+                    Text('Start'),
+                  ],
+                ),
+            label: 'Start new service session',
+            hint: 'Tap to begin registering attendees for a new service',
+            onPressed: () {
+              AccessibilityUtils.provideHapticFeedback(HapticFeedbackType.mediumImpact);
+              _startNewService(context);
+            },
+            backgroundColor: AppTheme.secondaryGreen,
           );
         }
         break;
       case 1: // Messaging tab
         if (sessionProvider.hasActiveService && sessionProvider.attendeeCount > 0) {
-          return FloatingActionButton(
-            onPressed: () => _showQuickSendDialog(context),
+          return AccessibilityUtils.createAccessibleFAB(
             child: const Icon(Icons.send),
-            backgroundColor: Colors.blue[700],
+            label: 'Quick send message',
+            hint: 'Tap to open message composition dialog',
+            onPressed: () {
+              AccessibilityUtils.provideHapticFeedback(HapticFeedbackType.mediumImpact);
+              _showQuickSendDialog(context);
+            },
+            backgroundColor: AppTheme.primaryBlue,
           );
         }
         break;
@@ -232,9 +250,9 @@ class _HomeScreenState extends State<HomeScreen> {
   void _showQuickSendDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Quick Send'),
-        content: const Text('Navigate to messaging screen to compose and send messages?'),
+      builder: (context) => AccessibilityUtils.createAccessibleAlertDialog(
+        title: 'Quick Send',
+        content: 'Navigate to messaging screen to compose and send messages?',
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -244,8 +262,130 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () {
               Navigator.of(context).pop();
               context.read<NavigationProvider>().navigateToTab(1);
+              AccessibilityUtils.announceToScreenReader(
+                context, 
+                'Navigated to messaging screen'
+              );
             },
             child: const Text('Go to Messaging'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAccessibleBottomNavigationBar(
+    BuildContext context,
+    NavigationProvider navigationProvider,
+    ServiceSessionProvider sessionProvider,
+  ) {
+    return Semantics(
+      container: true,
+      child: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        currentIndex: navigationProvider.currentIndex,
+        onTap: (index) {
+          AccessibilityUtils.provideHapticFeedback(HapticFeedbackType.selectionClick);
+          navigationProvider.navigateToTab(index);
+          
+          // Announce tab change to screen reader
+          final tabNames = ['Registration', 'Messaging', 'Reports', 'Settings'];
+          AccessibilityUtils.announceToScreenReader(
+            context, 
+            'Switched to ${tabNames[index]} tab'
+          );
+        },
+        selectedItemColor: AppTheme.primaryBlue,
+        unselectedItemColor: AppTheme.textSecondary,
+        items: [
+          BottomNavigationBarItem(
+            icon: Semantics(
+              label: AccessibilityUtils.getTabSemantics(0, 'Registration'),
+              child: const Icon(Icons.person_add),
+            ),
+            label: 'Registration',
+          ),
+          BottomNavigationBarItem(
+            icon: Semantics(
+              label: AccessibilityUtils.getTabSemantics(
+                1, 
+                'Messaging', 
+                isEnabled: navigationProvider.canNavigateToMessaging,
+                badgeCount: sessionProvider.attendeeCount > 0 ? sessionProvider.attendeeCount : null,
+              ),
+              child: Stack(
+                children: [
+                  Icon(
+                    Icons.message,
+                    color: navigationProvider.canNavigateToMessaging 
+                      ? null 
+                      : AppTheme.textHint,
+                  ),
+                  if (sessionProvider.attendeeCount > 0)
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: navigationProvider.canNavigateToMessaging 
+                            ? AppTheme.errorRed 
+                            : AppTheme.textHint,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 16,
+                          minHeight: 16,
+                        ),
+                        child: Text(
+                          '${sessionProvider.attendeeCount}',
+                          style: const TextStyle(
+                            color: AppTheme.textOnPrimary,
+                            fontSize: 10,
+                          ),
+                          textAlign: TextAlign.center,
+                          semanticsLabel: AccessibilityUtils.getAttendeeCountSemantics(
+                            sessionProvider.attendeeCount
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            label: 'Messaging',
+          ),
+          BottomNavigationBarItem(
+            icon: Semantics(
+              label: AccessibilityUtils.getTabSemantics(
+                2, 
+                'Reports', 
+                isEnabled: navigationProvider.canNavigateToReports
+              ),
+              child: Icon(
+                Icons.analytics,
+                color: navigationProvider.canNavigateToReports 
+                  ? null 
+                  : AppTheme.textHint,
+              ),
+            ),
+            label: 'Reports',
+          ),
+          BottomNavigationBarItem(
+            icon: Semantics(
+              label: AccessibilityUtils.getTabSemantics(
+                3, 
+                'Settings', 
+                isEnabled: navigationProvider.canNavigateToSettings
+              ),
+              child: Icon(
+                Icons.settings,
+                color: navigationProvider.canNavigateToSettings 
+                  ? null 
+                  : AppTheme.textHint,
+              ),
+            ),
+            label: 'Settings',
           ),
         ],
       ),
