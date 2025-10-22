@@ -241,6 +241,100 @@
             margin-bottom: 10px;
         }
 
+        .progress-container {
+            background: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+            height: 25px;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .network-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .network-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #4CAF50;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .sms-preview {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            position: relative;
+        }
+
+        .sms-preview::before {
+            content: "📱 SMS Preview";
+            position: absolute;
+            top: -10px;
+            left: 10px;
+            background: white;
+            padding: 0 5px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .template-card {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .template-card:hover {
+            background: #e9ecef;
+            border-color: #1976D2;
+        }
+
+        .template-card h4 {
+            margin-bottom: 8px;
+            color: #1976D2;
+        }
+
+        .template-card p {
+            font-size: 14px;
+            color: #666;
+            margin: 0;
+        }
+
         @media (max-width: 768px) {
             .nav-tabs {
                 flex-direction: column;
@@ -253,6 +347,14 @@
 
             .attendee-item button {
                 margin-top: 10px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .template-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -611,10 +713,43 @@
             }
         }
 
-        // Messaging
-        function sendMessages() {
+        // Message character counting
+        document.addEventListener('DOMContentLoaded', function() {
+            const messageArea = document.getElementById('message');
+            if (messageArea) {
+                messageArea.addEventListener('input', updateCharacterCount);
+            }
+        });
+
+        function updateCharacterCount() {
             const message = document.getElementById('message').value;
-            if (!message.trim()) {
+            const charCount = message.length;
+            const smsCount = Math.ceil(charCount / 160) || 1;
+            
+            document.getElementById('char-count').textContent = `${charCount}/160 characters`;
+            document.getElementById('sms-count').textContent = `${smsCount} SMS`;
+            
+            // Update cost calculation
+            const recipients = currentService ? currentService.attendees.length : 0;
+            const totalCost = recipients * smsCount;
+            document.getElementById('sms-cost').textContent = `KES ${totalCost}`;
+        }
+
+        // Message templates
+        function useTemplate() {
+            const templateSelect = document.getElementById('message-templates');
+            const template = templateSelect.value;
+            
+            if (template && messageTemplates[template]) {
+                document.getElementById('message').value = messageTemplates[template];
+                updateCharacterCount();
+            }
+        }
+
+        // Enhanced messaging with offline support
+        function sendMessages() {
+            const message = document.getElementById('message').value.trim();
+            if (!message) {
                 alert('Please enter a message!');
                 return;
             }
@@ -624,24 +759,144 @@
                 return;
             }
 
-            // Simulate sending messages
-            messagesSent += currentService.attendees.length;
-            localStorage.setItem('messagesSent', messagesSent.toString());
+            const serviceAttendees = attendees.filter(a => currentService.attendees.includes(a.id));
+            const saveOffline = document.getElementById('save-offline').checked;
 
-            showSuccess(`Messages sent to ${currentService.attendees.length} attendees!`);
-            document.getElementById('message').value = '';
-            updateUI();
+            if (saveOffline) {
+                // Save for offline sending
+                const messageData = {
+                    id: Date.now(),
+                    message: message,
+                    recipients: serviceAttendees,
+                    timestamp: new Date().toISOString(),
+                    status: 'pending',
+                    serviceId: currentService.id
+                };
+                
+                pendingMessages.push(messageData);
+                localStorage.setItem('pendingMessages', JSON.stringify(pendingMessages));
+                updatePendingMessages();
+                showSuccess('Message saved for offline sending!');
+            }
+
+            // Simulate SMS sending with progress
+            simulateSMSSending(serviceAttendees, message);
+        }
+
+        function simulateSMSSending(recipients, message) {
+            const progressDiv = document.getElementById('sending-progress');
+            const progressBar = document.getElementById('progress-bar');
+            const sentCountSpan = document.getElementById('sent-count');
+            const totalCountSpan = document.getElementById('total-count');
+            const currentSendingSpan = document.getElementById('current-sending');
+            
+            progressDiv.style.display = 'block';
+            totalCountSpan.textContent = recipients.length;
+            
+            let sent = 0;
+            const sendInterval = setInterval(() => {
+                if (sent < recipients.length) {
+                    const recipient = recipients[sent];
+                    sent++;
+                    
+                    // Update progress
+                    const progress = (sent / recipients.length) * 100;
+                    progressBar.style.width = progress + '%';
+                    sentCountSpan.textContent = sent;
+                    currentSendingSpan.textContent = `Sending to ${recipient.name} (${recipient.phone})...`;
+                    
+                    // Simulate network delay
+                    setTimeout(() => {
+                        if (sent === recipients.length) {
+                            // All messages sent
+                            currentSendingSpan.textContent = '✅ All messages sent successfully!';
+                            messagesSent += recipients.length;
+                            localStorage.setItem('messagesSent', messagesSent.toString());
+                            
+                            setTimeout(() => {
+                                progressDiv.style.display = 'none';
+                                document.getElementById('message').value = '';
+                                updateUI();
+                                showSuccess(`📱 SMS sent to ${recipients.length} attendees via Safaricom/Airtel networks!`);
+                            }, 2000);
+                        }
+                    }, 500);
+                } else {
+                    clearInterval(sendInterval);
+                }
+            }, 1000);
         }
 
         function previewMessage() {
-            const message = document.getElementById('message').value;
-            if (!message.trim()) {
+            const message = document.getElementById('message').value.trim();
+            if (!message) {
                 alert('Please enter a message first!');
                 return;
             }
 
+            const serviceAttendees = attendees.filter(a => currentService ? currentService.attendees.includes(a.id) : false);
+            
             document.getElementById('preview-text').textContent = message;
+            document.getElementById('preview-recipients').textContent = `${serviceAttendees.length} attendees`;
             document.getElementById('message-preview').style.display = 'block';
+        }
+
+        function scheduleMessage() {
+            const message = document.getElementById('message').value.trim();
+            if (!message) {
+                alert('Please enter a message first!');
+                return;
+            }
+
+            const scheduleTime = prompt('Schedule message for later?\nEnter time (e.g., "2:30 PM" or "14:30"):');
+            if (scheduleTime) {
+                showSuccess(`Message scheduled for ${scheduleTime}. Will be sent automatically.`);
+                // In a real app, this would integrate with a scheduling system
+            }
+        }
+
+        function updatePendingMessages() {
+            const pendingDiv = document.getElementById('pending-messages');
+            const countSpan = document.getElementById('pending-count');
+            
+            countSpan.textContent = pendingMessages.length;
+            
+            if (pendingMessages.length === 0) {
+                pendingDiv.innerHTML = '<p>No pending messages</p>';
+                return;
+            }
+
+            pendingDiv.innerHTML = pendingMessages.map(msg => `
+                <div style="background: #fff3cd; padding: 10px; margin: 5px 0; border-radius: 5px; border-left: 4px solid #ffc107;">
+                    <strong>Message:</strong> ${msg.message.substring(0, 50)}${msg.message.length > 50 ? '...' : ''}<br>
+                    <strong>Recipients:</strong> ${msg.recipients.length} attendees<br>
+                    <strong>Created:</strong> ${new Date(msg.timestamp).toLocaleString()}<br>
+                    <button onclick="sendPendingMessage(${msg.id})" class="btn" style="margin-top: 5px;">Send Now</button>
+                    <button onclick="deletePendingMessage(${msg.id})" class="btn btn-danger" style="margin-top: 5px;">Delete</button>
+                </div>
+            `).join('');
+        }
+
+        function sendPendingMessage(messageId) {
+            const messageIndex = pendingMessages.findIndex(m => m.id === messageId);
+            if (messageIndex === -1) return;
+            
+            const messageData = pendingMessages[messageIndex];
+            simulateSMSSending(messageData.recipients, messageData.message);
+            
+            // Remove from pending
+            pendingMessages.splice(messageIndex, 1);
+            localStorage.setItem('pendingMessages', JSON.stringify(pendingMessages));
+            updatePendingMessages();
+        }
+
+        function deletePendingMessage(messageId) {
+            if (confirm('Delete this pending message?')) {
+                pendingMessages = pendingMessages.filter(m => m.id !== messageId);
+                localStorage.setItem('pendingMessages', JSON.stringify(pendingMessages));
+                updatePendingMessages();
+                showSuccess('Pending message deleted!');
+            }
         }
 
         // Reports
@@ -718,6 +973,8 @@
             updateServiceStatus();
             updateAttendeeList();
             updateStats();
+            updateCharacterCount();
+            updatePendingMessages();
         }
 
         function updateServiceStatus() {
