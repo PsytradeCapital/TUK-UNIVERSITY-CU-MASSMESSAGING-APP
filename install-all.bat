@@ -1,7 +1,7 @@
 @echo off
 setlocal enabledelayedexpansion
 
-echo Christian Union Attendance App - Complete Installation Script
+echo TUK CU Mass Messaging App - Complete Installation Script
 echo =============================================================
 echo.
 

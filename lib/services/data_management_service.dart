@@ -124,7 +124,7 @@ class DataManagementService {
       await Share.shareXFiles(
         [XFile(filePath)],
         subject: subject ?? 'Attendee Data Export',
-        text: 'Christian Union attendance data export',
+        text: 'TUK CU Mass Messaging App - attendance data export',
       );
     } catch (e) {
       throw DataManagementException('Failed to share CSV file: $e');

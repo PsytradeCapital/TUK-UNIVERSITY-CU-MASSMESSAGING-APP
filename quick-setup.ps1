@@ -1,8 +1,8 @@
-# Quick Setup Script for Christian Union Attendance App
+# Quick Setup Script for TUK CU Mass Messaging App
 # This script installs everything needed to run the Flutter app
 
-Write-Host "Christian Union Attendance App - Quick Setup" -ForegroundColor Green
-Write-Host "=============================================" -ForegroundColor Green
+Write-Host "TUK CU Mass Messaging App - Quick Setup" -ForegroundColor Green
+Write-Host "=======================================" -ForegroundColor Green
 Write-Host ""
 
 # Check if running as Administrator

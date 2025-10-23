@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Comprehensive theme system for the Christian Union Attendance App
+/// Comprehensive theme system for the TUK CU Mass Messaging App
 class AppTheme {
   // Color palette
   static const Color primaryBlue = Color(0xFF1976D2);

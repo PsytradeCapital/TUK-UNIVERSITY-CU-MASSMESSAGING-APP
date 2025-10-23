@@ -64,7 +64,7 @@ class ChristianUnionAttendanceApp extends StatelessWidget {
       child: Consumer<AppStateProvider>(
         builder: (context, appState, child) {
           return MaterialApp(
-            title: 'Christian Union Attendance',
+            title: 'TUK CU Mass Messaging App',
             theme: AppTheme.lightTheme,
             // Add global error handling and loading overlay
             home: GlobalErrorHandler(

@@ -1,6 +1,7 @@
-# Christian Union Attendance App
+# TUK CU Mass Messaging App
+## "Raising to Serve"
 
-A mobile application for the Technical University of Kenya Christian Union to automate attendee registration and mass SMS messaging during services.
+A comprehensive mass messaging and attendance management application for the Technical University of Kenya Christian Union (TUK CU). Designed to streamline attendee registration and enable efficient bulk SMS communication during services and events.
 
 ## Features
 

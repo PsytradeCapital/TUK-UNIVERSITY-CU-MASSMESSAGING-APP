@@ -1,5 +1,5 @@
-name: christian_union_attendance_app
-description: A mobile app for Technical University of Kenya Christian Union to automate attendee registration and mass SMS messaging.
+name: tuk_cu_mass_messaging_app
+description: TUK CU Mass Messaging App - Technical University of Kenya Christian Union mass messaging and attendance system. "Raising to Serve"
 
 publish_to: 'none'
 

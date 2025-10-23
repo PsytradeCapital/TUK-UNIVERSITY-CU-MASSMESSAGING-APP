@@ -1,4 +1,5 @@
-# Christian Union Attendance App - Setup Guide
+# TUK CU Mass Messaging App - Setup Guide
+## "Raising to Serve"
 
 ## Prerequisites
 

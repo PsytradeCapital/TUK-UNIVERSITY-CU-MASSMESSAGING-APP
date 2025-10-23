@@ -5,7 +5,7 @@ import 'package:crypto/crypto.dart';
 import 'security_service.dart';
 
 class EncryptionService {
-  static const String _ivLength = 16; // AES block size
+  static const int _ivLength = 16; // AES block size
   
   // Encrypt sensitive data using AES-like encryption
   static Future<String> encryptSensitiveData(String data) async {

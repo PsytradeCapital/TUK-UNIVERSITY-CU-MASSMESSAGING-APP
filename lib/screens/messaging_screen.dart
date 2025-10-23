@@ -48,6 +48,9 @@ class _MessagingScreenState extends State<MessagingScreen> {
       if (mounted) {
         setState(() {
           _currentProgress = progress;
+        });
+      }
+    });
           _isSending = progress.isSending;
         });
       }
@@ -159,13 +162,13 @@ class _MessagingScreenState extends State<MessagingScreen> {
         _messageController.text,
         onMessageSent: (messageLog) async {
           // Save successful message log
-          await _messageLogRepository.insertMessageLog(
+          await _messageLogRepository.createMessageLog(
             messageLog.copyWith(serviceId: widget.serviceId),
           );
         },
         onMessageFailed: (messageLog) async {
           // Save failed message log
-          await _messageLogRepository.insertMessageLog(
+          await _messageLogRepository.createMessageLog(
             messageLog.copyWith(serviceId: widget.serviceId),
           );
         },
@@ -200,12 +203,12 @@ class _MessagingScreenState extends State<MessagingScreen> {
     try {
       await _smsManager.resumeSending(
         onMessageSent: (messageLog) async {
-          await _messageLogRepository.insertMessageLog(
+          await _messageLogRepository.createMessageLog(
             messageLog.copyWith(serviceId: widget.serviceId),
           );
         },
         onMessageFailed: (messageLog) async {
-          await _messageLogRepository.insertMessageLog(
+          await _messageLogRepository.createMessageLog(
             messageLog.copyWith(serviceId: widget.serviceId),
           );
         },

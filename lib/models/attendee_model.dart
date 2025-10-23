@@ -61,6 +61,24 @@ class AttendeeModel {
     return phone; // Return as-is if format not recognized
   }
 
+  // Mask phone number for display (e.g., +254712****56)
+  static String maskPhoneNumber(String phone) {
+    if (phone.length < 4) return phone;
+    
+    if (phone.startsWith('+254') && phone.length >= 13) {
+      return '${phone.substring(0, 7)}****${phone.substring(phone.length - 2)}';
+    } else if (phone.startsWith('07') && phone.length >= 10) {
+      return '${phone.substring(0, 4)}****${phone.substring(phone.length - 2)}';
+    }
+    
+    // For other formats, mask middle digits
+    if (phone.length >= 6) {
+      return '${phone.substring(0, 3)}****${phone.substring(phone.length - 2)}';
+    }
+    
+    return phone;
+  }
+
   // Validation method
   String? validateFields() {
     if (name.trim().isEmpty) {

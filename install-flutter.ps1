@@ -6,8 +6,8 @@ param(
     [switch]$SkipAndroidStudio
 )
 
-Write-Host "Christian Union Attendance App - Flutter Installation Script" -ForegroundColor Green
-Write-Host "=============================================================" -ForegroundColor Green
+Write-Host "TUK CU Mass Messaging App - Flutter Installation Script" -ForegroundColor Green
+Write-Host "=======================================================" -ForegroundColor Green
 Write-Host ""
 
 # Check if running as Administrator

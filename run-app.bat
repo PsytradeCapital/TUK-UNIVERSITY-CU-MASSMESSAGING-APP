@@ -1,6 +1,6 @@
 @echo off
-echo Christian Union Attendance App - Run Script
-echo ===========================================
+echo TUK CU Mass Messaging App - "Raising to Serve"
+echo ===============================================
 echo.
 
 REM Check if Flutter is installed

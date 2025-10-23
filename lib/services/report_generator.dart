@@ -233,7 +233,7 @@ class ReportGenerator {
       final csvData = StringBuffer();
       
       // Report Header
-      csvData.writeln('Christian Union Attendance Report');
+      csvData.writeln('TUK CU Mass Messaging App - Attendance Report');
       csvData.writeln('Generated: ${report.generatedAt.toIso8601String()}');
       csvData.writeln('');
       

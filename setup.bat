@@ -1,5 +1,5 @@
 @echo off
-echo Christian Union Attendance App - Setup Script
+echo TUK CU Mass Messaging App - Setup Script
 echo =============================================
 echo.
 
