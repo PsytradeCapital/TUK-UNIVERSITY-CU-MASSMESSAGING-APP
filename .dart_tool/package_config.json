@@ -428,13 +428,13 @@
       "languageVersion": "3.0"
     },
     {
-      "name": "christian_union_attendance_app",
+      "name": "tuk_cu_mass_messaging_app",
       "rootUri": "../",
       "packageUri": "lib/",
       "languageVersion": "3.0"
     }
   ],
-  "generated": "2025-10-21T02:27:50.587126Z",
+  "generated": "2025-11-18T18:36:30.974551Z",
   "generator": "pub",
   "generatorVersion": "3.2.3"
 }
