@@ -1,0 +1,1 @@
+ C:\\Users\\Evelyn\\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\\.dart_tool\\flutter_build\\571b475784fd81317c201a4d4d0e78e3\\native_assets.yaml: 

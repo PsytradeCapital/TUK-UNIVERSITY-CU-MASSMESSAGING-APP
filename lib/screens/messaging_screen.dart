@@ -48,9 +48,6 @@ class _MessagingScreenState extends State<MessagingScreen> {
       if (mounted) {
         setState(() {
           _currentProgress = progress;
-        });
-      }
-    });
           _isSending = progress.isSending;
         });
       }
@@ -683,4 +680,4 @@ class _MessagingScreenState extends State<MessagingScreen> {
       ],
     );
   }
-              
+}
