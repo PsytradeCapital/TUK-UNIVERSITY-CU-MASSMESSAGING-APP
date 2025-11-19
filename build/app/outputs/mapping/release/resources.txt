@@ -3248,6 +3248,7 @@ Marking id:fragment_container_view_tag:2131296346 used because it matches string
 @drawable/ic_call_decline : reachable=false
 @drawable/ic_call_decline_low : reachable=false
 @drawable/launch_background : reachable=false
+    @mipmap/ic_launcher
 @drawable/notification_action_background : reachable=true
     @color/androidx_core_ripple_material_light
     @dimen/compat_button_inset_horizontal_material
