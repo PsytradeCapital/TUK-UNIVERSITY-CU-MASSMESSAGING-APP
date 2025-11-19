@@ -1,0 +1,385 @@
+-- Merging decision tree log ---
+application
+INJECTED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:22:5-56:19
+MERGED from [:share_plus] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\share_plus\intermediates\merged_manifest\release\AndroidManifest.xml:9:5-35:19
+MERGED from [:share_plus] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\share_plus\intermediates\merged_manifest\release\AndroidManifest.xml:9:5-35:19
+MERGED from [androidx.window:window:1.0.0-beta04] C:\Users\Evelyn\.gradle\caches\transforms-3\9c061899132f2b3eb0783c91d4f7b10b\transformed\jetified-window-1.0.0-beta04\AndroidManifest.xml:24:5-31:19
+MERGED from [androidx.window:window:1.0.0-beta04] C:\Users\Evelyn\.gradle\caches\transforms-3\9c061899132f2b3eb0783c91d4f7b10b\transformed\jetified-window-1.0.0-beta04\AndroidManifest.xml:24:5-31:19
+MERGED from [androidx.core:core:1.10.1] C:\Users\Evelyn\.gradle\caches\transforms-3\2ddaa5378649743b6092d03840959cc6\transformed\core-1.10.1\AndroidManifest.xml:28:5-89
+MERGED from [androidx.core:core:1.10.1] C:\Users\Evelyn\.gradle\caches\transforms-3\2ddaa5378649743b6092d03840959cc6\transformed\core-1.10.1\AndroidManifest.xml:28:5-89
+MERGED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Evelyn\.gradle\caches\transforms-3\dacf117bc0717fdb2bc99b01e823a2c0\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:23:5-53:19
+MERGED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Evelyn\.gradle\caches\transforms-3\dacf117bc0717fdb2bc99b01e823a2c0\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:23:5-53:19
+MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\Evelyn\.gradle\caches\transforms-3\25c41f5c59741993f1d87b725ed45a2c\transformed\jetified-startup-runtime-1.1.1\AndroidManifest.xml:25:5-31:19
+MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\Evelyn\.gradle\caches\transforms-3\25c41f5c59741993f1d87b725ed45a2c\transformed\jetified-startup-runtime-1.1.1\AndroidManifest.xml:25:5-31:19
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] C:\Users\Evelyn\.gradle\caches\transforms-3\6892849e1f525b94130059452b218617\transformed\versionedparcelable-1.1.1\AndroidManifest.xml:24:5-25:19
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] C:\Users\Evelyn\.gradle\caches\transforms-3\6892849e1f525b94130059452b218617\transformed\versionedparcelable-1.1.1\AndroidManifest.xml:24:5-25:19
+	android:appComponentFactory
+		ADDED from [androidx.core:core:1.10.1] C:\Users\Evelyn\.gradle\caches\transforms-3\2ddaa5378649743b6092d03840959cc6\transformed\core-1.10.1\AndroidManifest.xml:28:18-86
+	android:label
+		ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:23:9-46
+	android:icon
+		ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:25:9-43
+	android:name
+		INJECTED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml
+		ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:24:9-42
+manifest
+ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:1:1-70:12
+INJECTED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:1:1-70:12
+INJECTED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:1:1-70:12
+INJECTED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:1:1-70:12
+MERGED from [:local_auth_android] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\local_auth_android\intermediates\merged_manifest\release\AndroidManifest.xml:2:1-11:12
+MERGED from [:flutter_plugin_android_lifecycle] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\flutter_plugin_android_lifecycle\intermediates\merged_manifest\release\AndroidManifest.xml:2:1-9:12
+MERGED from [:sqflite] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\sqflite\intermediates\merged_manifest\release\AndroidManifest.xml:2:1-9:12
+MERGED from [:share_plus] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\share_plus\intermediates\merged_manifest\release\AndroidManifest.xml:2:1-37:12
+MERGED from [:telephony] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\telephony\intermediates\merged_manifest\release\AndroidManifest.xml:2:1-11:12
+MERGED from [:path_provider_android] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\path_provider_android\intermediates\merged_manifest\release\AndroidManifest.xml:2:1-9:12
+MERGED from [:flutter_secure_storage] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\flutter_secure_storage\intermediates\merged_manifest\release\AndroidManifest.xml:2:1-11:12
+MERGED from [androidx.biometric:biometric:1.1.0] C:\Users\Evelyn\.gradle\caches\transforms-3\e9d4bfaea2c2c8d1a1efd28d7fb0f4a6\transformed\biometric-1.1.0\AndroidManifest.xml:17:1-29:12
+MERGED from [androidx.appcompat:appcompat:1.2.0] C:\Users\Evelyn\.gradle\caches\transforms-3\5de1125698c6127b1508721f875d846a\transformed\appcompat-1.2.0\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.fragment:fragment:1.6.2] C:\Users\Evelyn\.gradle\caches\transforms-3\94955f4f67155617dbc54c3d0e3e8f45\transformed\fragment-1.6.2\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.activity:activity:1.7.2] C:\Users\Evelyn\.gradle\caches\transforms-3\3c345bdcad2adbacdcc3a1241d8d7b9c\transformed\jetified-activity-1.7.2\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.core:core-ktx:1.10.1] C:\Users\Evelyn\.gradle\caches\transforms-3\e776674788e99cf0be834cc266465bce\transformed\jetified-core-ktx-1.10.1\AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.window:window-java:1.0.0-beta04] C:\Users\Evelyn\.gradle\caches\transforms-3\a90dfda4c095f8b141fb7e625e2cbd0b\transformed\jetified-window-java-1.0.0-beta04\AndroidManifest.xml:17:1-23:12
+MERGED from [androidx.loader:loader:1.0.0] C:\Users\Evelyn\.gradle\caches\transforms-3\4994fb29e1102828ddf7477a9c8a987f\transformed\loader-1.0.0\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.viewpager:viewpager:1.0.0] C:\Users\Evelyn\.gradle\caches\transforms-3\b7d4edb6309788d4905e9fa95ef6458a\transformed\viewpager-1.0.0\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.window:window:1.0.0-beta04] C:\Users\Evelyn\.gradle\caches\transforms-3\9c061899132f2b3eb0783c91d4f7b10b\transformed\jetified-window-1.0.0-beta04\AndroidManifest.xml:17:1-33:12
+MERGED from [androidx.appcompat:appcompat-resources:1.2.0] C:\Users\Evelyn\.gradle\caches\transforms-3\313ea0152ef9fed347c4e4a69745cc6e\transformed\jetified-appcompat-resources-1.2.0\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.drawerlayout:drawerlayout:1.0.0] C:\Users\Evelyn\.gradle\caches\transforms-3\dcd3dcaad711771e2e807a0579b47819\transformed\drawerlayout-1.0.0\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.customview:customview:1.0.0] C:\Users\Evelyn\.gradle\caches\transforms-3\eda439bdf8a07d056a1230619d207e41\transformed\customview-1.0.0\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.vectordrawable:vectordrawable-animated:1.1.0] C:\Users\Evelyn\.gradle\caches\transforms-3\2fd7118ce138316b6cd70c626eb2093a\transformed\vectordrawable-animated-1.1.0\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.vectordrawable:vectordrawable:1.1.0] C:\Users\Evelyn\.gradle\caches\transforms-3\0508a7c1ad055eea921fb5cc58279ffe\transformed\vectordrawable-1.1.0\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.core:core:1.10.1] C:\Users\Evelyn\.gradle\caches\transforms-3\2ddaa5378649743b6092d03840959cc6\transformed\core-1.10.1\AndroidManifest.xml:17:1-30:12
+MERGED from [androidx.savedstate:savedstate:1.2.1] C:\Users\Evelyn\.gradle\caches\transforms-3\6aec09b5d565c6dc297828729873a54b\transformed\jetified-savedstate-1.2.1\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.lifecycle:lifecycle-livedata:2.6.1] C:\Users\Evelyn\.gradle\caches\transforms-3\f8240db3f2ba5e354736b027fa0c16e0\transformed\lifecycle-livedata-2.6.1\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.lifecycle:lifecycle-viewmodel:2.6.1] C:\Users\Evelyn\.gradle\caches\transforms-3\a45dd86bfcfcb32c49afc1979cd56228\transformed\lifecycle-viewmodel-2.6.1\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.lifecycle:lifecycle-runtime:2.6.1] C:\Users\Evelyn\.gradle\caches\transforms-3\617acfe9a185b3a05989bb1caba2c647\transformed\lifecycle-runtime-2.6.1\AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.lifecycle:lifecycle-livedata-core:2.6.1] C:\Users\Evelyn\.gradle\caches\transforms-3\9df5a8472eaea893f70fd7143c901eb0\transformed\lifecycle-livedata-core-2.6.1\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-savedstate:2.6.1] C:\Users\Evelyn\.gradle\caches\transforms-3\24c5e60d7fdd518bb37d3ad6cb4a7881\transformed\jetified-lifecycle-viewmodel-savedstate-2.6.1\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.security:security-crypto:1.1.0-alpha06] C:\Users\Evelyn\.gradle\caches\transforms-3\8bb077e49e3b4e9523ea4a289be49c77\transformed\jetified-security-crypto-1.1.0-alpha06\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Evelyn\.gradle\caches\transforms-3\dacf117bc0717fdb2bc99b01e823a2c0\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:17:1-55:12
+MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\Evelyn\.gradle\caches\transforms-3\25c41f5c59741993f1d87b725ed45a2c\transformed\jetified-startup-runtime-1.1.1\AndroidManifest.xml:17:1-33:12
+MERGED from [androidx.tracing:tracing:1.0.0] C:\Users\Evelyn\.gradle\caches\transforms-3\7a6ec1ae9654ab9c033298f4be86e2a7\transformed\jetified-tracing-1.0.0\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.interpolator:interpolator:1.0.0] C:\Users\Evelyn\.gradle\caches\transforms-3\c052b635dfaafc628427d6c470b1441c\transformed\interpolator-1.0.0\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] C:\Users\Evelyn\.gradle\caches\transforms-3\6892849e1f525b94130059452b218617\transformed\versionedparcelable-1.1.1\AndroidManifest.xml:17:1-27:12
+MERGED from [androidx.cursoradapter:cursoradapter:1.0.0] C:\Users\Evelyn\.gradle\caches\transforms-3\38fadde4beca8b22d6197267a6df0574\transformed\cursoradapter-1.0.0\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.arch.core:core-runtime:2.2.0] C:\Users\Evelyn\.gradle\caches\transforms-3\4ef91297c675ebb9a36b1c49029da5a5\transformed\core-runtime-2.2.0\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.annotation:annotation-experimental:1.3.0] C:\Users\Evelyn\.gradle\caches\transforms-3\6b8dbcfc112ae33a190c97a157931ee9\transformed\jetified-annotation-experimental-1.3.0\AndroidManifest.xml:17:1-22:12
+INJECTED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:1:1-70:12
+INJECTED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:1:1-70:12
+INJECTED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:1:1-70:12
+	package
+		INJECTED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml
+		ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:1:1-70:12
+		INJECTED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml
+	android:versionName
+		INJECTED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml
+		ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:1:1-70:12
+		INJECTED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml
+	android:versionCode
+		INJECTED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml
+		ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:1:1-70:12
+		INJECTED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml
+	xmlns:android
+		ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:1:11-69
+uses-permission#android.permission.SEND_SMS
+ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:4:5-67
+	android:name
+		ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:4:22-64
+uses-permission#android.permission.READ_SMS
+ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:5:5-67
+	android:name
+		ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:5:22-64
+uses-permission#android.permission.RECEIVE_SMS
+ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:6:5-70
+	android:name
+		ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:6:22-67
+uses-permission#android.permission.READ_PHONE_STATE
+ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:9:5-75
+	android:name
+		ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:9:22-72
+uses-permission#android.permission.WRITE_EXTERNAL_STORAGE
+ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:12:5-81
+	android:name
+		ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:12:22-78
+uses-permission#android.permission.READ_EXTERNAL_STORAGE
+ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:13:5-80
+	android:name
+		ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:13:22-77
+uses-permission#android.permission.INTERNET
+ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:16:5-67
+	android:name
+		ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:16:22-64
+uses-permission#android.permission.USE_FINGERPRINT
+ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:19:5-74
+MERGED from [androidx.biometric:biometric:1.1.0] C:\Users\Evelyn\.gradle\caches\transforms-3\e9d4bfaea2c2c8d1a1efd28d7fb0f4a6\transformed\biometric-1.1.0\AndroidManifest.xml:27:5-74
+MERGED from [androidx.biometric:biometric:1.1.0] C:\Users\Evelyn\.gradle\caches\transforms-3\e9d4bfaea2c2c8d1a1efd28d7fb0f4a6\transformed\biometric-1.1.0\AndroidManifest.xml:27:5-74
+	android:name
+		ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:19:22-71
+uses-permission#android.permission.USE_BIOMETRIC
+ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:20:5-72
+MERGED from [:local_auth_android] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\local_auth_android\intermediates\merged_manifest\release\AndroidManifest.xml:9:5-72
+MERGED from [:local_auth_android] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\local_auth_android\intermediates\merged_manifest\release\AndroidManifest.xml:9:5-72
+MERGED from [androidx.biometric:biometric:1.1.0] C:\Users\Evelyn\.gradle\caches\transforms-3\e9d4bfaea2c2c8d1a1efd28d7fb0f4a6\transformed\biometric-1.1.0\AndroidManifest.xml:24:5-72
+MERGED from [androidx.biometric:biometric:1.1.0] C:\Users\Evelyn\.gradle\caches\transforms-3\e9d4bfaea2c2c8d1a1efd28d7fb0f4a6\transformed\biometric-1.1.0\AndroidManifest.xml:24:5-72
+	android:name
+		ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:20:22-69
+queries
+ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:63:5-68:15
+intent#action:name:android.intent.action.PROCESS_TEXT+data:mimeType:text/plain
+ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:64:9-67:18
+action#android.intent.action.PROCESS_TEXT
+ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:65:13-73
+	android:name
+		ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:65:21-70
+data
+ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:66:13-51
+	android:mimeType
+		ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:66:19-48
+uses-sdk
+INJECTED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml
+INJECTED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml
+MERGED from [:local_auth_android] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\local_auth_android\intermediates\merged_manifest\release\AndroidManifest.xml:5:5-7:41
+MERGED from [:local_auth_android] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\local_auth_android\intermediates\merged_manifest\release\AndroidManifest.xml:5:5-7:41
+MERGED from [:flutter_plugin_android_lifecycle] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\flutter_plugin_android_lifecycle\intermediates\merged_manifest\release\AndroidManifest.xml:5:5-7:41
+MERGED from [:flutter_plugin_android_lifecycle] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\flutter_plugin_android_lifecycle\intermediates\merged_manifest\release\AndroidManifest.xml:5:5-7:41
+MERGED from [:sqflite] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\sqflite\intermediates\merged_manifest\release\AndroidManifest.xml:5:5-7:41
+MERGED from [:sqflite] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\sqflite\intermediates\merged_manifest\release\AndroidManifest.xml:5:5-7:41
+MERGED from [:share_plus] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\share_plus\intermediates\merged_manifest\release\AndroidManifest.xml:5:5-7:41
+MERGED from [:share_plus] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\share_plus\intermediates\merged_manifest\release\AndroidManifest.xml:5:5-7:41
+MERGED from [:telephony] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\telephony\intermediates\merged_manifest\release\AndroidManifest.xml:5:5-7:41
+MERGED from [:telephony] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\telephony\intermediates\merged_manifest\release\AndroidManifest.xml:5:5-7:41
+MERGED from [:path_provider_android] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\path_provider_android\intermediates\merged_manifest\release\AndroidManifest.xml:5:5-7:41
+MERGED from [:path_provider_android] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\path_provider_android\intermediates\merged_manifest\release\AndroidManifest.xml:5:5-7:41
+MERGED from [:flutter_secure_storage] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\flutter_secure_storage\intermediates\merged_manifest\release\AndroidManifest.xml:6:5-9:53
+MERGED from [:flutter_secure_storage] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\flutter_secure_storage\intermediates\merged_manifest\release\AndroidManifest.xml:6:5-9:53
+MERGED from [androidx.biometric:biometric:1.1.0] C:\Users\Evelyn\.gradle\caches\transforms-3\e9d4bfaea2c2c8d1a1efd28d7fb0f4a6\transformed\biometric-1.1.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.biometric:biometric:1.1.0] C:\Users\Evelyn\.gradle\caches\transforms-3\e9d4bfaea2c2c8d1a1efd28d7fb0f4a6\transformed\biometric-1.1.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.appcompat:appcompat:1.2.0] C:\Users\Evelyn\.gradle\caches\transforms-3\5de1125698c6127b1508721f875d846a\transformed\appcompat-1.2.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.appcompat:appcompat:1.2.0] C:\Users\Evelyn\.gradle\caches\transforms-3\5de1125698c6127b1508721f875d846a\transformed\appcompat-1.2.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.fragment:fragment:1.6.2] C:\Users\Evelyn\.gradle\caches\transforms-3\94955f4f67155617dbc54c3d0e3e8f45\transformed\fragment-1.6.2\AndroidManifest.xml:20:5-44
+MERGED from [androidx.fragment:fragment:1.6.2] C:\Users\Evelyn\.gradle\caches\transforms-3\94955f4f67155617dbc54c3d0e3e8f45\transformed\fragment-1.6.2\AndroidManifest.xml:20:5-44
+MERGED from [androidx.activity:activity:1.7.2] C:\Users\Evelyn\.gradle\caches\transforms-3\3c345bdcad2adbacdcc3a1241d8d7b9c\transformed\jetified-activity-1.7.2\AndroidManifest.xml:20:5-44
+MERGED from [androidx.activity:activity:1.7.2] C:\Users\Evelyn\.gradle\caches\transforms-3\3c345bdcad2adbacdcc3a1241d8d7b9c\transformed\jetified-activity-1.7.2\AndroidManifest.xml:20:5-44
+MERGED from [androidx.core:core-ktx:1.10.1] C:\Users\Evelyn\.gradle\caches\transforms-3\e776674788e99cf0be834cc266465bce\transformed\jetified-core-ktx-1.10.1\AndroidManifest.xml:5:5-44
+MERGED from [androidx.core:core-ktx:1.10.1] C:\Users\Evelyn\.gradle\caches\transforms-3\e776674788e99cf0be834cc266465bce\transformed\jetified-core-ktx-1.10.1\AndroidManifest.xml:5:5-44
+MERGED from [androidx.window:window-java:1.0.0-beta04] C:\Users\Evelyn\.gradle\caches\transforms-3\a90dfda4c095f8b141fb7e625e2cbd0b\transformed\jetified-window-java-1.0.0-beta04\AndroidManifest.xml:19:5-21:41
+MERGED from [androidx.window:window-java:1.0.0-beta04] C:\Users\Evelyn\.gradle\caches\transforms-3\a90dfda4c095f8b141fb7e625e2cbd0b\transformed\jetified-window-java-1.0.0-beta04\AndroidManifest.xml:19:5-21:41
+MERGED from [androidx.loader:loader:1.0.0] C:\Users\Evelyn\.gradle\caches\transforms-3\4994fb29e1102828ddf7477a9c8a987f\transformed\loader-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.loader:loader:1.0.0] C:\Users\Evelyn\.gradle\caches\transforms-3\4994fb29e1102828ddf7477a9c8a987f\transformed\loader-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.viewpager:viewpager:1.0.0] C:\Users\Evelyn\.gradle\caches\transforms-3\b7d4edb6309788d4905e9fa95ef6458a\transformed\viewpager-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.viewpager:viewpager:1.0.0] C:\Users\Evelyn\.gradle\caches\transforms-3\b7d4edb6309788d4905e9fa95ef6458a\transformed\viewpager-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.window:window:1.0.0-beta04] C:\Users\Evelyn\.gradle\caches\transforms-3\9c061899132f2b3eb0783c91d4f7b10b\transformed\jetified-window-1.0.0-beta04\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.window:window:1.0.0-beta04] C:\Users\Evelyn\.gradle\caches\transforms-3\9c061899132f2b3eb0783c91d4f7b10b\transformed\jetified-window-1.0.0-beta04\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.appcompat:appcompat-resources:1.2.0] C:\Users\Evelyn\.gradle\caches\transforms-3\313ea0152ef9fed347c4e4a69745cc6e\transformed\jetified-appcompat-resources-1.2.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.appcompat:appcompat-resources:1.2.0] C:\Users\Evelyn\.gradle\caches\transforms-3\313ea0152ef9fed347c4e4a69745cc6e\transformed\jetified-appcompat-resources-1.2.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.drawerlayout:drawerlayout:1.0.0] C:\Users\Evelyn\.gradle\caches\transforms-3\dcd3dcaad711771e2e807a0579b47819\transformed\drawerlayout-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.drawerlayout:drawerlayout:1.0.0] C:\Users\Evelyn\.gradle\caches\transforms-3\dcd3dcaad711771e2e807a0579b47819\transformed\drawerlayout-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.customview:customview:1.0.0] C:\Users\Evelyn\.gradle\caches\transforms-3\eda439bdf8a07d056a1230619d207e41\transformed\customview-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.customview:customview:1.0.0] C:\Users\Evelyn\.gradle\caches\transforms-3\eda439bdf8a07d056a1230619d207e41\transformed\customview-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.vectordrawable:vectordrawable-animated:1.1.0] C:\Users\Evelyn\.gradle\caches\transforms-3\2fd7118ce138316b6cd70c626eb2093a\transformed\vectordrawable-animated-1.1.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.vectordrawable:vectordrawable-animated:1.1.0] C:\Users\Evelyn\.gradle\caches\transforms-3\2fd7118ce138316b6cd70c626eb2093a\transformed\vectordrawable-animated-1.1.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.vectordrawable:vectordrawable:1.1.0] C:\Users\Evelyn\.gradle\caches\transforms-3\0508a7c1ad055eea921fb5cc58279ffe\transformed\vectordrawable-1.1.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.vectordrawable:vectordrawable:1.1.0] C:\Users\Evelyn\.gradle\caches\transforms-3\0508a7c1ad055eea921fb5cc58279ffe\transformed\vectordrawable-1.1.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.core:core:1.10.1] C:\Users\Evelyn\.gradle\caches\transforms-3\2ddaa5378649743b6092d03840959cc6\transformed\core-1.10.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.core:core:1.10.1] C:\Users\Evelyn\.gradle\caches\transforms-3\2ddaa5378649743b6092d03840959cc6\transformed\core-1.10.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.savedstate:savedstate:1.2.1] C:\Users\Evelyn\.gradle\caches\transforms-3\6aec09b5d565c6dc297828729873a54b\transformed\jetified-savedstate-1.2.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.savedstate:savedstate:1.2.1] C:\Users\Evelyn\.gradle\caches\transforms-3\6aec09b5d565c6dc297828729873a54b\transformed\jetified-savedstate-1.2.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-livedata:2.6.1] C:\Users\Evelyn\.gradle\caches\transforms-3\f8240db3f2ba5e354736b027fa0c16e0\transformed\lifecycle-livedata-2.6.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-livedata:2.6.1] C:\Users\Evelyn\.gradle\caches\transforms-3\f8240db3f2ba5e354736b027fa0c16e0\transformed\lifecycle-livedata-2.6.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-viewmodel:2.6.1] C:\Users\Evelyn\.gradle\caches\transforms-3\a45dd86bfcfcb32c49afc1979cd56228\transformed\lifecycle-viewmodel-2.6.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-viewmodel:2.6.1] C:\Users\Evelyn\.gradle\caches\transforms-3\a45dd86bfcfcb32c49afc1979cd56228\transformed\lifecycle-viewmodel-2.6.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-runtime:2.6.1] C:\Users\Evelyn\.gradle\caches\transforms-3\617acfe9a185b3a05989bb1caba2c647\transformed\lifecycle-runtime-2.6.1\AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-runtime:2.6.1] C:\Users\Evelyn\.gradle\caches\transforms-3\617acfe9a185b3a05989bb1caba2c647\transformed\lifecycle-runtime-2.6.1\AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-livedata-core:2.6.1] C:\Users\Evelyn\.gradle\caches\transforms-3\9df5a8472eaea893f70fd7143c901eb0\transformed\lifecycle-livedata-core-2.6.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-livedata-core:2.6.1] C:\Users\Evelyn\.gradle\caches\transforms-3\9df5a8472eaea893f70fd7143c901eb0\transformed\lifecycle-livedata-core-2.6.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-savedstate:2.6.1] C:\Users\Evelyn\.gradle\caches\transforms-3\24c5e60d7fdd518bb37d3ad6cb4a7881\transformed\jetified-lifecycle-viewmodel-savedstate-2.6.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-savedstate:2.6.1] C:\Users\Evelyn\.gradle\caches\transforms-3\24c5e60d7fdd518bb37d3ad6cb4a7881\transformed\jetified-lifecycle-viewmodel-savedstate-2.6.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.security:security-crypto:1.1.0-alpha06] C:\Users\Evelyn\.gradle\caches\transforms-3\8bb077e49e3b4e9523ea4a289be49c77\transformed\jetified-security-crypto-1.1.0-alpha06\AndroidManifest.xml:20:5-44
+MERGED from [androidx.security:security-crypto:1.1.0-alpha06] C:\Users\Evelyn\.gradle\caches\transforms-3\8bb077e49e3b4e9523ea4a289be49c77\transformed\jetified-security-crypto-1.1.0-alpha06\AndroidManifest.xml:20:5-44
+MERGED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Evelyn\.gradle\caches\transforms-3\dacf117bc0717fdb2bc99b01e823a2c0\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:21:5-44
+MERGED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Evelyn\.gradle\caches\transforms-3\dacf117bc0717fdb2bc99b01e823a2c0\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:21:5-44
+MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\Evelyn\.gradle\caches\transforms-3\25c41f5c59741993f1d87b725ed45a2c\transformed\jetified-startup-runtime-1.1.1\AndroidManifest.xml:21:5-23:41
+MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\Evelyn\.gradle\caches\transforms-3\25c41f5c59741993f1d87b725ed45a2c\transformed\jetified-startup-runtime-1.1.1\AndroidManifest.xml:21:5-23:41
+MERGED from [androidx.tracing:tracing:1.0.0] C:\Users\Evelyn\.gradle\caches\transforms-3\7a6ec1ae9654ab9c033298f4be86e2a7\transformed\jetified-tracing-1.0.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.tracing:tracing:1.0.0] C:\Users\Evelyn\.gradle\caches\transforms-3\7a6ec1ae9654ab9c033298f4be86e2a7\transformed\jetified-tracing-1.0.0\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.interpolator:interpolator:1.0.0] C:\Users\Evelyn\.gradle\caches\transforms-3\c052b635dfaafc628427d6c470b1441c\transformed\interpolator-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.interpolator:interpolator:1.0.0] C:\Users\Evelyn\.gradle\caches\transforms-3\c052b635dfaafc628427d6c470b1441c\transformed\interpolator-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] C:\Users\Evelyn\.gradle\caches\transforms-3\6892849e1f525b94130059452b218617\transformed\versionedparcelable-1.1.1\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] C:\Users\Evelyn\.gradle\caches\transforms-3\6892849e1f525b94130059452b218617\transformed\versionedparcelable-1.1.1\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.cursoradapter:cursoradapter:1.0.0] C:\Users\Evelyn\.gradle\caches\transforms-3\38fadde4beca8b22d6197267a6df0574\transformed\cursoradapter-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.cursoradapter:cursoradapter:1.0.0] C:\Users\Evelyn\.gradle\caches\transforms-3\38fadde4beca8b22d6197267a6df0574\transformed\cursoradapter-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.arch.core:core-runtime:2.2.0] C:\Users\Evelyn\.gradle\caches\transforms-3\4ef91297c675ebb9a36b1c49029da5a5\transformed\core-runtime-2.2.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.arch.core:core-runtime:2.2.0] C:\Users\Evelyn\.gradle\caches\transforms-3\4ef91297c675ebb9a36b1c49029da5a5\transformed\core-runtime-2.2.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.annotation:annotation-experimental:1.3.0] C:\Users\Evelyn\.gradle\caches\transforms-3\6b8dbcfc112ae33a190c97a157931ee9\transformed\jetified-annotation-experimental-1.3.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.annotation:annotation-experimental:1.3.0] C:\Users\Evelyn\.gradle\caches\transforms-3\6b8dbcfc112ae33a190c97a157931ee9\transformed\jetified-annotation-experimental-1.3.0\AndroidManifest.xml:20:5-44
+INJECTED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml
+INJECTED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml
+	tools:overrideLibrary
+		ADDED from [:flutter_secure_storage] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\flutter_secure_storage\intermediates\merged_manifest\release\AndroidManifest.xml:9:9-50
+	android:targetSdkVersion
+		INJECTED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml
+		ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml
+		INJECTED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml
+		ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml
+		INJECTED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml
+activity#com.example.christian_union_attendance_app.MainActivity
+ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:27:9-49:20
+	android:launchMode
+		ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:30:13-43
+	android:hardwareAccelerated
+		ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:33:13-47
+	android:windowSoftInputMode
+		ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:34:13-55
+	android:exported
+		ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:29:13-36
+	android:configChanges
+		ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:32:13-163
+	android:theme
+		ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:31:13-47
+	android:name
+		ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:28:13-41
+meta-data#io.flutter.embedding.android.NormalTheme
+ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:40:13-43:17
+	android:resource
+		ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:42:15-52
+	android:name
+		ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:41:15-70
+intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
+ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:45:13-48:29
+	android:autoVerify
+		ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:45:28-53
+action#android.intent.action.MAIN
+ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:46:17-68
+	android:name
+		ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:46:25-66
+category#android.intent.category.LAUNCHER
+ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:47:17-76
+	android:name
+		ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:47:27-74
+meta-data#flutterEmbedding
+ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:53:9-55:33
+	android:value
+		ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:55:13-30
+	android:name
+		ADDED from C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\android\app\src\main\AndroidManifest.xml:54:13-44
+provider#dev.fluttercommunity.plus.share.ShareFileProvider
+ADDED from [:share_plus] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\share_plus\intermediates\merged_manifest\release\AndroidManifest.xml:15:9-23:20
+	android:grantUriPermissions
+		ADDED from [:share_plus] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\share_plus\intermediates\merged_manifest\release\AndroidManifest.xml:19:13-47
+	android:authorities
+		ADDED from [:share_plus] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\share_plus\intermediates\merged_manifest\release\AndroidManifest.xml:17:13-74
+	android:exported
+		ADDED from [:share_plus] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\share_plus\intermediates\merged_manifest\release\AndroidManifest.xml:18:13-37
+	android:name
+		ADDED from [:share_plus] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\share_plus\intermediates\merged_manifest\release\AndroidManifest.xml:16:13-77
+meta-data#android.support.FILE_PROVIDER_PATHS
+ADDED from [:share_plus] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\share_plus\intermediates\merged_manifest\release\AndroidManifest.xml:20:13-22:68
+	android:resource
+		ADDED from [:share_plus] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\share_plus\intermediates\merged_manifest\release\AndroidManifest.xml:22:17-65
+	android:name
+		ADDED from [:share_plus] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\share_plus\intermediates\merged_manifest\release\AndroidManifest.xml:21:17-67
+receiver#dev.fluttercommunity.plus.share.SharePlusPendingIntent
+ADDED from [:share_plus] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\share_plus\intermediates\merged_manifest\release\AndroidManifest.xml:28:9-34:20
+	android:exported
+		ADDED from [:share_plus] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\share_plus\intermediates\merged_manifest\release\AndroidManifest.xml:30:13-37
+	android:name
+		ADDED from [:share_plus] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\share_plus\intermediates\merged_manifest\release\AndroidManifest.xml:29:13-82
+intent-filter#action:name:EXTRA_CHOSEN_COMPONENT
+ADDED from [:share_plus] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\share_plus\intermediates\merged_manifest\release\AndroidManifest.xml:31:13-33:29
+action#EXTRA_CHOSEN_COMPONENT
+ADDED from [:share_plus] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\share_plus\intermediates\merged_manifest\release\AndroidManifest.xml:32:17-65
+	android:name
+		ADDED from [:share_plus] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\share_plus\intermediates\merged_manifest\release\AndroidManifest.xml:32:25-62
+uses-permission#android.permission.ACCESS_COARSE_LOCATION
+ADDED from [:telephony] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\telephony\intermediates\merged_manifest\release\AndroidManifest.xml:9:5-81
+	android:name
+		ADDED from [:telephony] C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\telephony\intermediates\merged_manifest\release\AndroidManifest.xml:9:22-78
+uses-library#androidx.window.extensions
+ADDED from [androidx.window:window:1.0.0-beta04] C:\Users\Evelyn\.gradle\caches\transforms-3\9c061899132f2b3eb0783c91d4f7b10b\transformed\jetified-window-1.0.0-beta04\AndroidManifest.xml:25:9-27:40
+	android:required
+		ADDED from [androidx.window:window:1.0.0-beta04] C:\Users\Evelyn\.gradle\caches\transforms-3\9c061899132f2b3eb0783c91d4f7b10b\transformed\jetified-window-1.0.0-beta04\AndroidManifest.xml:27:13-37
+	android:name
+		ADDED from [androidx.window:window:1.0.0-beta04] C:\Users\Evelyn\.gradle\caches\transforms-3\9c061899132f2b3eb0783c91d4f7b10b\transformed\jetified-window-1.0.0-beta04\AndroidManifest.xml:26:13-54
+uses-library#androidx.window.sidecar
+ADDED from [androidx.window:window:1.0.0-beta04] C:\Users\Evelyn\.gradle\caches\transforms-3\9c061899132f2b3eb0783c91d4f7b10b\transformed\jetified-window-1.0.0-beta04\AndroidManifest.xml:28:9-30:40
+	android:required
+		ADDED from [androidx.window:window:1.0.0-beta04] C:\Users\Evelyn\.gradle\caches\transforms-3\9c061899132f2b3eb0783c91d4f7b10b\transformed\jetified-window-1.0.0-beta04\AndroidManifest.xml:30:13-37
+	android:name
+		ADDED from [androidx.window:window:1.0.0-beta04] C:\Users\Evelyn\.gradle\caches\transforms-3\9c061899132f2b3eb0783c91d4f7b10b\transformed\jetified-window-1.0.0-beta04\AndroidManifest.xml:29:13-51
+permission#${applicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+ADDED from [androidx.core:core:1.10.1] C:\Users\Evelyn\.gradle\caches\transforms-3\2ddaa5378649743b6092d03840959cc6\transformed\core-1.10.1\AndroidManifest.xml:22:5-24:47
+	android:protectionLevel
+		ADDED from [androidx.core:core:1.10.1] C:\Users\Evelyn\.gradle\caches\transforms-3\2ddaa5378649743b6092d03840959cc6\transformed\core-1.10.1\AndroidManifest.xml:24:9-44
+	android:name
+		ADDED from [androidx.core:core:1.10.1] C:\Users\Evelyn\.gradle\caches\transforms-3\2ddaa5378649743b6092d03840959cc6\transformed\core-1.10.1\AndroidManifest.xml:23:9-81
+permission#com.example.christian_union_attendance_app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+ADDED from [androidx.core:core:1.10.1] C:\Users\Evelyn\.gradle\caches\transforms-3\2ddaa5378649743b6092d03840959cc6\transformed\core-1.10.1\AndroidManifest.xml:22:5-24:47
+	android:protectionLevel
+		ADDED from [androidx.core:core:1.10.1] C:\Users\Evelyn\.gradle\caches\transforms-3\2ddaa5378649743b6092d03840959cc6\transformed\core-1.10.1\AndroidManifest.xml:24:9-44
+	android:name
+		ADDED from [androidx.core:core:1.10.1] C:\Users\Evelyn\.gradle\caches\transforms-3\2ddaa5378649743b6092d03840959cc6\transformed\core-1.10.1\AndroidManifest.xml:23:9-81
+uses-permission#${applicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+ADDED from [androidx.core:core:1.10.1] C:\Users\Evelyn\.gradle\caches\transforms-3\2ddaa5378649743b6092d03840959cc6\transformed\core-1.10.1\AndroidManifest.xml:26:5-97
+	android:name
+		ADDED from [androidx.core:core:1.10.1] C:\Users\Evelyn\.gradle\caches\transforms-3\2ddaa5378649743b6092d03840959cc6\transformed\core-1.10.1\AndroidManifest.xml:26:22-94
+uses-permission#com.example.christian_union_attendance_app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+ADDED from [androidx.core:core:1.10.1] C:\Users\Evelyn\.gradle\caches\transforms-3\2ddaa5378649743b6092d03840959cc6\transformed\core-1.10.1\AndroidManifest.xml:26:5-97
+	android:name
+		ADDED from [androidx.core:core:1.10.1] C:\Users\Evelyn\.gradle\caches\transforms-3\2ddaa5378649743b6092d03840959cc6\transformed\core-1.10.1\AndroidManifest.xml:26:22-94
+provider#androidx.startup.InitializationProvider
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Evelyn\.gradle\caches\transforms-3\dacf117bc0717fdb2bc99b01e823a2c0\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:24:9-32:20
+MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\Evelyn\.gradle\caches\transforms-3\25c41f5c59741993f1d87b725ed45a2c\transformed\jetified-startup-runtime-1.1.1\AndroidManifest.xml:26:9-30:34
+MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\Evelyn\.gradle\caches\transforms-3\25c41f5c59741993f1d87b725ed45a2c\transformed\jetified-startup-runtime-1.1.1\AndroidManifest.xml:26:9-30:34
+	tools:node
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Evelyn\.gradle\caches\transforms-3\dacf117bc0717fdb2bc99b01e823a2c0\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:28:13-31
+	android:authorities
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Evelyn\.gradle\caches\transforms-3\dacf117bc0717fdb2bc99b01e823a2c0\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:26:13-68
+	android:exported
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Evelyn\.gradle\caches\transforms-3\dacf117bc0717fdb2bc99b01e823a2c0\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:27:13-37
+	android:name
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Evelyn\.gradle\caches\transforms-3\dacf117bc0717fdb2bc99b01e823a2c0\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:25:13-67
+meta-data#androidx.profileinstaller.ProfileInstallerInitializer
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Evelyn\.gradle\caches\transforms-3\dacf117bc0717fdb2bc99b01e823a2c0\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:29:13-31:52
+	android:value
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Evelyn\.gradle\caches\transforms-3\dacf117bc0717fdb2bc99b01e823a2c0\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:31:17-49
+	android:name
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Evelyn\.gradle\caches\transforms-3\dacf117bc0717fdb2bc99b01e823a2c0\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:30:17-85
+receiver#androidx.profileinstaller.ProfileInstallReceiver
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Evelyn\.gradle\caches\transforms-3\dacf117bc0717fdb2bc99b01e823a2c0\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:34:9-52:20
+	android:enabled
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Evelyn\.gradle\caches\transforms-3\dacf117bc0717fdb2bc99b01e823a2c0\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:37:13-35
+	android:exported
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Evelyn\.gradle\caches\transforms-3\dacf117bc0717fdb2bc99b01e823a2c0\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:38:13-36
+	android:permission
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Evelyn\.gradle\caches\transforms-3\dacf117bc0717fdb2bc99b01e823a2c0\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:39:13-57
+	android:directBootAware
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Evelyn\.gradle\caches\transforms-3\dacf117bc0717fdb2bc99b01e823a2c0\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:36:13-44
+	android:name
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Evelyn\.gradle\caches\transforms-3\dacf117bc0717fdb2bc99b01e823a2c0\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:35:13-76
+intent-filter#action:name:androidx.profileinstaller.action.INSTALL_PROFILE
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Evelyn\.gradle\caches\transforms-3\dacf117bc0717fdb2bc99b01e823a2c0\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:40:13-42:29
+action#androidx.profileinstaller.action.INSTALL_PROFILE
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Evelyn\.gradle\caches\transforms-3\dacf117bc0717fdb2bc99b01e823a2c0\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:41:17-91
+	android:name
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Evelyn\.gradle\caches\transforms-3\dacf117bc0717fdb2bc99b01e823a2c0\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:41:25-88
+intent-filter#action:name:androidx.profileinstaller.action.SKIP_FILE
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Evelyn\.gradle\caches\transforms-3\dacf117bc0717fdb2bc99b01e823a2c0\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:43:13-45:29
+action#androidx.profileinstaller.action.SKIP_FILE
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Evelyn\.gradle\caches\transforms-3\dacf117bc0717fdb2bc99b01e823a2c0\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:44:17-85
+	android:name
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Evelyn\.gradle\caches\transforms-3\dacf117bc0717fdb2bc99b01e823a2c0\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:44:25-82
+intent-filter#action:name:androidx.profileinstaller.action.SAVE_PROFILE
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Evelyn\.gradle\caches\transforms-3\dacf117bc0717fdb2bc99b01e823a2c0\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:46:13-48:29
+action#androidx.profileinstaller.action.SAVE_PROFILE
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Evelyn\.gradle\caches\transforms-3\dacf117bc0717fdb2bc99b01e823a2c0\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:47:17-88
+	android:name
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Evelyn\.gradle\caches\transforms-3\dacf117bc0717fdb2bc99b01e823a2c0\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:47:25-85
+intent-filter#action:name:androidx.profileinstaller.action.BENCHMARK_OPERATION
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Evelyn\.gradle\caches\transforms-3\dacf117bc0717fdb2bc99b01e823a2c0\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:49:13-51:29
+action#androidx.profileinstaller.action.BENCHMARK_OPERATION
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Evelyn\.gradle\caches\transforms-3\dacf117bc0717fdb2bc99b01e823a2c0\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:50:17-95
+	android:name
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Evelyn\.gradle\caches\transforms-3\dacf117bc0717fdb2bc99b01e823a2c0\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:50:25-92
