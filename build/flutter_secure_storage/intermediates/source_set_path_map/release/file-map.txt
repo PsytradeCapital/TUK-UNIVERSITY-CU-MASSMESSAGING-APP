@@ -1,0 +1,13 @@
+com.it_nomads.fluttersecurestorage.flutter_secure_storage-jetified-security-crypto-1.1.0-alpha06-0 C:\Users\Evelyn\.gradle\caches\transforms-3\8bb077e49e3b4e9523ea4a289be49c77\transformed\jetified-security-crypto-1.1.0-alpha06\res
+com.it_nomads.fluttersecurestorage.flutter_secure_storage-jetified-window-1.0.0-beta04-1 C:\Users\Evelyn\.gradle\caches\transforms-3\9c061899132f2b3eb0783c91d4f7b10b\transformed\jetified-window-1.0.0-beta04\res
+com.it_nomads.fluttersecurestorage.flutter_secure_storage-jetified-window-java-1.0.0-beta04-2 C:\Users\Evelyn\.gradle\caches\transforms-3\a90dfda4c095f8b141fb7e625e2cbd0b\transformed\jetified-window-java-1.0.0-beta04\res
+com.it_nomads.fluttersecurestorage.flutter_secure_storage-jetified-annotation-experimental-1.1.0-3 C:\Users\Evelyn\.gradle\caches\transforms-3\e5f4a1eca8af1e1fdf189b9b8db701e7\transformed\jetified-annotation-experimental-1.1.0\res
+com.it_nomads.fluttersecurestorage.flutter_secure_storage-core-1.6.0-4 C:\Users\Evelyn\.gradle\caches\transforms-3\e8f5d94d5693e7dc9b58f226ff811e27\transformed\core-1.6.0\res
+com.it_nomads.fluttersecurestorage.flutter_secure_storage-main-5 C:\Users\Evelyn\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage-9.2.4\android\src\main\res
+com.it_nomads.fluttersecurestorage.flutter_secure_storage-release-6 C:\Users\Evelyn\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage-9.2.4\android\src\release\res
+com.it_nomads.fluttersecurestorage.flutter_secure_storage-pngs-7 C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\flutter_secure_storage\generated\res\pngs\release
+com.it_nomads.fluttersecurestorage.flutter_secure_storage-resValues-8 C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\flutter_secure_storage\generated\res\resValues\release
+com.it_nomads.fluttersecurestorage.flutter_secure_storage-rs-9 C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\flutter_secure_storage\generated\res\rs\release
+com.it_nomads.fluttersecurestorage.flutter_secure_storage-mergeReleaseResources-10 C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\flutter_secure_storage\intermediates\incremental\release\mergeReleaseResources\merged.dir
+com.it_nomads.fluttersecurestorage.flutter_secure_storage-mergeReleaseResources-11 C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\flutter_secure_storage\intermediates\incremental\release\mergeReleaseResources\stripped.dir
+com.it_nomads.fluttersecurestorage.flutter_secure_storage-merged_res-12 C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\flutter_secure_storage\intermediates\merged_res\release

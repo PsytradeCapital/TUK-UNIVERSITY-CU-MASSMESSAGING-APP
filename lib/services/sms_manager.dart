@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart';
 import 'package:telephony/telephony.dart';
 import '../models/attendee_model.dart';
 import '../models/message_log_model.dart';
+import '../models/pending_message_model.dart';
+import '../repositories/pending_message_repository.dart';
 import 'notification_service.dart';
 
 enum SMSPermissionStatus {
@@ -78,6 +80,7 @@ class SMSManager {
   final Telephony _telephony = Telephony.instance;
   final StreamController<SMSProgress> _progressController = StreamController<SMSProgress>.broadcast();
   final NotificationService _notificationService = NotificationService();
+  final PendingMessageRepository _pendingMessageRepo = PendingMessageRepository();
   
   SMSProgress _currentProgress = SMSProgress(
     totalMessages: 0,
@@ -287,10 +290,33 @@ class SMSManager {
         // Handle SMS sending failure
         final errorMessage = e.toString();
         
+        // Check if this is a balance/credit issue
+        final isBalanceIssue = _isBalanceError(errorMessage);
+        
+        if (isBalanceIssue) {
+          // Save as pending message for auto-retry later
+          try {
+            final pendingMessage = PendingMessageModel(
+              serviceId: 0, // Will be set by calling service
+              attendeeId: attendee.id ?? 0,
+              phoneNumber: attendee.phoneNumber,
+              attendeeName: attendee.name,
+              messageText: personalizedMessage,
+              status: PendingMessageStatus.pending,
+              lastError: 'Insufficient SMS balance',
+            );
+            await _pendingMessageRepo.addPendingMessage(pendingMessage);
+            
+            debugPrint('Message saved as pending for ${attendee.name}');
+          } catch (pendingError) {
+            debugPrint('Failed to save pending message: $pendingError');
+          }
+        }
+        
         // Update progress with failure
         _currentProgress = _currentProgress.copyWith(
           failedMessages: _currentProgress.failedMessages + 1,
-          lastError: errorMessage,
+          lastError: isBalanceIssue ? 'Saved as pending - will retry when balance available' : errorMessage,
         );
         _progressController.add(_currentProgress);
 
@@ -300,7 +326,7 @@ class SMSManager {
             serviceId: 0, // Will be set by the calling service
             attendeeId: attendee.id ?? 0,
             messageText: personalizedMessage,
-            sendStatus: MessageStatus.failed,
+            sendStatus: isBalanceIssue ? MessageStatus.pending : MessageStatus.failed,
             errorMessage: errorMessage,
           );
           onMessageFailed(messageLog);
@@ -388,6 +414,22 @@ class SMSManager {
 
     final lowerError = errorMessage.toLowerCase();
     return criticalErrors.any((error) => lowerError.contains(error));
+  }
+
+  /// Check if error is due to insufficient SMS balance
+  bool _isBalanceError(String errorMessage) {
+    final balanceErrors = [
+      'insufficient credit',
+      'no credit',
+      'bundle depleted',
+      'airtime',
+      'balance',
+      'sms limit exceeded',
+      'quota exceeded',
+    ];
+
+    final lowerError = errorMessage.toLowerCase();
+    return balanceErrors.any((error) => lowerError.contains(error));
   }
 
   /// Get user-friendly error message for display
@@ -526,6 +568,103 @@ class SMSManager {
       state: SMSSendingState.idle,
     );
     _progressController.add(_currentProgress);
+  }
+
+  /// Retry all pending messages
+  Future<void> retryPendingMessages({
+    Function(MessageLogModel)? onMessageSent,
+    Function(MessageLogModel)? onMessageFailed,
+  }) async {
+    try {
+      final pendingMessages = await _pendingMessageRepo.getAllPendingMessages();
+      
+      if (pendingMessages.isEmpty) {
+        debugPrint('No pending messages to retry');
+        return;
+      }
+
+      debugPrint('Retrying ${pendingMessages.length} pending messages');
+      
+      for (final pending in pendingMessages) {
+        if (!pending.canRetry) {
+          continue;
+        }
+
+        try {
+          // Attempt to send the message
+          await _sendSingleSMS(pending.phoneNumber, pending.messageText);
+          
+          // Success - update status to sent
+          await _pendingMessageRepo.updatePendingMessage(
+            pending.copyWith(
+              status: PendingMessageStatus.sent,
+              lastAttemptAt: DateTime.now(),
+              attemptCount: pending.attemptCount + 1,
+            ),
+          );
+
+          // Notify success callback
+          if (onMessageSent != null) {
+            final messageLog = MessageLogModel(
+              serviceId: pending.serviceId,
+              attendeeId: pending.attendeeId,
+              messageText: pending.messageText,
+              sendStatus: MessageStatus.sent,
+              sentAt: DateTime.now(),
+            );
+            onMessageSent(messageLog);
+          }
+
+          debugPrint('Successfully sent pending message to ${pending.attendeeName}');
+          
+        } catch (e) {
+          // Failed - update attempt count
+          final errorMessage = e.toString();
+          final isStillBalanceIssue = _isBalanceError(errorMessage);
+          
+          await _pendingMessageRepo.updatePendingMessage(
+            pending.copyWith(
+              status: isStillBalanceIssue ? PendingMessageStatus.pending : PendingMessageStatus.failed,
+              lastAttemptAt: DateTime.now(),
+              attemptCount: pending.attemptCount + 1,
+              lastError: errorMessage,
+            ),
+          );
+
+          if (!isStillBalanceIssue && onMessageFailed != null) {
+            final messageLog = MessageLogModel(
+              serviceId: pending.serviceId,
+              attendeeId: pending.attendeeId,
+              messageText: pending.messageText,
+              sendStatus: MessageStatus.failed,
+              errorMessage: errorMessage,
+            );
+            onMessageFailed(messageLog);
+          }
+
+          debugPrint('Failed to send pending message to ${pending.attendeeName}: $errorMessage');
+          
+          // If still balance issue, stop retrying
+          if (isStillBalanceIssue) {
+            break;
+          }
+        }
+
+        // Small delay between retries
+        await Future.delayed(const Duration(milliseconds: 500));
+      }
+
+      // Clean up sent messages
+      await _pendingMessageRepo.clearSentMessages();
+      
+    } catch (e) {
+      debugPrint('Error retrying pending messages: $e');
+    }
+  }
+
+  /// Get count of pending messages
+  Future<int> getPendingMessagesCount() async {
+    return await _pendingMessageRepo.getPendingCount();
   }
 
   /// Dispose resources

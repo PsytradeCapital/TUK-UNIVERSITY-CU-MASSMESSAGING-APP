@@ -1,0 +1,12 @@
+io.flutter.plugins.flutter_plugin_android_lifecycle-jetified-window-1.0.0-beta04-0 C:\Users\Evelyn\.gradle\caches\transforms-3\9c061899132f2b3eb0783c91d4f7b10b\transformed\jetified-window-1.0.0-beta04\res
+io.flutter.plugins.flutter_plugin_android_lifecycle-jetified-window-java-1.0.0-beta04-1 C:\Users\Evelyn\.gradle\caches\transforms-3\a90dfda4c095f8b141fb7e625e2cbd0b\transformed\jetified-window-java-1.0.0-beta04\res
+io.flutter.plugins.flutter_plugin_android_lifecycle-jetified-annotation-experimental-1.1.0-2 C:\Users\Evelyn\.gradle\caches\transforms-3\e5f4a1eca8af1e1fdf189b9b8db701e7\transformed\jetified-annotation-experimental-1.1.0\res
+io.flutter.plugins.flutter_plugin_android_lifecycle-core-1.6.0-3 C:\Users\Evelyn\.gradle\caches\transforms-3\e8f5d94d5693e7dc9b58f226ff811e27\transformed\core-1.6.0\res
+io.flutter.plugins.flutter_plugin_android_lifecycle-main-4 C:\Users\Evelyn\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_plugin_android_lifecycle-2.0.19\android\src\main\res
+io.flutter.plugins.flutter_plugin_android_lifecycle-release-5 C:\Users\Evelyn\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_plugin_android_lifecycle-2.0.19\android\src\release\res
+io.flutter.plugins.flutter_plugin_android_lifecycle-pngs-6 C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\flutter_plugin_android_lifecycle\generated\res\pngs\release
+io.flutter.plugins.flutter_plugin_android_lifecycle-resValues-7 C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\flutter_plugin_android_lifecycle\generated\res\resValues\release
+io.flutter.plugins.flutter_plugin_android_lifecycle-rs-8 C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\flutter_plugin_android_lifecycle\generated\res\rs\release
+io.flutter.plugins.flutter_plugin_android_lifecycle-mergeReleaseResources-9 C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\flutter_plugin_android_lifecycle\intermediates\incremental\release\mergeReleaseResources\merged.dir
+io.flutter.plugins.flutter_plugin_android_lifecycle-mergeReleaseResources-10 C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\flutter_plugin_android_lifecycle\intermediates\incremental\release\mergeReleaseResources\stripped.dir
+io.flutter.plugins.flutter_plugin_android_lifecycle-merged_res-11 C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\flutter_plugin_android_lifecycle\intermediates\merged_res\release

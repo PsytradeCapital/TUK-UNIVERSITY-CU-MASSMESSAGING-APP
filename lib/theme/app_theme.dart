@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 
 /// Comprehensive theme system for the TUK CU Mass Messaging App
 class AppTheme {
-  // Color palette
-  static const Color primaryBlue = Color(0xFF1976D2);
-  static const Color primaryBlueDark = Color(0xFF0D47A1);
-  static const Color primaryBlueLight = Color(0xFF42A5F5);
+  // Color palette - TUK CU Brand Colors
+  static const Color primaryBlue = Color(0xFF2B4C7E); // CU Blue from logo
+  static const Color primaryBlueDark = Color(0xFF1A2F4F);
+  static const Color primaryBlueLight = Color(0xFF4A6FA5);
   
-  static const Color secondaryGreen = Color(0xFF388E3C);
+  static const Color secondaryGreen = Color(0xFF2D8659); // CU Green from logo
   static const Color secondaryGreenDark = Color(0xFF1B5E20);
-  static const Color secondaryGreenLight = Color(0xFF66BB6A);
+  static const Color secondaryGreenLight = Color(0xFF4CAF50);
   
   static const Color errorRed = Color(0xFFD32F2F);
   static const Color errorRedDark = Color(0xFFB71C1C);

@@ -1,0 +1,12 @@
+io.flutter.plugins.pathprovider.path_provider_android-jetified-window-1.0.0-beta04-0 C:\Users\Evelyn\.gradle\caches\transforms-3\9c061899132f2b3eb0783c91d4f7b10b\transformed\jetified-window-1.0.0-beta04\res
+io.flutter.plugins.pathprovider.path_provider_android-jetified-window-java-1.0.0-beta04-1 C:\Users\Evelyn\.gradle\caches\transforms-3\a90dfda4c095f8b141fb7e625e2cbd0b\transformed\jetified-window-java-1.0.0-beta04\res
+io.flutter.plugins.pathprovider.path_provider_android-jetified-annotation-experimental-1.1.0-2 C:\Users\Evelyn\.gradle\caches\transforms-3\e5f4a1eca8af1e1fdf189b9b8db701e7\transformed\jetified-annotation-experimental-1.1.0\res
+io.flutter.plugins.pathprovider.path_provider_android-core-1.6.0-3 C:\Users\Evelyn\.gradle\caches\transforms-3\e8f5d94d5693e7dc9b58f226ff811e27\transformed\core-1.6.0\res
+io.flutter.plugins.pathprovider.path_provider_android-main-4 C:\Users\Evelyn\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_android-2.2.4\android\src\main\res
+io.flutter.plugins.pathprovider.path_provider_android-release-5 C:\Users\Evelyn\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_android-2.2.4\android\src\release\res
+io.flutter.plugins.pathprovider.path_provider_android-pngs-6 C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\path_provider_android\generated\res\pngs\release
+io.flutter.plugins.pathprovider.path_provider_android-resValues-7 C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\path_provider_android\generated\res\resValues\release
+io.flutter.plugins.pathprovider.path_provider_android-rs-8 C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\path_provider_android\generated\res\rs\release
+io.flutter.plugins.pathprovider.path_provider_android-mergeReleaseResources-9 C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\path_provider_android\intermediates\incremental\release\mergeReleaseResources\merged.dir
+io.flutter.plugins.pathprovider.path_provider_android-mergeReleaseResources-10 C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\path_provider_android\intermediates\incremental\release\mergeReleaseResources\stripped.dir
+io.flutter.plugins.pathprovider.path_provider_android-merged_res-11 C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\path_provider_android\intermediates\merged_res\release

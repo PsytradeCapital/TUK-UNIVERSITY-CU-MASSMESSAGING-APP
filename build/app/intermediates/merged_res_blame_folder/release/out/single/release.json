@@ -260,6 +260,10 @@
         "source": "com.example.christian_union_attendance_app-appcompat-1.2.0-6:/drawable-hdpi-v4/abc_list_selector_disabled_holo_light.9.png"
     },
     {
+        "merged": "com.example.christian_union_attendance_app-merged_res-27:/mipmap-xhdpi_ic_launcher.png.flat",
+        "source": "com.example.christian_union_attendance_app-main-20:/mipmap-xhdpi/ic_launcher.png"
+    },
+    {
         "merged": "com.example.christian_union_attendance_app-merged_res-27:/drawable-v21_abc_list_divider_material.xml.flat",
         "source": "com.example.christian_union_attendance_app-appcompat-1.2.0-6:/drawable-v21/abc_list_divider_material.xml"
     },
@@ -330,6 +334,10 @@
     {
         "merged": "com.example.christian_union_attendance_app-merged_res-27:/drawable-xxhdpi-v4_abc_cab_background_top_mtrl_alpha.9.png.flat",
         "source": "com.example.christian_union_attendance_app-appcompat-1.2.0-6:/drawable-xxhdpi-v4/abc_cab_background_top_mtrl_alpha.9.png"
+    },
+    {
+        "merged": "com.example.christian_union_attendance_app-merged_res-27:/mipmap-xxxhdpi_ic_launcher.png.flat",
+        "source": "com.example.christian_union_attendance_app-main-20:/mipmap-xxxhdpi/ic_launcher.png"
     },
     {
         "merged": "com.example.christian_union_attendance_app-merged_res-27:/interpolator_fast_out_slow_in.xml.flat",
@@ -520,6 +528,10 @@
         "source": "com.example.christian_union_attendance_app-appcompat-1.2.0-6:/drawable-xhdpi-v4/abc_list_longpressed_holo.9.png"
     },
     {
+        "merged": "com.example.christian_union_attendance_app-merged_res-27:/mipmap-hdpi_ic_launcher.png.flat",
+        "source": "com.example.christian_union_attendance_app-main-20:/mipmap-hdpi/ic_launcher.png"
+    },
+    {
         "merged": "com.example.christian_union_attendance_app-merged_res-27:/drawable-ldpi-v4_ic_call_answer_video.png.flat",
         "source": "com.example.christian_union_attendance_app-core-1.10.1-2:/drawable-ldpi-v4/ic_call_answer_video.png"
     },
@@ -694,6 +706,10 @@
     {
         "merged": "com.example.christian_union_attendance_app-merged_res-27:/drawable_abc_switch_thumb_material.xml.flat",
         "source": "com.example.christian_union_attendance_app-appcompat-1.2.0-6:/drawable/abc_switch_thumb_material.xml"
+    },
+    {
+        "merged": "com.example.christian_union_attendance_app-merged_res-27:/mipmap-xxhdpi_ic_launcher.png.flat",
+        "source": "com.example.christian_union_attendance_app-main-20:/mipmap-xxhdpi/ic_launcher.png"
     },
     {
         "merged": "com.example.christian_union_attendance_app-merged_res-27:/drawable-hdpi-v4_ic_call_answer_low.png.flat",
@@ -1552,6 +1568,10 @@
         "source": "com.example.christian_union_attendance_app-appcompat-1.2.0-6:/drawable-xxhdpi-v4/abc_list_divider_mtrl_alpha.9.png"
     },
     {
+        "merged": "com.example.christian_union_attendance_app-merged_res-27:/mipmap-mdpi_ic_launcher.png.flat",
+        "source": "com.example.christian_union_attendance_app-main-20:/mipmap-mdpi/ic_launcher.png"
+    },
+    {
         "merged": "com.example.christian_union_attendance_app-merged_res-27:/anim_btn_checkbox_to_checked_icon_null_animation.xml.flat",
         "source": "com.example.christian_union_attendance_app-appcompat-1.2.0-6:/anim/btn_checkbox_to_checked_icon_null_animation.xml"
     },
@@ -1610,6 +1630,10 @@
     {
         "merged": "com.example.christian_union_attendance_app-merged_res-27:/layout_abc_tooltip.xml.flat",
         "source": "com.example.christian_union_attendance_app-appcompat-1.2.0-6:/layout/abc_tooltip.xml"
+    },
+    {
+        "merged": "com.example.christian_union_attendance_app-merged_res-27:/drawable-v21_launch_background.xml.flat",
+        "source": "com.example.christian_union_attendance_app-main-20:/drawable-v21/launch_background.xml"
     },
     {
         "merged": "com.example.christian_union_attendance_app-merged_res-27:/drawable-xxhdpi-v4_abc_list_focused_holo.9.png.flat",

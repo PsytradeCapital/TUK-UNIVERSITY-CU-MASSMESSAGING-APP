@@ -1,0 +1,6 @@
+[
+    {
+        "merged": "com.shounakmulay.telephony-merged_res-10:/drawable-v21/notification_action_background.xml",
+        "source": "com.shounakmulay.telephony-core-1.6.0-3:/drawable-v21/notification_action_background.xml"
+    }
+]

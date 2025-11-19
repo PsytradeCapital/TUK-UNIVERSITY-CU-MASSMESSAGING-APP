@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/attendee_model.dart';
 import '../services/registration_service.dart';
 import '../widgets/attendee_search_widget.dart';
+import '../widgets/cu_logo_widget.dart';
 import '../providers/service_session_provider.dart';
 
 class RegistrationScreen extends StatefulWidget {
@@ -285,7 +286,15 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       builder: (context, sessionProvider, child) {
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Register Attendee'),
+            title: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const CULogoWidget(height: 32, useDarkVersion: true),
+                const SizedBox(width: 8),
+                const Text('Register Attendee'),
+              ],
+            ),
+            centerTitle: true,
             backgroundColor: Colors.blue,
             foregroundColor: Colors.white,
             actions: [

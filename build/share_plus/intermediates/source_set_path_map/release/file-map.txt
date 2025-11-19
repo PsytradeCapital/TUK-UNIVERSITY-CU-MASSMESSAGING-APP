@@ -1,0 +1,14 @@
+dev.fluttercommunity.plus.share.share_plus-core-1.10.1-0 C:\Users\Evelyn\.gradle\caches\transforms-3\2ddaa5378649743b6092d03840959cc6\transformed\core-1.10.1\res
+dev.fluttercommunity.plus.share.share_plus-jetified-annotation-experimental-1.3.0-1 C:\Users\Evelyn\.gradle\caches\transforms-3\6b8dbcfc112ae33a190c97a157931ee9\transformed\jetified-annotation-experimental-1.3.0\res
+dev.fluttercommunity.plus.share.share_plus-jetified-window-1.0.0-beta04-2 C:\Users\Evelyn\.gradle\caches\transforms-3\9c061899132f2b3eb0783c91d4f7b10b\transformed\jetified-window-1.0.0-beta04\res
+dev.fluttercommunity.plus.share.share_plus-jetified-window-java-1.0.0-beta04-3 C:\Users\Evelyn\.gradle\caches\transforms-3\a90dfda4c095f8b141fb7e625e2cbd0b\transformed\jetified-window-java-1.0.0-beta04\res
+dev.fluttercommunity.plus.share.share_plus-lifecycle-runtime-2.3.1-4 C:\Users\Evelyn\.gradle\caches\transforms-3\d657b5695a8482415c2f348abee48cf1\transformed\lifecycle-runtime-2.3.1\res
+dev.fluttercommunity.plus.share.share_plus-jetified-core-ktx-1.10.1-5 C:\Users\Evelyn\.gradle\caches\transforms-3\e776674788e99cf0be834cc266465bce\transformed\jetified-core-ktx-1.10.1\res
+dev.fluttercommunity.plus.share.share_plus-main-6 C:\Users\Evelyn\AppData\Local\Pub\Cache\hosted\pub.dev\share_plus-7.2.2\android\src\main\res
+dev.fluttercommunity.plus.share.share_plus-release-7 C:\Users\Evelyn\AppData\Local\Pub\Cache\hosted\pub.dev\share_plus-7.2.2\android\src\release\res
+dev.fluttercommunity.plus.share.share_plus-pngs-8 C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\share_plus\generated\res\pngs\release
+dev.fluttercommunity.plus.share.share_plus-resValues-9 C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\share_plus\generated\res\resValues\release
+dev.fluttercommunity.plus.share.share_plus-rs-10 C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\share_plus\generated\res\rs\release
+dev.fluttercommunity.plus.share.share_plus-mergeReleaseResources-11 C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\share_plus\intermediates\incremental\release\mergeReleaseResources\merged.dir
+dev.fluttercommunity.plus.share.share_plus-mergeReleaseResources-12 C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\share_plus\intermediates\incremental\release\mergeReleaseResources\stripped.dir
+dev.fluttercommunity.plus.share.share_plus-merged_res-13 C:\Users\Evelyn\TUK-UNIVERSITY-CU-MASSMESSAGING-APP\build\share_plus\intermediates\merged_res\release

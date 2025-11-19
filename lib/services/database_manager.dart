@@ -5,7 +5,7 @@ import 'package:path_provider/path_provider.dart';
 
 class DatabaseManager {
   static const String _databaseName = 'christian_union_attendance.db';
-  static const int _databaseVersion = 2;
+  static const int _databaseVersion = 3;
   
   static Database? _database;
   static DatabaseManager? _instance;
@@ -104,6 +104,23 @@ class DatabaseManager {
         )
       ''');
 
+      // Create pending_messages table for retry logic
+      await db.execute('''
+        CREATE TABLE pending_messages (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          service_id INTEGER NOT NULL,
+          attendee_id INTEGER NOT NULL,
+          phone_number TEXT NOT NULL,
+          attendee_name TEXT NOT NULL,
+          message_text TEXT NOT NULL,
+          status TEXT NOT NULL,
+          created_at TEXT NOT NULL,
+          last_attempt_at TEXT,
+          attempt_count INTEGER DEFAULT 0,
+          last_error TEXT
+        )
+      ''');
+
       // Create indexes for better performance
       await db.execute('CREATE INDEX idx_attendees_phone ON attendees(phone_number)');
       await db.execute('CREATE INDEX idx_attendees_phone_hash ON attendees(phone_hash)');
@@ -112,6 +129,7 @@ class DatabaseManager {
       await db.execute('CREATE INDEX idx_service_attendees_attendee ON service_attendees(attendee_id)');
       await db.execute('CREATE INDEX idx_message_log_service ON message_log(service_id)');
       await db.execute('CREATE INDEX idx_message_log_status ON message_log(send_status)');
+      await db.execute('CREATE INDEX idx_pending_messages_status ON pending_messages(status)');
 
     } catch (e) {
       throw DatabaseException('Failed to create tables: $e');
@@ -125,6 +143,26 @@ class DatabaseManager {
       if (oldVersion < 2) {
         await db.execute('ALTER TABLE attendees ADD COLUMN phone_hash TEXT');
         await db.execute('CREATE INDEX idx_attendees_phone_hash ON attendees(phone_hash)');
+      }
+      
+      // Migration from version 2 to 3: Add pending_messages table
+      if (oldVersion < 3) {
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS pending_messages (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            service_id INTEGER NOT NULL,
+            attendee_id INTEGER NOT NULL,
+            phone_number TEXT NOT NULL,
+            attendee_name TEXT NOT NULL,
+            message_text TEXT NOT NULL,
+            status TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            last_attempt_at TEXT,
+            attempt_count INTEGER DEFAULT 0,
+            last_error TEXT
+          )
+        ''');
+        await db.execute('CREATE INDEX idx_pending_messages_status ON pending_messages(status)');
       }
       
       // Add more migration logic as needed for future versions

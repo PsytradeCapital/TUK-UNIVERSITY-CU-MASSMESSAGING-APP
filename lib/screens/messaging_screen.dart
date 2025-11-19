@@ -6,6 +6,7 @@ import '../services/sms_manager.dart';
 import '../services/notification_service.dart';
 import '../repositories/message_log_repository.dart';
 import '../providers/service_session_provider.dart';
+import '../widgets/cu_logo_widget.dart';
 
 class MessagingScreen extends StatefulWidget {
   final List<AttendeeModel> attendees;
@@ -237,7 +238,15 @@ class _MessagingScreenState extends State<MessagingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Send Messages'),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            CULogoWidget(height: 32, useDarkVersion: true),
+            SizedBox(width: 8),
+            Text('Send Messages'),
+          ],
+        ),
+        centerTitle: true,
         backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
       ),
