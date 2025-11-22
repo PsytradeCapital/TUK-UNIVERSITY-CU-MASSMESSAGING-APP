@@ -241,14 +241,15 @@ class _MessagingScreenState extends State<MessagingScreen> {
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: const [
-            CULogoWidget(height: 32, useDarkVersion: true),
-            SizedBox(width: 8),
+            CULogoWidget(height: 48, useDarkVersion: true),
+            SizedBox(width: 12),
             Text('Send Messages'),
           ],
         ),
         centerTitle: true,
         backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
+        toolbarHeight: 70,
       ),
       body: widget.attendees.isEmpty
           ? _buildEmptyState()

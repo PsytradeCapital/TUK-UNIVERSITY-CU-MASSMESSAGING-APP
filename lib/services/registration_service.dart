@@ -324,8 +324,17 @@ class RegistrationService {
   // Get predefined location options
   List<String> getPredefinedLocations() {
     return [
-      'Makongeni',
+      'Kitengela',
+      'Athi River',
+      'Sukari',
+      'Mlolongo',
+      'Syokimau',
+      'Juja',
       'Kaloleni',
+      'Rongai',
+      'Thika',
+      'Githurai',
+      'Makongeni',
       'Ngara',
       'Langata',
       'Mlango',
@@ -335,6 +344,11 @@ class RegistrationService {
       'Landi Mawe',
       'Pipeline',
       'Shauri Moyo',
+      'Embakasi',
+      'Kasarani',
+      'Ruiru',
+      'Kahawa',
+      'Zimmerman',
       'Other',
     ];
   }

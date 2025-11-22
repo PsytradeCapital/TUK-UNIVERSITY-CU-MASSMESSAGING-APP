@@ -289,14 +289,15 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             title: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const CULogoWidget(height: 32, useDarkVersion: true),
-                const SizedBox(width: 8),
+                const CULogoWidget(height: 48, useDarkVersion: true),
+                const SizedBox(width: 12),
                 const Text('Register Attendee'),
               ],
             ),
             centerTitle: true,
-            backgroundColor: Colors.blue,
+            backgroundColor: Theme.of(context).primaryColor,
             foregroundColor: Colors.white,
+            toolbarHeight: 70,
             actions: [
               IconButton(
                 onPressed: _clearForm,
