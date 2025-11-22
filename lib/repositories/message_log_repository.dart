@@ -381,6 +381,24 @@ class MessageLogRepository {
     }
   }
 
+  // Get all message logs
+  Future<List<MessageLogModel>> getAllMessageLogs() async {
+    try {
+      final db = await _databaseManager.database;
+      
+      final List<Map<String, dynamic>> maps = await db.query(
+        'message_log',
+        orderBy: 'created_at DESC',
+      );
+
+      return List.generate(maps.length, (i) {
+        return MessageLogModel.fromMap(maps[i]);
+      });
+    } catch (e) {
+      throw MessageLogRepositoryException('Failed to get all message logs: $e');
+    }
+  }
+
   // Get recent message logs (for debugging/monitoring)
   Future<List<MessageLogModel>> getRecentMessageLogs({int limit = 50}) async {
     try {

@@ -262,6 +262,17 @@ class SMSManager {
       _progressController.add(_currentProgress);
 
       try {
+        // Mark as sending
+        if (onMessageSent != null) {
+          final sendingLog = MessageLogModel(
+            serviceId: 0,
+            attendeeId: attendee.id ?? 0,
+            messageText: personalizedMessage,
+            sendStatus: MessageStatus.sending,
+          );
+          onMessageSent(sendingLog);
+        }
+        
         // Attempt to send SMS
         await _sendSingleSMS(attendee.phoneNumber, personalizedMessage);
         
@@ -271,7 +282,7 @@ class SMSManager {
         );
         _progressController.add(_currentProgress);
 
-        // Notify callback if provided
+        // Notify callback if provided - mark as sent
         if (onMessageSent != null) {
           final messageLog = MessageLogModel(
             serviceId: 0, // Will be set by the calling service
@@ -665,6 +676,72 @@ class SMSManager {
   /// Get count of pending messages
   Future<int> getPendingMessagesCount() async {
     return await _pendingMessageRepo.getPendingCount();
+  }
+
+  /// Setup SMS delivery status listener
+  /// This listens for delivery receipts from the telephony system
+  void setupDeliveryStatusListener(Function(String phoneNumber, bool delivered) onDeliveryStatus) {
+    try {
+      // Note: The telephony plugin has limited delivery receipt support on Android
+      // Most carriers don't reliably send delivery receipts
+      // This is a placeholder for when/if delivery receipts become available
+      
+      _telephony.listenIncomingSms(
+        onNewMessage: (SmsMessage message) {
+          // Check if this is a delivery report
+          // Delivery reports typically come from specific short codes
+          debugPrint('Received SMS from: ${message.address}');
+        },
+        listenInBackground: false,
+      );
+    } catch (e) {
+      debugPrint('Error setting up delivery status listener: $e');
+    }
+  }
+
+  /// Manually mark a message as delivered
+  /// This can be called from the UI or after a certain time period
+  Future<void> markMessageAsDelivered(
+    int messageId,
+    Function(MessageLogModel) onStatusUpdate,
+  ) async {
+    try {
+      // In a real implementation, this would check with the SMS provider
+      // For now, we assume messages marked as "sent" are delivered after a delay
+      await Future.delayed(const Duration(seconds: 2));
+      
+      final deliveredLog = MessageLogModel(
+        messageId: messageId,
+        serviceId: 0,
+        attendeeId: 0,
+        messageText: '',
+        sendStatus: MessageStatus.delivered,
+        sentAt: DateTime.now(),
+      );
+      
+      onStatusUpdate(deliveredLog);
+    } catch (e) {
+      debugPrint('Error marking message as delivered: $e');
+    }
+  }
+
+  /// Auto-update sent messages to delivered after a delay
+  /// This simulates delivery confirmation when actual delivery receipts aren't available
+  Future<void> autoUpdateSentToDelivered({
+    required List<int> messageIds,
+    required Function(int messageId) onDelivered,
+    Duration delay = const Duration(seconds: 5),
+  }) async {
+    try {
+      await Future.delayed(delay);
+      
+      for (final messageId in messageIds) {
+        onDelivered(messageId);
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
+    } catch (e) {
+      debugPrint('Error auto-updating messages to delivered: $e');
+    }
   }
 
   /// Dispose resources
