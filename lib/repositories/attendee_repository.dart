@@ -296,6 +296,24 @@ class AttendeeRepository {
     }
   }
 
+  // Get all unique locations from database (including custom "Other" locations)
+  Future<List<String>> getUniqueLocations() async {
+    try {
+      final db = await _databaseManager.database;
+      
+      final List<Map<String, dynamic>> maps = await db.query(
+        'attendees',
+        columns: ['location'],
+        distinct: true,
+        orderBy: 'location ASC',
+      );
+
+      return maps.map((map) => map['location'] as String).toList();
+    } catch (e) {
+      throw AttendeeRepositoryException('Failed to get unique locations: $e');
+    }
+  }
+
   // Get attendees by category
   Future<List<AttendeeModel>> getAttendeesByCategory(AttendeeCategory category) async {
     try {

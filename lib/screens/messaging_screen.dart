@@ -9,6 +9,7 @@ import '../repositories/attendee_repository.dart';
 import '../providers/service_session_provider.dart';
 import '../widgets/cu_logo_widget.dart';
 import '../widgets/message_filter_widget.dart';
+import 'message_history_screen.dart';
 
 class MessagingScreen extends StatefulWidget {
   final List<AttendeeModel> attendees;
@@ -88,26 +89,59 @@ class _MessagingScreenState extends State<MessagingScreen> {
 
   Future<void> _loadFilterOptions() async {
     try {
-      final allAttendees = await _attendeeRepository.getAllAttendees();
+      // Use all possible years (1st through 8th for extended programs)
+      final allYears = [
+        '1st Year', 
+        '2nd Year', 
+        '3rd Year', 
+        '4th Year', 
+        '5th Year', 
+        '6th Year',
+        '7th Year',
+        '8th Year',
+      ];
       
-      // Extract unique years and locations
-      final years = allAttendees
-          .where((a) => a.yearOfStudy.isNotEmpty)
-          .map((a) => a.yearOfStudy)
-          .toSet()
-          .toList()
-        ..sort();
+      // Get all unique locations from database (including custom "Other" locations)
+      final dbLocations = await _attendeeRepository.getUniqueLocations();
       
-      final locations = allAttendees
-          .map((a) => a.location)
-          .toSet()
-          .toList()
-        ..sort();
+      // Combine predefined locations with database locations
+      final predefinedLocations = [
+        'Kitengela',
+        'Athi River',
+        'Sukari',
+        'Mlolongo',
+        'Syokimau',
+        'Juja',
+        'Kaloleni',
+        'Rongai',
+        'Thika',
+        'Githurai',
+        'Makongeni',
+        'Ngara',
+        'Langata',
+        'Mlango',
+        'South B',
+        'Upper Hill',
+        'South C',
+        'Landi Mawe',
+        'Pipeline',
+        'Shauri Moyo',
+        'Embakasi',
+        'Kasarani',
+        'Ruiru',
+        'Kahawa',
+        'Zimmerman',
+        'Other',
+      ];
+      
+      // Merge and deduplicate locations
+      final allLocationsSet = <String>{...predefinedLocations, ...dbLocations};
+      final allLocations = allLocationsSet.toList()..sort();
       
       if (mounted) {
         setState(() {
-          _availableYears = years;
-          _availableLocations = locations;
+          _availableYears = allYears;
+          _availableLocations = allLocations;
         });
       }
     } catch (e) {
@@ -342,6 +376,22 @@ class _MessagingScreenState extends State<MessagingScreen> {
         backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
         toolbarHeight: 70,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.history),
+            tooltip: 'Message History',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => MessageHistoryScreen(
+                    serviceId: widget.serviceId,
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: widget.attendees.isEmpty
           ? _buildEmptyState()
