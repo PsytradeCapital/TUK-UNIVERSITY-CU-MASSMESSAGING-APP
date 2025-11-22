@@ -25,6 +25,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   // Form state
   String? _selectedYear;
   String? _selectedLocation;
+  AttendeeCategory _selectedCategory = AttendeeCategory.student;
   bool _isLoading = false;
   bool _showCustomLocation = false;
   
@@ -37,6 +38,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   String? _phoneError;
   String? _yearError;
   String? _locationError;
+  String? _categoryError;
   String? _generalError;
 
   @override
@@ -56,6 +58,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       _nameController.text = attendee.name;
       _phoneController.text = attendee.phoneNumber;
       _selectedYear = attendee.yearOfStudy;
+      _selectedCategory = attendee.category;
       
       // Handle location - check if it's a predefined location
       final predefinedLocations = _registrationService.getPredefinedLocations();
@@ -81,6 +84,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       _customLocationController.clear();
       _selectedYear = null;
       _selectedLocation = null;
+      _selectedCategory = AttendeeCategory.student;
       _selectedAttendee = null;
       _isReturningAttendee = false;
       _showCustomLocation = false;
@@ -94,6 +98,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       _phoneError = null;
       _yearError = null;
       _locationError = null;
+      _categoryError = null;
       _generalError = null;
     });
   }
@@ -116,11 +121,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       isValid = false;
     }
 
-    // Validate year
-    final yearError = _registrationService.validateYearOfStudy(_selectedYear ?? '');
-    if (yearError != null) {
-      setState(() => _yearError = yearError);
-      isValid = false;
+    // Validate year (only required for students)
+    if (_selectedCategory == AttendeeCategory.student) {
+      final yearError = _registrationService.validateYearOfStudy(_selectedYear ?? '');
+      if (yearError != null) {
+        setState(() => _yearError = yearError);
+        isValid = false;
+      }
     }
 
     // Validate location
@@ -167,8 +174,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         result = await _registrationService.registerAttendee(
           name: _nameController.text.trim(),
           phoneNumber: _phoneController.text.trim(),
-          yearOfStudy: _selectedYear!,
+          yearOfStudy: _selectedYear ?? '',
           location: locationValue,
+          category: _selectedCategory,
         );
       }
 
@@ -206,7 +214,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             const SizedBox(height: 8),
             Text('Name: ${attendee.name}'),
             Text('Phone: ${attendee.phoneNumber}'),
-            Text('Year: ${attendee.yearOfStudy}'),
+            Text('Category: ${attendee.categoryDisplayName}'),
+            if (attendee.yearOfStudy.isNotEmpty)
+              Text('Year: ${attendee.yearOfStudy}'),
             Text('Location: ${attendee.location}'),
             if (isReturning)
               Text(
@@ -240,7 +250,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             const SizedBox(height: 8),
             Text('Name: ${existingAttendee.name}'),
             Text('Phone: ${existingAttendee.phoneNumber}'),
-            Text('Year: ${existingAttendee.yearOfStudy}'),
+            Text('Category: ${existingAttendee.categoryDisplayName}'),
+            if (existingAttendee.yearOfStudy.isNotEmpty)
+              Text('Year: ${existingAttendee.yearOfStudy}'),
             Text('Location: ${existingAttendee.location}'),
             Text('Attendance Count: ${existingAttendee.attendanceCount}'),
             const SizedBox(height: 16),
@@ -456,28 +468,62 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       
                       const SizedBox(height: 16),
                       
-                      // Year of study dropdown
-                      DropdownButtonFormField<String>(
-                        value: _selectedYear,
+                      // Category dropdown
+                      DropdownButtonFormField<AttendeeCategory>(
+                        value: _selectedCategory,
                         decoration: InputDecoration(
-                          labelText: 'Year of Study *',
-                          prefixIcon: const Icon(Icons.school),
+                          labelText: 'Category *',
+                          prefixIcon: const Icon(Icons.category),
                           border: const OutlineInputBorder(),
-                          errorText: _yearError,
+                          errorText: _categoryError,
+                          helperText: 'Select Student, Associate, or Visitor',
                         ),
-                        items: _registrationService.getYearOfStudyOptions().map((year) {
+                        items: AttendeeCategory.values.map((category) {
                           return DropdownMenuItem(
-                            value: year,
-                            child: Text(year),
+                            value: category,
+                            child: Text(AttendeeModel.categoryToString(category).toUpperCase()),
                           );
                         }).toList(),
                         onChanged: _isLoading ? null : (value) {
                           setState(() {
-                            _selectedYear = value;
-                            _yearError = null;
+                            _selectedCategory = value!;
+                            _categoryError = null;
+                            // Clear year if not a student
+                            if (_selectedCategory != AttendeeCategory.student) {
+                              _selectedYear = null;
+                            }
                           });
                         },
                       ),
+                      
+                      const SizedBox(height: 16),
+                      
+                      // Year of study dropdown (only for students)
+                      if (_selectedCategory == AttendeeCategory.student)
+                        DropdownButtonFormField<String>(
+                          value: _selectedYear,
+                          decoration: InputDecoration(
+                            labelText: 'Year of Study *',
+                            prefixIcon: const Icon(Icons.school),
+                            border: const OutlineInputBorder(),
+                            errorText: _yearError,
+                          ),
+                          items: _registrationService.getYearOfStudyOptions().map((year) {
+                            return DropdownMenuItem(
+                              value: year,
+                              child: Text(year),
+                            );
+                          }).toList(),
+                          onChanged: _isLoading ? null : (value) {
+                            setState(() {
+                              _selectedYear = value;
+                              _yearError = null;
+                            });
+                          },
+                        ),
+                      
+                      if (_selectedCategory == AttendeeCategory.student)
+                        const SizedBox(height: 16),
                       
                       const SizedBox(height: 16),
                       

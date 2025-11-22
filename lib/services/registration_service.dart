@@ -12,6 +12,7 @@ class RegistrationService {
     required String phoneNumber,
     required String yearOfStudy,
     required String location,
+    AttendeeCategory category = AttendeeCategory.student,
   }) async {
     try {
       // Create attendee model for validation
@@ -20,6 +21,7 @@ class RegistrationService {
         phoneNumber: phoneNumber.trim(),
         yearOfStudy: yearOfStudy,
         location: location.trim(),
+        category: category,
       );
 
       // Validate all fields
