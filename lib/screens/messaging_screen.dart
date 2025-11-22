@@ -5,8 +5,10 @@ import '../models/message_log_model.dart';
 import '../services/sms_manager.dart';
 import '../services/notification_service.dart';
 import '../repositories/message_log_repository.dart';
+import '../repositories/attendee_repository.dart';
 import '../providers/service_session_provider.dart';
 import '../widgets/cu_logo_widget.dart';
+import '../widgets/message_filter_widget.dart';
 
 class MessagingScreen extends StatefulWidget {
   final List<AttendeeModel> attendees;
@@ -27,6 +29,7 @@ class _MessagingScreenState extends State<MessagingScreen> {
   final _smsManager = SMSManager();
   final _messageLogRepository = MessageLogRepository();
   final _notificationService = NotificationService();
+  final _attendeeRepository = AttendeeRepository();
   
   bool _isLoading = false;
   bool _isSending = false;
@@ -38,11 +41,22 @@ class _MessagingScreenState extends State<MessagingScreen> {
   final int _maxCharacters = 1600; // SMS limit
   bool _showPreview = false;
   String _previewMessage = '';
+  
+  // Filter state
+  MessageFilters? _activeFilters;
+  List<AttendeeModel> _filteredAttendees = [];
+  bool _isLoadingFilters = false;
+  
+  // Available filter options
+  List<String> _availableYears = [];
+  List<String> _availableLocations = [];
 
   @override
   void initState() {
     super.initState();
+    _filteredAttendees = widget.attendees;
     _messageController.addListener(_updateCharacterCount);
+    _loadFilterOptions();
     
     // Listen to SMS progress updates
     _smsManager.progressStream.listen((progress) {
@@ -70,6 +84,82 @@ class _MessagingScreenState extends State<MessagingScreen> {
     setState(() {
       _characterCount = _messageController.text.length;
     });
+  }
+
+  Future<void> _loadFilterOptions() async {
+    try {
+      final allAttendees = await _attendeeRepository.getAllAttendees();
+      
+      // Extract unique years and locations
+      final years = allAttendees
+          .where((a) => a.yearOfStudy.isNotEmpty)
+          .map((a) => a.yearOfStudy)
+          .toSet()
+          .toList()
+        ..sort();
+      
+      final locations = allAttendees
+          .map((a) => a.location)
+          .toSet()
+          .toList()
+        ..sort();
+      
+      if (mounted) {
+        setState(() {
+          _availableYears = years;
+          _availableLocations = locations;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading filter options: $e');
+    }
+  }
+
+  Future<void> _applyFilters(MessageFilters filters) async {
+    setState(() {
+      _activeFilters = filters;
+      _isLoadingFilters = true;
+    });
+
+    try {
+      if (!filters.hasFilters) {
+        // No filters - use all attendees
+        setState(() {
+          _filteredAttendees = widget.attendees;
+          _isLoadingFilters = false;
+        });
+        return;
+      }
+
+      // Apply filters using repository
+      final filtered = await _attendeeRepository.getAttendeesWithFilters(
+        years: filters.years,
+        locations: filters.locations,
+        categories: filters.categories,
+      );
+
+      // Only include attendees that are in the current service session
+      final sessionAttendeeIds = widget.attendees.map((a) => a.id).toSet();
+      final filteredInSession = filtered
+          .where((a) => sessionAttendeeIds.contains(a.id))
+          .toList();
+
+      if (mounted) {
+        setState(() {
+          _filteredAttendees = filteredInSession;
+          _isLoadingFilters = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error applying filters: $e');
+      setState(() {
+        _isLoadingFilters = false;
+      });
+      _notificationService.showErrorNotification(
+        'Filter Error',
+        'Failed to apply filters: $e',
+      );
+    }
   }
 
   void _handleNotification(NotificationMessage notification) {
@@ -133,10 +223,12 @@ class _MessagingScreenState extends State<MessagingScreen> {
       return;
     }
 
-    if (widget.attendees.isEmpty) {
+    if (_filteredAttendees.isEmpty) {
       _notificationService.showErrorNotification(
         'No Recipients',
-        'No attendees found for this service session.',
+        _activeFilters?.hasFilters ?? false
+            ? 'No attendees match the selected filters.'
+            : 'No attendees found for this service session.',
       );
       return;
     }
@@ -156,7 +248,7 @@ class _MessagingScreenState extends State<MessagingScreen> {
 
     try {
       await _smsManager.sendBulkSMS(
-        widget.attendees,
+        _filteredAttendees,
         _messageController.text,
         onMessageSent: (messageLog) async {
           // Save successful message log
@@ -258,6 +350,17 @@ class _MessagingScreenState extends State<MessagingScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  // Filter section
+                  if (_availableYears.isNotEmpty || _availableLocations.isNotEmpty)
+                    MessageFilterWidget(
+                      onFiltersChanged: _applyFilters,
+                      availableYears: _availableYears,
+                      availableLocations: _availableLocations,
+                    ),
+                  
+                  if (_availableYears.isNotEmpty || _availableLocations.isNotEmpty)
+                    const SizedBox(height: 16),
+                  
                   // Recipients section
                   _buildRecipientsSection(),
                   const SizedBox(height: 16),
@@ -334,6 +437,10 @@ class _MessagingScreenState extends State<MessagingScreen> {
   }
 
   Widget _buildRecipientsSection() {
+    final recipientCount = _filteredAttendees.length;
+    final totalCount = widget.attendees.length;
+    final hasFilters = _activeFilters?.hasFilters ?? false;
+    
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -350,24 +457,74 @@ class _MessagingScreenState extends State<MessagingScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+                const Spacer(),
+                if (_isLoadingFilters)
+                  const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
               ],
             ),
             const SizedBox(height: 12),
-            Text(
-              '${widget.attendees.length} attendees will receive this message',
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
+            
+            // Recipient count with filter info
+            if (hasFilters) ...[
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: Theme.of(context).primaryColor.withOpacity(0.3),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.filter_alt,
+                          size: 16,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Filtered: $recipientCount of $totalCount attendees',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).primaryColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _activeFilters.toString(),
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+            ] else ...[
+              Text(
+                '$recipientCount attendees will receive this message',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ],
+            
             const SizedBox(height: 8),
             
             // Show first few attendees
-            if (widget.attendees.isNotEmpty) ...[
+            if (_filteredAttendees.isNotEmpty) ...[
               const Divider(),
               SizedBox(
                 height: 120,
                 child: ListView.builder(
-                  itemCount: widget.attendees.length,
+                  itemCount: _filteredAttendees.length,
                   itemBuilder: (context, index) {
-                    final attendee = widget.attendees[index];
+                    final attendee = _filteredAttendees[index];
                     return ListTile(
                       dense: true,
                       leading: CircleAvatar(
@@ -382,7 +539,7 @@ class _MessagingScreenState extends State<MessagingScreen> {
                       ),
                       title: Text(attendee.name),
                       subtitle: Text(
-                        '${AttendeeModel.maskPhoneNumber(attendee.phoneNumber)} • ${attendee.yearOfStudy}',
+                        '${attendee.categoryDisplayName} • ${attendee.yearOfStudy.isNotEmpty ? attendee.yearOfStudy : attendee.location}',
                       ),
                       trailing: Text(
                         '${attendee.attendanceCount} visits',
@@ -390,6 +547,23 @@ class _MessagingScreenState extends State<MessagingScreen> {
                       ),
                     );
                   },
+                ),
+              ),
+            ] else if (hasFilters) ...[
+              const Divider(),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Center(
+                  child: Column(
+                    children: [
+                      Icon(Icons.filter_alt_off, size: 48, color: Colors.grey[400]),
+                      const SizedBox(height: 8),
+                      Text(
+                        'No attendees match the selected filters',
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -579,7 +753,7 @@ class _MessagingScreenState extends State<MessagingScreen> {
     final canSend = !_isLoading && 
                    !_isSending && 
                    _messageController.text.trim().isNotEmpty &&
-                   widget.attendees.isNotEmpty;
+                   _filteredAttendees.isNotEmpty;
     final canResume = progress != null && progress.isPaused;
     final canPause = _isSending && !_isLoading;
     
@@ -597,7 +771,11 @@ class _MessagingScreenState extends State<MessagingScreen> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Icons.send),
-            label: Text(_isLoading ? 'Preparing...' : 'Send Messages'),
+            label: Text(
+              _isLoading 
+                  ? 'Preparing...' 
+                  : 'Send to ${_filteredAttendees.length} ${_filteredAttendees.length == 1 ? "Recipient" : "Recipients"}',
+            ),
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).primaryColor,
               foregroundColor: Colors.white,
