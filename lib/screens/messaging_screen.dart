@@ -345,7 +345,7 @@ class _MessagingScreenState extends State<MessagingScreen> {
       ),
       body: widget.attendees.isEmpty
           ? _buildEmptyState()
-          : Padding(
+          : SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -377,6 +377,8 @@ class _MessagingScreenState extends State<MessagingScreen> {
                   
                   // Send controls section
                   _buildSendControlsSection(),
+                  
+                  const SizedBox(height: 32), // Extra padding at bottom
                 ],
               ),
             ),

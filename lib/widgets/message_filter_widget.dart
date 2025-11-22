@@ -70,14 +70,41 @@ class _MessageFilterWidgetState extends State<MessageFilterWidget> {
   }
 
   Widget _buildCategoryFilter() {
+    final allCategoriesSelected = _selectedCategories.length == AttendeeCategory.values.length;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Category',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+        Row(
+          children: [
+            Text(
+              'Category',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            TextButton.icon(
+              onPressed: () {
+                setState(() {
+                  if (allCategoriesSelected) {
+                    _selectedCategories.clear();
+                  } else {
+                    _selectedCategories.addAll(AttendeeCategory.values);
+                  }
+                  _notifyFiltersChanged();
+                });
+              },
+              icon: Icon(
+                allCategoriesSelected ? Icons.clear : Icons.select_all,
+                size: 16,
+              ),
+              label: Text(allCategoriesSelected ? 'Clear All' : 'Select All'),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 8),
         Wrap(
@@ -107,14 +134,41 @@ class _MessageFilterWidgetState extends State<MessageFilterWidget> {
   }
 
   Widget _buildYearFilter() {
+    final allYearsSelected = _selectedYears.length == widget.availableYears.length;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Year of Study',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+        Row(
+          children: [
+            Text(
+              'Year of Study',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            TextButton.icon(
+              onPressed: () {
+                setState(() {
+                  if (allYearsSelected) {
+                    _selectedYears.clear();
+                  } else {
+                    _selectedYears.addAll(widget.availableYears);
+                  }
+                  _notifyFiltersChanged();
+                });
+              },
+              icon: Icon(
+                allYearsSelected ? Icons.clear : Icons.select_all,
+                size: 16,
+              ),
+              label: Text(allYearsSelected ? 'Clear All' : 'Select All'),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 8),
         Wrap(
@@ -144,14 +198,41 @@ class _MessageFilterWidgetState extends State<MessageFilterWidget> {
   }
 
   Widget _buildLocationFilter() {
+    final allLocationsSelected = _selectedLocations.length == widget.availableLocations.length;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Location',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+        Row(
+          children: [
+            Text(
+              'Location',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            TextButton.icon(
+              onPressed: () {
+                setState(() {
+                  if (allLocationsSelected) {
+                    _selectedLocations.clear();
+                  } else {
+                    _selectedLocations.addAll(widget.availableLocations);
+                  }
+                  _notifyFiltersChanged();
+                });
+              },
+              icon: Icon(
+                allLocationsSelected ? Icons.clear : Icons.select_all,
+                size: 16,
+              ),
+              label: Text(allLocationsSelected ? 'Clear All' : 'Select All'),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 8),
         Wrap(
