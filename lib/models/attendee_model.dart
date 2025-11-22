@@ -1,9 +1,16 @@
+enum AttendeeCategory {
+  student,
+  associate,
+  visitor
+}
+
 class AttendeeModel {
   final int? id;
   final String name;
   final String phoneNumber;
   final String yearOfStudy;
   final String location;
+  final AttendeeCategory category;
   final int attendanceCount;
   final DateTime firstRegistered;
   final DateTime lastUpdated;
@@ -14,6 +21,7 @@ class AttendeeModel {
     required this.phoneNumber,
     required this.yearOfStudy,
     required this.location,
+    this.category = AttendeeCategory.student,
     this.attendanceCount = 0,
     DateTime? firstRegistered,
     DateTime? lastUpdated,
@@ -79,6 +87,44 @@ class AttendeeModel {
     return phone;
   }
 
+  // Convert category enum to string
+  static String categoryToString(AttendeeCategory category) {
+    switch (category) {
+      case AttendeeCategory.student:
+        return 'student';
+      case AttendeeCategory.associate:
+        return 'associate';
+      case AttendeeCategory.visitor:
+        return 'visitor';
+    }
+  }
+
+  // Convert string to category enum
+  static AttendeeCategory categoryFromString(String category) {
+    switch (category.toLowerCase()) {
+      case 'student':
+        return AttendeeCategory.student;
+      case 'associate':
+        return AttendeeCategory.associate;
+      case 'visitor':
+        return AttendeeCategory.visitor;
+      default:
+        return AttendeeCategory.student;
+    }
+  }
+
+  // Get category display name
+  String get categoryDisplayName {
+    switch (category) {
+      case AttendeeCategory.student:
+        return 'Student';
+      case AttendeeCategory.associate:
+        return 'Associate';
+      case AttendeeCategory.visitor:
+        return 'Visitor';
+    }
+  }
+
   // Validation method
   String? validateFields() {
     if (name.trim().isEmpty) {
@@ -93,13 +139,16 @@ class AttendeeModel {
       return 'Invalid phone number format. Use +2547xxxxxxxx or 07xxxxxxxx';
     }
     
-    if (yearOfStudy.isEmpty) {
-      return 'Year of study is required';
-    }
-    
-    List<String> validYears = ['1st Year', '2nd Year', '3rd Year', '4th Year', '5th Year', '6th Year'];
-    if (!validYears.contains(yearOfStudy)) {
-      return 'Invalid year of study';
+    // Year of study is required only for students
+    if (category == AttendeeCategory.student) {
+      if (yearOfStudy.isEmpty) {
+        return 'Year of study is required for students';
+      }
+      
+      List<String> validYears = ['1st Year', '2nd Year', '3rd Year', '4th Year', '5th Year', '6th Year'];
+      if (!validYears.contains(yearOfStudy)) {
+        return 'Invalid year of study';
+      }
     }
     
     if (location.trim().isEmpty) {
@@ -117,6 +166,7 @@ class AttendeeModel {
       'phoneNumber': phoneNumber,
       'yearOfStudy': yearOfStudy,
       'location': location,
+      'category': categoryToString(category),
       'attendanceCount': attendanceCount,
       'firstRegistered': firstRegistered.toIso8601String(),
       'lastUpdated': lastUpdated.toIso8601String(),
@@ -129,8 +179,9 @@ class AttendeeModel {
       id: json['id'],
       name: json['name'],
       phoneNumber: json['phoneNumber'],
-      yearOfStudy: json['yearOfStudy'],
+      yearOfStudy: json['yearOfStudy'] ?? '',
       location: json['location'],
+      category: categoryFromString(json['category'] ?? 'student'),
       attendanceCount: json['attendanceCount'] ?? 0,
       firstRegistered: DateTime.parse(json['firstRegistered']),
       lastUpdated: DateTime.parse(json['lastUpdated']),
@@ -145,6 +196,7 @@ class AttendeeModel {
       'phone_number': phoneNumber,
       'year_of_study': yearOfStudy,
       'location': location,
+      'category': categoryToString(category),
       'attendance_count': attendanceCount,
       'first_registered': firstRegistered.toIso8601String(),
       'last_updated': lastUpdated.toIso8601String(),
@@ -157,8 +209,9 @@ class AttendeeModel {
       id: map['id'],
       name: map['name'],
       phoneNumber: map['phone_number'],
-      yearOfStudy: map['year_of_study'],
+      yearOfStudy: map['year_of_study'] ?? '',
       location: map['location'],
+      category: categoryFromString(map['category'] ?? 'student'),
       attendanceCount: map['attendance_count'] ?? 0,
       firstRegistered: DateTime.parse(map['first_registered']),
       lastUpdated: DateTime.parse(map['last_updated']),
@@ -172,6 +225,7 @@ class AttendeeModel {
     String? phoneNumber,
     String? yearOfStudy,
     String? location,
+    AttendeeCategory? category,
     int? attendanceCount,
     DateTime? firstRegistered,
     DateTime? lastUpdated,
@@ -182,6 +236,7 @@ class AttendeeModel {
       phoneNumber: phoneNumber ?? this.phoneNumber,
       yearOfStudy: yearOfStudy ?? this.yearOfStudy,
       location: location ?? this.location,
+      category: category ?? this.category,
       attendanceCount: attendanceCount ?? this.attendanceCount,
       firstRegistered: firstRegistered ?? this.firstRegistered,
       lastUpdated: lastUpdated ?? this.lastUpdated,
@@ -210,11 +265,12 @@ class AttendeeModel {
         other.phoneNumber == phoneNumber &&
         other.yearOfStudy == yearOfStudy &&
         other.location == location &&
+        other.category == category &&
         other.attendanceCount == attendanceCount;
   }
 
   @override
   int get hashCode {
-    return Object.hash(id, name, phoneNumber, yearOfStudy, location, attendanceCount);
+    return Object.hash(id, name, phoneNumber, yearOfStudy, location, category, attendanceCount);
   }
 }

@@ -5,7 +5,7 @@ import 'package:path_provider/path_provider.dart';
 
 class DatabaseManager {
   static const String _databaseName = 'christian_union_attendance.db';
-  static const int _databaseVersion = 3;
+  static const int _databaseVersion = 4;
   
   static Database? _database;
   static DatabaseManager? _instance;
@@ -55,8 +55,9 @@ class DatabaseManager {
           name TEXT NOT NULL,
           phone_number TEXT UNIQUE NOT NULL,
           phone_hash TEXT,
-          year_of_study TEXT NOT NULL,
+          year_of_study TEXT,
           location TEXT NOT NULL,
+          category TEXT DEFAULT 'student',
           attendance_count INTEGER DEFAULT 0,
           first_registered TEXT NOT NULL,
           last_updated TEXT NOT NULL
@@ -125,6 +126,7 @@ class DatabaseManager {
       await db.execute('CREATE INDEX idx_attendees_phone ON attendees(phone_number)');
       await db.execute('CREATE INDEX idx_attendees_phone_hash ON attendees(phone_hash)');
       await db.execute('CREATE INDEX idx_attendees_name ON attendees(name)');
+      await db.execute('CREATE INDEX idx_attendees_category ON attendees(category)');
       await db.execute('CREATE INDEX idx_service_attendees_service ON service_attendees(service_id)');
       await db.execute('CREATE INDEX idx_service_attendees_attendee ON service_attendees(attendee_id)');
       await db.execute('CREATE INDEX idx_message_log_service ON message_log(service_id)');
@@ -163,6 +165,13 @@ class DatabaseManager {
           )
         ''');
         await db.execute('CREATE INDEX idx_pending_messages_status ON pending_messages(status)');
+      }
+      
+      // Migration from version 3 to 4: Add category column and make year_of_study optional
+      if (oldVersion < 4) {
+        await db.execute('ALTER TABLE attendees ADD COLUMN category TEXT DEFAULT "student"');
+        // Note: SQLite doesn't support modifying column constraints, so year_of_study remains NOT NULL
+        // but we handle empty values in the application layer for associates/visitors
       }
       
       // Add more migration logic as needed for future versions

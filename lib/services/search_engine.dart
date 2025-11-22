@@ -2,6 +2,8 @@ import 'dart:async';
 import '../models/attendee_model.dart';
 import '../repositories/attendee_repository.dart';
 
+// AttendeeCategory is exported from attendee_model.dart
+
 class SearchEngine {
   final AttendeeRepository _attendeeRepository = AttendeeRepository();
   Timer? _debounceTimer;
@@ -240,21 +242,22 @@ class SearchEngine {
   // Search attendees by multiple criteria
   Future<List<AttendeeSearchResult>> advancedSearch({
     String? nameQuery,
-    String? yearOfStudy,
-    String? location,
+    List<String>? years,
+    List<String>? locations,
+    List<AttendeeCategory>? categories,
     int? minAttendance,
   }) async {
     try {
-      List<AttendeeModel> candidates = await _attendeeRepository.getAllAttendees();
-      
-      // Filter by year of study
-      if (yearOfStudy != null && yearOfStudy.isNotEmpty) {
-        candidates = candidates.where((a) => a.yearOfStudy == yearOfStudy).toList();
-      }
-      
-      // Filter by location
-      if (location != null && location.isNotEmpty) {
-        candidates = candidates.where((a) => a.location == location).toList();
+      // Use repository filter if we have year/location/category filters
+      List<AttendeeModel> candidates;
+      if (years != null || locations != null || categories != null) {
+        candidates = await _attendeeRepository.getAttendeesWithFilters(
+          years: years,
+          locations: locations,
+          categories: categories,
+        );
+      } else {
+        candidates = await _attendeeRepository.getAllAttendees();
       }
       
       // Filter by minimum attendance

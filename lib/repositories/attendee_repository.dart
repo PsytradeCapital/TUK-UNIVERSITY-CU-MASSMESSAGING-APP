@@ -290,6 +290,79 @@ class AttendeeRepository {
     }
   }
 
+  // Get attendees by category
+  Future<List<AttendeeModel>> getAttendeesByCategory(AttendeeCategory category) async {
+    try {
+      final db = await _databaseManager.database;
+      
+      final List<Map<String, dynamic>> maps = await db.query(
+        'attendees',
+        where: 'category = ?',
+        whereArgs: [AttendeeModel.categoryToString(category)],
+        orderBy: 'name ASC',
+      );
+
+      final decryptedMaps = await EncryptionService.decryptAttendeeList(maps);
+      
+      return List.generate(decryptedMaps.length, (i) {
+        return AttendeeModel.fromMap(decryptedMaps[i]);
+      });
+    } catch (e) {
+      throw AttendeeRepositoryException('Failed to get attendees by category: $e');
+    }
+  }
+
+  // Get attendees with filters (year, location, category)
+  Future<List<AttendeeModel>> getAttendeesWithFilters({
+    List<String>? years,
+    List<String>? locations,
+    List<AttendeeCategory>? categories,
+  }) async {
+    try {
+      final db = await _databaseManager.database;
+      
+      // Build WHERE clause dynamically
+      List<String> whereClauses = [];
+      List<dynamic> whereArgs = [];
+      
+      if (years != null && years.isNotEmpty) {
+        final placeholders = List.filled(years.length, '?').join(',');
+        whereClauses.add('year_of_study IN ($placeholders)');
+        whereArgs.addAll(years);
+      }
+      
+      if (locations != null && locations.isNotEmpty) {
+        final placeholders = List.filled(locations.length, '?').join(',');
+        whereClauses.add('location IN ($placeholders)');
+        whereArgs.addAll(locations);
+      }
+      
+      if (categories != null && categories.isNotEmpty) {
+        final categoryStrings = categories.map((c) => AttendeeModel.categoryToString(c)).toList();
+        final placeholders = List.filled(categoryStrings.length, '?').join(',');
+        whereClauses.add('category IN ($placeholders)');
+        whereArgs.addAll(categoryStrings);
+      }
+      
+      final whereClause = whereClauses.isNotEmpty ? whereClauses.join(' AND ') : null;
+      
+      final List<Map<String, dynamic>> maps = await db.query(
+        'attendees',
+        where: whereClause,
+        whereArgs: whereArgs.isNotEmpty ? whereArgs : null,
+        orderBy: 'name ASC',
+      );
+
+      final decryptedMaps = await EncryptionService.decryptAttendeeList(maps);
+      
+      return List.generate(decryptedMaps.length, (i) {
+        return AttendeeModel.fromMap(decryptedMaps[i]);
+      });
+    } catch (e) {
+      throw AttendeeRepositoryException('Failed to get attendees with filters: $e');
+    }
+  }
+
   // Get attendance statistics
   Future<Map<String, dynamic>> getAttendanceStatistics() async {
     try {

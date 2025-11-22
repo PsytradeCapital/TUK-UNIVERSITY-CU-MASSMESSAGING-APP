@@ -1,8 +1,10 @@
 enum MessageStatus {
-  pending,
-  sent,
-  failed,
-  cancelled
+  pending,      // Message queued for sending
+  sending,      // Currently being sent
+  sent,         // Successfully sent to SMS provider
+  delivered,    // Confirmed delivered to recipient
+  failed,       // Failed to send
+  cancelled     // Cancelled by user
 }
 
 class MessageLogModel {
@@ -60,8 +62,12 @@ class MessageLogModel {
     switch (status) {
       case MessageStatus.pending:
         return 'pending';
+      case MessageStatus.sending:
+        return 'sending';
       case MessageStatus.sent:
         return 'sent';
+      case MessageStatus.delivered:
+        return 'delivered';
       case MessageStatus.failed:
         return 'failed';
       case MessageStatus.cancelled:
@@ -74,14 +80,54 @@ class MessageLogModel {
     switch (status.toLowerCase()) {
       case 'pending':
         return MessageStatus.pending;
+      case 'sending':
+        return MessageStatus.sending;
       case 'sent':
         return MessageStatus.sent;
+      case 'delivered':
+        return MessageStatus.delivered;
       case 'failed':
         return MessageStatus.failed;
       case 'cancelled':
         return MessageStatus.cancelled;
       default:
         return MessageStatus.pending;
+    }
+  }
+  
+  // Get user-friendly status text
+  String get statusDisplayText {
+    switch (sendStatus) {
+      case MessageStatus.pending:
+        return 'Pending';
+      case MessageStatus.sending:
+        return 'Sending...';
+      case MessageStatus.sent:
+        return 'Sent';
+      case MessageStatus.delivered:
+        return 'Delivered';
+      case MessageStatus.failed:
+        return 'Failed';
+      case MessageStatus.cancelled:
+        return 'Cancelled';
+    }
+  }
+  
+  // Get status icon
+  String get statusIcon {
+    switch (sendStatus) {
+      case MessageStatus.pending:
+        return '⏳';
+      case MessageStatus.sending:
+        return '📤';
+      case MessageStatus.sent:
+        return '✓';
+      case MessageStatus.delivered:
+        return '✓✓';
+      case MessageStatus.failed:
+        return '✗';
+      case MessageStatus.cancelled:
+        return '⊘';
     }
   }
 
