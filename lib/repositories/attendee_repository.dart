@@ -239,11 +239,13 @@ class AttendeeRepository {
         'attendees',
         where: 'attendance_count >= ?',
         whereArgs: [minAttendance],
-        orderBy: 'attendance_count DESC, name ASC',
+        orderBy: 'attendance_count DESC',
       );
 
-      return List.generate(maps.length, (i) {
-        return AttendeeModel.fromMap(maps[i]);
+      final decryptedMaps = await EncryptionService.decryptAttendeeList(maps);
+      
+      return List.generate(decryptedMaps.length, (i) {
+        return AttendeeModel.fromMap(decryptedMaps[i]);
       });
     } catch (e) {
       throw AttendeeRepositoryException('Failed to get attendees with min attendance: $e');
@@ -262,8 +264,10 @@ class AttendeeRepository {
         orderBy: 'name ASC',
       );
 
-      return List.generate(maps.length, (i) {
-        return AttendeeModel.fromMap(maps[i]);
+      final decryptedMaps = await EncryptionService.decryptAttendeeList(maps);
+      
+      return List.generate(decryptedMaps.length, (i) {
+        return AttendeeModel.fromMap(decryptedMaps[i]);
       });
     } catch (e) {
       throw AttendeeRepositoryException('Failed to get attendees by year: $e');
@@ -282,8 +286,10 @@ class AttendeeRepository {
         orderBy: 'name ASC',
       );
 
-      return List.generate(maps.length, (i) {
-        return AttendeeModel.fromMap(maps[i]);
+      final decryptedMaps = await EncryptionService.decryptAttendeeList(maps);
+      
+      return List.generate(decryptedMaps.length, (i) {
+        return AttendeeModel.fromMap(decryptedMaps[i]);
       });
     } catch (e) {
       throw AttendeeRepositoryException('Failed to get attendees by location: $e');
