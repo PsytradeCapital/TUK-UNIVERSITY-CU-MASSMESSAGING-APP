@@ -20,11 +20,14 @@
   - Add firebase_storage package (for future file uploads)
 
 
+
+
   - Add connectivity_plus package (for network monitoring)
   - Run flutter pub get
   - _Requirements: 1.1, 2.1, 4.1_
 
-- [-] 3. Create User Model and Authentication Service
+- [x] 3. Create User Model and Authentication Service
+
 
   - [ ] 3.1 Create UserModel with Firestore serialization
     - Define UserModel class with uid, email, name, role, isApproved fields
@@ -37,13 +40,17 @@
     - Implement signUp() method with email/password
     - Implement signIn() method
     - Implement signOut() method
+
+
+
     - Implement getCurrentUser() method
     - Implement authStateChanges() stream
     - Implement resetPassword() method
     - Add error handling with user-friendly messages
     - _Requirements: 1.2, 1.3, 1.4_
 
-  - [ ]* 3.3 Write property test for authentication
+  - [-]* 3.3 Write property test for authentication
+
     - **Property 1: Authentication round-trip**
     - **Validates: Requirements 1.2, 1.3**
 
