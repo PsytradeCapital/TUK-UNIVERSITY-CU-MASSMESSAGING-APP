@@ -228,8 +228,14 @@
     - **Property 3: Offline-online round-trip**
     - **Validates: Requirements 4.2, 4.3**
 
-- [ ] 10. Implement Hybrid Repository Pattern
-  - [ ] 10.1 Create HybridAttendeeRepository
+- [-] 10. Implement Hybrid Repository Pattern
+
+
+
+
+  - [x] 10.1 Create HybridAttendeeRepository
+
+
     - Combine FirebaseAttendeeRepository and local AttendeeRepository
     - Implement connectivity checking
     - Route operations to cloud when online
@@ -243,7 +249,9 @@
     - Queue offline message logs
     - _Requirements: 4.1, 4.2_
 
-  - [ ] 10.3 Implement offline change queue
+  - [x] 10.3 Implement offline change queue
+
+
     - Create SyncQueue model
     - Store pending operations in local database
     - Process queue when connection restored

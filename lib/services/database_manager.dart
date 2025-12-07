@@ -5,7 +5,7 @@ import 'package:path_provider/path_provider.dart';
 
 class DatabaseManager {
   static const String _databaseName = 'christian_union_attendance.db';
-  static const int _databaseVersion = 4;
+  static const int _databaseVersion = 5;
   
   static Database? _database;
   static DatabaseManager? _instance;
@@ -122,6 +122,24 @@ class DatabaseManager {
         )
       ''');
 
+      // Create sync_queue table for offline change tracking
+      await db.execute('''
+        CREATE TABLE sync_queue (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id TEXT NOT NULL,
+          operation TEXT NOT NULL,
+          collection TEXT NOT NULL,
+          document_id TEXT,
+          local_id INTEGER,
+          data TEXT NOT NULL,
+          created_at TEXT NOT NULL,
+          processed_at TEXT,
+          status TEXT NOT NULL,
+          error_message TEXT,
+          attempt_count INTEGER DEFAULT 0
+        )
+      ''');
+
       // Create indexes for better performance
       await db.execute('CREATE INDEX idx_attendees_phone ON attendees(phone_number)');
       await db.execute('CREATE INDEX idx_attendees_phone_hash ON attendees(phone_hash)');
@@ -132,6 +150,8 @@ class DatabaseManager {
       await db.execute('CREATE INDEX idx_message_log_service ON message_log(service_id)');
       await db.execute('CREATE INDEX idx_message_log_status ON message_log(send_status)');
       await db.execute('CREATE INDEX idx_pending_messages_status ON pending_messages(status)');
+      await db.execute('CREATE INDEX idx_sync_queue_status ON sync_queue(status)');
+      await db.execute('CREATE INDEX idx_sync_queue_user ON sync_queue(user_id)');
 
     } catch (e) {
       throw DatabaseException('Failed to create tables: $e');
@@ -172,6 +192,28 @@ class DatabaseManager {
         await db.execute('ALTER TABLE attendees ADD COLUMN category TEXT DEFAULT "student"');
         // Note: SQLite doesn't support modifying column constraints, so year_of_study remains NOT NULL
         // but we handle empty values in the application layer for associates/visitors
+      }
+      
+      // Migration from version 4 to 5: Add sync_queue table for offline change tracking
+      if (oldVersion < 5) {
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS sync_queue (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id TEXT NOT NULL,
+            operation TEXT NOT NULL,
+            collection TEXT NOT NULL,
+            document_id TEXT,
+            local_id INTEGER,
+            data TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            processed_at TEXT,
+            status TEXT NOT NULL,
+            error_message TEXT,
+            attempt_count INTEGER DEFAULT 0
+          )
+        ''');
+        await db.execute('CREATE INDEX idx_sync_queue_status ON sync_queue(status)');
+        await db.execute('CREATE INDEX idx_sync_queue_user ON sync_queue(user_id)');
       }
       
       // Add more migration logic as needed for future versions
