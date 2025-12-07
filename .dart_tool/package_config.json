@@ -2,6 +2,18 @@
   "configVersion": 2,
   "packages": [
     {
+      "name": "_flutterfire_internals",
+      "rootUri": "file:///C:/Users/Evelyn/AppData/Local/Pub/Cache/hosted/pub.dev/_flutterfire_internals-1.3.25",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
+    },
+    {
+      "name": "args",
+      "rootUri": "file:///C:/Users/Evelyn/AppData/Local/Pub/Cache/hosted/pub.dev/args-2.5.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
       "name": "async",
       "rootUri": "file:///C:/Users/Evelyn/AppData/Local/Pub/Cache/hosted/pub.dev/async-2.11.0",
       "packageUri": "lib/",
@@ -26,10 +38,40 @@
       "languageVersion": "2.12"
     },
     {
+      "name": "cloud_firestore",
+      "rootUri": "file:///C:/Users/Evelyn/AppData/Local/Pub/Cache/hosted/pub.dev/cloud_firestore-4.15.8",
+      "packageUri": "lib/",
+      "languageVersion": "2.18"
+    },
+    {
+      "name": "cloud_firestore_platform_interface",
+      "rootUri": "file:///C:/Users/Evelyn/AppData/Local/Pub/Cache/hosted/pub.dev/cloud_firestore_platform_interface-6.1.9",
+      "packageUri": "lib/",
+      "languageVersion": "2.18"
+    },
+    {
+      "name": "cloud_firestore_web",
+      "rootUri": "file:///C:/Users/Evelyn/AppData/Local/Pub/Cache/hosted/pub.dev/cloud_firestore_web-3.10.8",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
+    },
+    {
       "name": "collection",
       "rootUri": "file:///C:/Users/Evelyn/AppData/Local/Pub/Cache/hosted/pub.dev/collection-1.18.0",
       "packageUri": "lib/",
       "languageVersion": "2.18"
+    },
+    {
+      "name": "connectivity_plus",
+      "rootUri": "file:///C:/Users/Evelyn/AppData/Local/Pub/Cache/hosted/pub.dev/connectivity_plus-5.0.2",
+      "packageUri": "lib/",
+      "languageVersion": "2.18"
+    },
+    {
+      "name": "connectivity_plus_platform_interface",
+      "rootUri": "file:///C:/Users/Evelyn/AppData/Local/Pub/Cache/hosted/pub.dev/connectivity_plus_platform_interface-1.2.4",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
     },
     {
       "name": "cross_file",
@@ -56,6 +98,12 @@
       "languageVersion": "3.1"
     },
     {
+      "name": "dbus",
+      "rootUri": "file:///C:/Users/Evelyn/AppData/Local/Pub/Cache/hosted/pub.dev/dbus-0.7.11",
+      "packageUri": "lib/",
+      "languageVersion": "2.17"
+    },
+    {
       "name": "fake_async",
       "rootUri": "file:///C:/Users/Evelyn/AppData/Local/Pub/Cache/hosted/pub.dev/fake_async-1.3.1",
       "packageUri": "lib/",
@@ -72,6 +120,60 @@
       "rootUri": "file:///C:/Users/Evelyn/AppData/Local/Pub/Cache/hosted/pub.dev/file-7.0.1",
       "packageUri": "lib/",
       "languageVersion": "3.0"
+    },
+    {
+      "name": "firebase_auth",
+      "rootUri": "file:///C:/Users/Evelyn/AppData/Local/Pub/Cache/hosted/pub.dev/firebase_auth-4.17.8",
+      "packageUri": "lib/",
+      "languageVersion": "2.18"
+    },
+    {
+      "name": "firebase_auth_platform_interface",
+      "rootUri": "file:///C:/Users/Evelyn/AppData/Local/Pub/Cache/hosted/pub.dev/firebase_auth_platform_interface-7.1.8",
+      "packageUri": "lib/",
+      "languageVersion": "2.18"
+    },
+    {
+      "name": "firebase_auth_web",
+      "rootUri": "file:///C:/Users/Evelyn/AppData/Local/Pub/Cache/hosted/pub.dev/firebase_auth_web-5.9.8",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
+    },
+    {
+      "name": "firebase_core",
+      "rootUri": "file:///C:/Users/Evelyn/AppData/Local/Pub/Cache/hosted/pub.dev/firebase_core-2.27.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.18"
+    },
+    {
+      "name": "firebase_core_platform_interface",
+      "rootUri": "file:///C:/Users/Evelyn/AppData/Local/Pub/Cache/hosted/pub.dev/firebase_core_platform_interface-5.4.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
+    },
+    {
+      "name": "firebase_core_web",
+      "rootUri": "file:///C:/Users/Evelyn/AppData/Local/Pub/Cache/hosted/pub.dev/firebase_core_web-2.11.5",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
+    },
+    {
+      "name": "firebase_storage",
+      "rootUri": "file:///C:/Users/Evelyn/AppData/Local/Pub/Cache/hosted/pub.dev/firebase_storage-11.6.9",
+      "packageUri": "lib/",
+      "languageVersion": "2.18"
+    },
+    {
+      "name": "firebase_storage_platform_interface",
+      "rootUri": "file:///C:/Users/Evelyn/AppData/Local/Pub/Cache/hosted/pub.dev/firebase_storage_platform_interface-5.1.12",
+      "packageUri": "lib/",
+      "languageVersion": "2.18"
+    },
+    {
+      "name": "firebase_storage_web",
+      "rootUri": "file:///C:/Users/Evelyn/AppData/Local/Pub/Cache/hosted/pub.dev/firebase_storage_web-3.7.3",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
     },
     {
       "name": "fixnum",
@@ -144,6 +246,18 @@
       "rootUri": "file:///C:/flutter/packages/flutter_web_plugins",
       "packageUri": "lib/",
       "languageVersion": "3.2"
+    },
+    {
+      "name": "http",
+      "rootUri": "file:///C:/Users/Evelyn/AppData/Local/Pub/Cache/hosted/pub.dev/http-1.2.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
+    },
+    {
+      "name": "http_parser",
+      "rootUri": "file:///C:/Users/Evelyn/AppData/Local/Pub/Cache/hosted/pub.dev/http_parser-4.0.2",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
     },
     {
       "name": "intl",
@@ -224,6 +338,12 @@
       "languageVersion": "2.12"
     },
     {
+      "name": "nm",
+      "rootUri": "file:///C:/Users/Evelyn/AppData/Local/Pub/Cache/hosted/pub.dev/nm-0.5.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "path",
       "rootUri": "file:///C:/Users/Evelyn/AppData/Local/Pub/Cache/hosted/pub.dev/path-1.8.3",
       "packageUri": "lib/",
@@ -262,6 +382,12 @@
     {
       "name": "path_provider_windows",
       "rootUri": "file:///C:/Users/Evelyn/AppData/Local/Pub/Cache/hosted/pub.dev/path_provider_windows-2.3.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
+    },
+    {
+      "name": "petitparser",
+      "rootUri": "file:///C:/Users/Evelyn/AppData/Local/Pub/Cache/hosted/pub.dev/petitparser-6.0.2",
       "packageUri": "lib/",
       "languageVersion": "3.2"
     },
@@ -428,13 +554,19 @@
       "languageVersion": "3.0"
     },
     {
+      "name": "xml",
+      "rootUri": "file:///C:/Users/Evelyn/AppData/Local/Pub/Cache/hosted/pub.dev/xml-6.5.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
+    },
+    {
       "name": "tuk_cu_mass_messaging_app",
       "rootUri": "../",
       "packageUri": "lib/",
       "languageVersion": "3.0"
     }
   ],
-  "generated": "2025-11-19T04:09:58.935875Z",
+  "generated": "2025-12-07T03:22:00.958213Z",
   "generator": "pub",
   "generatorVersion": "3.2.3"
 }

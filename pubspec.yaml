@@ -13,6 +13,12 @@ dependencies:
   flutter:
     sdk: flutter
   
+  # Firebase
+  firebase_core: ^2.24.2
+  firebase_auth: ^4.15.3
+  cloud_firestore: ^4.13.6
+  firebase_storage: ^11.5.6
+  
   # Database
   sqflite: ^2.3.0
   path: ^1.8.3
@@ -34,6 +40,9 @@ dependencies:
   # CSV export and sharing
   csv: ^5.0.2
   share_plus: ^7.2.1
+  
+  # Network connectivity
+  connectivity_plus: ^5.0.2
   
   # UI
   cupertino_icons: ^1.0.2

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
+import 'package:firebase_core/firebase_core.dart';
 import 'widgets/auth_wrapper.dart';
 import 'widgets/global_error_handler.dart';
 import 'screens/home_screen.dart';
@@ -15,6 +16,14 @@ void main() {
   // Set up global error handling
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
+    
+    // Initialize Firebase
+    try {
+      await Firebase.initializeApp();
+      debugPrint('Firebase initialized successfully');
+    } catch (e) {
+      debugPrint('Firebase initialization error: $e');
+    }
     
     // Initialize error handling service
     final errorHandlingService = ErrorHandlingService();
