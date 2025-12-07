@@ -8,7 +8,7 @@ enum MessageStatus {
 }
 
 class MessageLogModel {
-  final int? messageId;
+  final int? messageId; // Local SQLite ID
   final int serviceId;
   final int attendeeId;
   final String messageText;
@@ -16,6 +16,13 @@ class MessageLogModel {
   final DateTime? sentAt;
   final String? errorMessage;
   final DateTime createdAt;
+  
+  // Cloud sync fields
+  final String? firestoreId; // Firestore document ID
+  final String? sentBy; // User UID who sent the message
+  final DateTime? cloudCreatedAt; // Cloud timestamp
+  final bool isSynced; // Sync status
+  final int version; // For conflict resolution
 
   MessageLogModel({
     this.messageId,
@@ -26,6 +33,11 @@ class MessageLogModel {
     this.sentAt,
     this.errorMessage,
     DateTime? createdAt,
+    this.firestoreId,
+    this.sentBy,
+    this.cloudCreatedAt,
+    this.isSynced = false,
+    this.version = 1,
   }) : createdAt = createdAt ?? DateTime.now();
 
   // Validation method
@@ -142,6 +154,11 @@ class MessageLogModel {
       'sentAt': sentAt?.toIso8601String(),
       'errorMessage': errorMessage,
       'createdAt': createdAt.toIso8601String(),
+      'firestoreId': firestoreId,
+      'sentBy': sentBy,
+      'cloudCreatedAt': cloudCreatedAt?.toIso8601String(),
+      'isSynced': isSynced,
+      'version': version,
     };
   }
 
@@ -156,6 +173,11 @@ class MessageLogModel {
       sentAt: json['sentAt'] != null ? DateTime.parse(json['sentAt']) : null,
       errorMessage: json['errorMessage'],
       createdAt: DateTime.parse(json['createdAt']),
+      firestoreId: json['firestoreId'],
+      sentBy: json['sentBy'],
+      cloudCreatedAt: json['cloudCreatedAt'] != null ? DateTime.parse(json['cloudCreatedAt']) : null,
+      isSynced: json['isSynced'] ?? false,
+      version: json['version'] ?? 1,
     );
   }
 
@@ -170,6 +192,11 @@ class MessageLogModel {
       'sent_at': sentAt?.toIso8601String(),
       'error_message': errorMessage,
       'created_at': createdAt.toIso8601String(),
+      'firestore_id': firestoreId,
+      'sent_by': sentBy,
+      'cloud_created_at': cloudCreatedAt?.toIso8601String(),
+      'is_synced': isSynced ? 1 : 0,
+      'version': version,
     };
   }
 
@@ -184,6 +211,49 @@ class MessageLogModel {
       sentAt: map['sent_at'] != null ? DateTime.parse(map['sent_at']) : null,
       errorMessage: map['error_message'],
       createdAt: DateTime.parse(map['created_at']),
+      firestoreId: map['firestore_id'],
+      sentBy: map['sent_by'],
+      cloudCreatedAt: map['cloud_created_at'] != null ? DateTime.parse(map['cloud_created_at']) : null,
+      isSynced: map['is_synced'] == 1,
+      version: map['version'] ?? 1,
+    );
+  }
+
+  // Firestore serialization
+  Map<String, dynamic> toFirestore() {
+    return {
+      'serviceId': serviceId,
+      'attendeeId': attendeeId,
+      'messageText': messageText,
+      'sendStatus': statusToString(sendStatus),
+      'sentAt': sentAt?.toIso8601String(),
+      'errorMessage': errorMessage,
+      'createdAt': createdAt.toIso8601String(),
+      'sentBy': sentBy,
+      'cloudCreatedAt': cloudCreatedAt?.toIso8601String(),
+      'version': version,
+    };
+  }
+
+  // Firestore deserialization
+  factory MessageLogModel.fromFirestore(Map<String, dynamic> data, String documentId) {
+    return MessageLogModel(
+      firestoreId: documentId,
+      serviceId: data['serviceId'] ?? 0,
+      attendeeId: data['attendeeId'] ?? 0,
+      messageText: data['messageText'] ?? '',
+      sendStatus: statusFromString(data['sendStatus'] ?? 'pending'),
+      sentAt: data['sentAt'] != null ? DateTime.parse(data['sentAt']) : null,
+      errorMessage: data['errorMessage'],
+      createdAt: data['createdAt'] != null 
+          ? DateTime.parse(data['createdAt']) 
+          : DateTime.now(),
+      sentBy: data['sentBy'],
+      cloudCreatedAt: data['cloudCreatedAt'] != null 
+          ? DateTime.parse(data['cloudCreatedAt']) 
+          : null,
+      isSynced: true, // Data from Firestore is considered synced
+      version: data['version'] ?? 1,
     );
   }
 
@@ -197,6 +267,11 @@ class MessageLogModel {
     DateTime? sentAt,
     String? errorMessage,
     DateTime? createdAt,
+    String? firestoreId,
+    String? sentBy,
+    DateTime? cloudCreatedAt,
+    bool? isSynced,
+    int? version,
   }) {
     return MessageLogModel(
       messageId: messageId ?? this.messageId,
@@ -207,6 +282,11 @@ class MessageLogModel {
       sentAt: sentAt ?? this.sentAt,
       errorMessage: errorMessage ?? this.errorMessage,
       createdAt: createdAt ?? this.createdAt,
+      firestoreId: firestoreId ?? this.firestoreId,
+      sentBy: sentBy ?? this.sentBy,
+      cloudCreatedAt: cloudCreatedAt ?? this.cloudCreatedAt,
+      isSynced: isSynced ?? this.isSynced,
+      version: version ?? this.version,
     );
   }
 
@@ -257,11 +337,13 @@ class MessageLogModel {
         other.serviceId == serviceId &&
         other.attendeeId == attendeeId &&
         other.messageText == messageText &&
-        other.sendStatus == sendStatus;
+        other.sendStatus == sendStatus &&
+        other.firestoreId == firestoreId &&
+        other.version == version;
   }
 
   @override
   int get hashCode {
-    return Object.hash(messageId, serviceId, attendeeId, messageText, sendStatus);
+    return Object.hash(messageId, serviceId, attendeeId, messageText, sendStatus, firestoreId, version);
   }
 }

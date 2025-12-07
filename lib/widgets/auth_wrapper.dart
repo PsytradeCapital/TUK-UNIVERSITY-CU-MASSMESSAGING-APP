@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/security_service.dart';
+import '../services/auth_service.dart';
 import '../screens/pin_auth_screen.dart';
 import '../screens/pin_setup_screen.dart';
+import '../screens/login_screen.dart';
+import '../screens/pending_approval_screen.dart';
 import '../providers/app_state_provider.dart';
 
 class AuthWrapper extends StatefulWidget {
@@ -21,12 +24,22 @@ class _AuthWrapperState extends State<AuthWrapper> with WidgetsBindingObserver {
   bool _isAuthenticated = false;
   bool _isPinSet = false;
   bool _isLoading = true;
+  bool _isFirebaseAuthenticated = false;
+  bool _isUserApproved = false;
+  final AuthService _authService = AuthService();
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _checkAuthenticationStatus();
+    
+    // Listen to Firebase auth state changes
+    _authService.authStateChanges().listen((user) {
+      if (mounted) {
+        _checkAuthenticationStatus();
+      }
+    });
   }
 
   @override
@@ -62,10 +75,24 @@ class _AuthWrapperState extends State<AuthWrapper> with WidgetsBindingObserver {
 
   Future<void> _checkAuthenticationStatus() async {
     try {
+      // Check Firebase authentication
+      final firebaseUser = _authService.getCurrentUser();
+      final isFirebaseAuth = firebaseUser != null;
+      
+      // Check user approval status if Firebase authenticated
+      bool isApproved = false;
+      if (isFirebaseAuth) {
+        isApproved = await _authService.isUserApproved();
+      }
+      
+      // Check PIN status
       final isPinSet = await SecurityService.isPinSet();
+      
       setState(() {
+        _isFirebaseAuthenticated = isFirebaseAuth;
+        _isUserApproved = isApproved;
         _isPinSet = isPinSet;
-        _isAuthenticated = !isPinSet; // If no PIN is set, consider authenticated
+        _isAuthenticated = !isPinSet; // If no PIN is set, consider authenticated for PIN
         _isLoading = false;
       });
       
@@ -77,6 +104,8 @@ class _AuthWrapperState extends State<AuthWrapper> with WidgetsBindingObserver {
         _isLoading = false;
         _isAuthenticated = false;
         _isPinSet = false;
+        _isFirebaseAuthenticated = false;
+        _isUserApproved = false;
       });
       
       // Report error to app state provider
@@ -127,6 +156,17 @@ class _AuthWrapperState extends State<AuthWrapper> with WidgetsBindingObserver {
       );
     }
 
+    // Check Firebase authentication first
+    if (!_isFirebaseAuthenticated) {
+      return const LoginScreen();
+    }
+
+    // Check user approval status
+    if (!_isUserApproved) {
+      return const PendingApprovalScreen();
+    }
+
+    // Then check PIN authentication
     if (!_isPinSet) {
       return PinSetupScreen(
         isChangingPin: false,

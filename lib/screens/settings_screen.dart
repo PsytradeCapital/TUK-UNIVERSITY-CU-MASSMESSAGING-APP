@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import '../services/security_service.dart';
 import '../services/database_manager.dart';
 import '../services/data_management_service.dart';
+import '../services/auth_service.dart';
 import 'pin_setup_screen.dart';
+import 'user_management_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -17,12 +19,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _isPinSet = false;
   Map<String, int> _databaseStats = {};
   int _databaseSize = 0;
+  bool _isAdmin = false;
   final DataManagementService _dataManagementService = DataManagementService();
+  final AuthService _authService = AuthService();
 
   @override
   void initState() {
     super.initState();
     _loadSettings();
+    _checkAdminStatus();
+  }
+
+  Future<void> _checkAdminStatus() async {
+    try {
+      final isAdmin = await _authService.isUserAdmin();
+      setState(() {
+        _isAdmin = isAdmin;
+      });
+    } catch (e) {
+      // Silently fail
+    }
   }
 
   Future<void> _loadSettings() async {
@@ -64,13 +80,59 @@ class _SettingsScreenState extends State<SettingsScreen> {
           : ListView(
               padding: const EdgeInsets.all(16.0),
               children: [
+                if (_isAdmin) ...[
+                  _buildUserManagementSection(),
+                  const SizedBox(height: 24),
+                ],
                 _buildSecuritySection(),
                 const SizedBox(height: 24),
                 _buildDataManagementSection(),
                 const SizedBox(height: 24),
                 _buildDatabaseInfoSection(),
+                const SizedBox(height: 24),
+                _buildAccountSection(),
               ],
             ),
+    );
+  }
+
+  Widget _buildUserManagementSection() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.admin_panel_settings, color: Colors.blue[700]),
+                const SizedBox(width: 8),
+                const Text(
+                  'User Management',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: const Icon(Icons.people),
+              title: const Text('Manage Users'),
+              subtitle: const Text('Approve users and manage permissions'),
+              trailing: const Icon(Icons.arrow_forward_ios),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const UserManagementScreen(),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -707,6 +769,73 @@ class _SettingsScreenState extends State<SettingsScreen> {
           backgroundColor: Colors.red,
         ),
       );
+    }
+  }
+
+  Widget _buildAccountSection() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.account_circle, color: Colors.blue[700]),
+                const SizedBox(width: 8),
+                const Text(
+                  'Account',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: const Icon(Icons.logout, color: Colors.red),
+              title: const Text(
+                'Sign Out',
+                style: TextStyle(color: Colors.red),
+              ),
+              subtitle: const Text('Sign out of your account'),
+              trailing: const Icon(Icons.arrow_forward_ios),
+              onTap: _handleSignOut,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleSignOut() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Sign Out'),
+        content: const Text('Are you sure you want to sign out?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Sign Out', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await _authService.signOut();
+        // The AuthWrapper will automatically redirect to login screen
+      } catch (e) {
+        _showErrorSnackBar('Failed to sign out: $e');
+      }
     }
   }
 }

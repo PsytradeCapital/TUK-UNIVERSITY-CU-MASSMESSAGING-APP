@@ -5,7 +5,7 @@ enum AttendeeCategory {
 }
 
 class AttendeeModel {
-  final int? id;
+  final int? id; // Local SQLite ID
   final String name;
   final String phoneNumber;
   final String yearOfStudy;
@@ -14,6 +14,15 @@ class AttendeeModel {
   final int attendanceCount;
   final DateTime firstRegistered;
   final DateTime lastUpdated;
+  
+  // Cloud sync fields
+  final String? firestoreId; // Firestore document ID
+  final String? createdBy; // User UID who created
+  final DateTime? createdAt; // Cloud timestamp
+  final String? modifiedBy; // User UID who last modified
+  final DateTime? modifiedAt; // Last modification timestamp
+  final bool isSynced; // Sync status
+  final int version; // For conflict resolution
 
   AttendeeModel({
     this.id,
@@ -25,6 +34,13 @@ class AttendeeModel {
     this.attendanceCount = 0,
     DateTime? firstRegistered,
     DateTime? lastUpdated,
+    this.firestoreId,
+    this.createdBy,
+    this.createdAt,
+    this.modifiedBy,
+    this.modifiedAt,
+    this.isSynced = false,
+    this.version = 1,
   }) : firstRegistered = firstRegistered ?? DateTime.now(),
        lastUpdated = lastUpdated ?? DateTime.now();
 
@@ -170,6 +186,13 @@ class AttendeeModel {
       'attendanceCount': attendanceCount,
       'firstRegistered': firstRegistered.toIso8601String(),
       'lastUpdated': lastUpdated.toIso8601String(),
+      'firestoreId': firestoreId,
+      'createdBy': createdBy,
+      'createdAt': createdAt?.toIso8601String(),
+      'modifiedBy': modifiedBy,
+      'modifiedAt': modifiedAt?.toIso8601String(),
+      'isSynced': isSynced,
+      'version': version,
     };
   }
 
@@ -185,6 +208,13 @@ class AttendeeModel {
       attendanceCount: json['attendanceCount'] ?? 0,
       firstRegistered: DateTime.parse(json['firstRegistered']),
       lastUpdated: DateTime.parse(json['lastUpdated']),
+      firestoreId: json['firestoreId'],
+      createdBy: json['createdBy'],
+      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
+      modifiedBy: json['modifiedBy'],
+      modifiedAt: json['modifiedAt'] != null ? DateTime.parse(json['modifiedAt']) : null,
+      isSynced: json['isSynced'] ?? false,
+      version: json['version'] ?? 1,
     );
   }
 
@@ -200,6 +230,13 @@ class AttendeeModel {
       'attendance_count': attendanceCount,
       'first_registered': firstRegistered.toIso8601String(),
       'last_updated': lastUpdated.toIso8601String(),
+      'firestore_id': firestoreId,
+      'created_by': createdBy,
+      'created_at': createdAt?.toIso8601String(),
+      'modified_by': modifiedBy,
+      'modified_at': modifiedAt?.toIso8601String(),
+      'is_synced': isSynced ? 1 : 0,
+      'version': version,
     };
   }
 
@@ -215,6 +252,61 @@ class AttendeeModel {
       attendanceCount: map['attendance_count'] ?? 0,
       firstRegistered: DateTime.parse(map['first_registered']),
       lastUpdated: DateTime.parse(map['last_updated']),
+      firestoreId: map['firestore_id'],
+      createdBy: map['created_by'],
+      createdAt: map['created_at'] != null ? DateTime.parse(map['created_at']) : null,
+      modifiedBy: map['modified_by'],
+      modifiedAt: map['modified_at'] != null ? DateTime.parse(map['modified_at']) : null,
+      isSynced: map['is_synced'] == 1,
+      version: map['version'] ?? 1,
+    );
+  }
+
+  // Firestore serialization
+  Map<String, dynamic> toFirestore() {
+    return {
+      'name': name,
+      'phoneNumber': phoneNumber,
+      'yearOfStudy': yearOfStudy,
+      'location': location,
+      'category': categoryToString(category),
+      'attendanceCount': attendanceCount,
+      'firstRegistered': firstRegistered.toIso8601String(),
+      'lastUpdated': lastUpdated.toIso8601String(),
+      'createdBy': createdBy,
+      'createdAt': createdAt?.toIso8601String(),
+      'modifiedBy': modifiedBy,
+      'modifiedAt': modifiedAt?.toIso8601String(),
+      'version': version,
+    };
+  }
+
+  // Firestore deserialization
+  factory AttendeeModel.fromFirestore(Map<String, dynamic> data, String documentId) {
+    return AttendeeModel(
+      firestoreId: documentId,
+      name: data['name'] ?? '',
+      phoneNumber: data['phoneNumber'] ?? '',
+      yearOfStudy: data['yearOfStudy'] ?? '',
+      location: data['location'] ?? '',
+      category: categoryFromString(data['category'] ?? 'student'),
+      attendanceCount: data['attendanceCount'] ?? 0,
+      firstRegistered: data['firstRegistered'] != null 
+          ? DateTime.parse(data['firstRegistered']) 
+          : DateTime.now(),
+      lastUpdated: data['lastUpdated'] != null 
+          ? DateTime.parse(data['lastUpdated']) 
+          : DateTime.now(),
+      createdBy: data['createdBy'],
+      createdAt: data['createdAt'] != null 
+          ? DateTime.parse(data['createdAt']) 
+          : null,
+      modifiedBy: data['modifiedBy'],
+      modifiedAt: data['modifiedAt'] != null 
+          ? DateTime.parse(data['modifiedAt']) 
+          : null,
+      isSynced: true, // Data from Firestore is considered synced
+      version: data['version'] ?? 1,
     );
   }
 
@@ -229,6 +321,13 @@ class AttendeeModel {
     int? attendanceCount,
     DateTime? firstRegistered,
     DateTime? lastUpdated,
+    String? firestoreId,
+    String? createdBy,
+    DateTime? createdAt,
+    String? modifiedBy,
+    DateTime? modifiedAt,
+    bool? isSynced,
+    int? version,
   }) {
     return AttendeeModel(
       id: id ?? this.id,
@@ -240,6 +339,13 @@ class AttendeeModel {
       attendanceCount: attendanceCount ?? this.attendanceCount,
       firstRegistered: firstRegistered ?? this.firstRegistered,
       lastUpdated: lastUpdated ?? this.lastUpdated,
+      firestoreId: firestoreId ?? this.firestoreId,
+      createdBy: createdBy ?? this.createdBy,
+      createdAt: createdAt ?? this.createdAt,
+      modifiedBy: modifiedBy ?? this.modifiedBy,
+      modifiedAt: modifiedAt ?? this.modifiedAt,
+      isSynced: isSynced ?? this.isSynced,
+      version: version ?? this.version,
     );
   }
 
@@ -266,11 +372,13 @@ class AttendeeModel {
         other.yearOfStudy == yearOfStudy &&
         other.location == location &&
         other.category == category &&
-        other.attendanceCount == attendanceCount;
+        other.attendanceCount == attendanceCount &&
+        other.firestoreId == firestoreId &&
+        other.version == version;
   }
 
   @override
   int get hashCode {
-    return Object.hash(id, name, phoneNumber, yearOfStudy, location, category, attendanceCount);
+    return Object.hash(id, name, phoneNumber, yearOfStudy, location, category, attendanceCount, firestoreId, version);
   }
 }

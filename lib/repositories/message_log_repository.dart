@@ -176,6 +176,30 @@ class MessageLogRepository {
     await updateMessageLogStatus(messageId, MessageStatus.cancelled);
   }
 
+  // Update full message log
+  Future<void> updateMessageLog(MessageLogModel messageLog) async {
+    try {
+      final db = await _databaseManager.database;
+      
+      if (messageLog.messageId == null) {
+        throw MessageLogRepositoryException('Cannot update message log without ID');
+      }
+
+      final count = await db.update(
+        'message_log',
+        messageLog.toMap(),
+        where: 'message_id = ?',
+        whereArgs: [messageLog.messageId],
+      );
+
+      if (count == 0) {
+        throw MessageLogRepositoryException('Message log not found for update');
+      }
+    } catch (e) {
+      throw MessageLogRepositoryException('Failed to update message log: $e');
+    }
+  }
+
   // Get message logs for an attendee
   Future<List<MessageLogModel>> getMessageLogsByAttendee(int attendeeId) async {
     try {
