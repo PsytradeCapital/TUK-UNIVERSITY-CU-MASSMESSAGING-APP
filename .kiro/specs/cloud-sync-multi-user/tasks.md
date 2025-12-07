@@ -9,6 +9,7 @@
   - Add Android app to Firebase project
   - Download and add google-services.json to android/app/
   - Add Firebase dependencies to pubspec.yaml
+
   - Configure Firebase initialization in main.dart
   - _Requirements: 1.1, 2.1_
 
@@ -17,11 +18,14 @@
   - Add firebase_auth package
   - Add cloud_firestore package
   - Add firebase_storage package (for future file uploads)
+
+
   - Add connectivity_plus package (for network monitoring)
   - Run flutter pub get
   - _Requirements: 1.1, 2.1, 4.1_
 
-- [ ] 3. Create User Model and Authentication Service
+- [-] 3. Create User Model and Authentication Service
+
   - [ ] 3.1 Create UserModel with Firestore serialization
     - Define UserModel class with uid, email, name, role, isApproved fields
     - Implement toFirestore() and fromFirestore() methods
