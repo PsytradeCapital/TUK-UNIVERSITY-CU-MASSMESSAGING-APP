@@ -3,6 +3,8 @@
 - [x] 1. Firebase Project Setup and Configuration
 
 
+
+
   - Create Firebase project in Firebase Console
   - Add Android app to Firebase project
   - Download and add google-services.json to android/app/
