@@ -1,9 +1,12 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/message_log_model.dart';
 import '../models/attendee_model.dart';
-import '../repositories/message_log_repository.dart';
-import '../repositories/attendee_repository.dart';
+import '../repositories/firebase_message_log_repository.dart';
+import '../repositories/hybrid_attendee_repository.dart';
+import '../services/auth_service.dart';
 import '../widgets/cu_logo_widget.dart';
+import '../widgets/sync_status_widget.dart';
 
 class MessageHistoryScreen extends StatefulWidget {
   final int? serviceId;
@@ -18,20 +21,72 @@ class MessageHistoryScreen extends StatefulWidget {
 }
 
 class _MessageHistoryScreenState extends State<MessageHistoryScreen> {
-  final _messageLogRepository = MessageLogRepository();
-  final _attendeeRepository = AttendeeRepository();
+  final _messageLogRepository = FirebaseMessageLogRepository();
+  final _attendeeRepository = HybridAttendeeRepository();
+  final _authService = AuthService();
   
   List<MessageLogModel> _messages = [];
   Map<int, AttendeeModel> _attendeeCache = {};
+  Map<String, String> _userCache = {}; // userId -> userName
   bool _isLoading = false;
   String? _error;
   
   MessageStatus? _filterStatus;
+  
+  StreamSubscription<List<MessageLogModel>>? _messageStreamSubscription;
 
   @override
   void initState() {
     super.initState();
     _loadMessages();
+    _setupRealTimeUpdates();
+  }
+
+  @override
+  void dispose() {
+    _messageStreamSubscription?.cancel();
+    super.dispose();
+  }
+
+  void _setupRealTimeUpdates() {
+    try {
+      // Listen to real-time message log updates
+      if (widget.serviceId != null) {
+        _messageStreamSubscription = _messageLogRepository
+            .messageLogsByServiceStream(widget.serviceId!)
+            .listen(
+          (messages) {
+            if (mounted) {
+              setState(() {
+                _messages = messages;
+              });
+              _loadUserAndAttendeeDetails();
+            }
+          },
+          onError: (error) {
+            debugPrint('Real-time message updates error: $error');
+          },
+        );
+      } else {
+        _messageStreamSubscription = _messageLogRepository
+            .messageLogsStream()
+            .listen(
+          (messages) {
+            if (mounted) {
+              setState(() {
+                _messages = messages;
+              });
+              _loadUserAndAttendeeDetails();
+            }
+          },
+          onError: (error) {
+            debugPrint('Real-time message updates error: $error');
+          },
+        );
+      }
+    } catch (e) {
+      debugPrint('Failed to setup real-time message updates: $e');
+    }
   }
 
   Future<void> _loadMessages() async {
@@ -49,22 +104,11 @@ class _MessageHistoryScreenState extends State<MessageHistoryScreen> {
         messages = await _messageLogRepository.getAllMessageLogs();
       }
 
-      // Load attendee details
-      final attendeeIds = messages.map((m) => m.attendeeId).toSet();
-      for (final id in attendeeIds) {
-        try {
-          final attendee = await _attendeeRepository.getAttendeeById(id);
-          if (attendee != null) {
-            _attendeeCache[id] = attendee;
-          }
-        } catch (e) {
-          debugPrint('Error loading attendee $id: $e');
-        }
-      }
-
       setState(() {
         _messages = messages;
       });
+
+      await _loadUserAndAttendeeDetails();
     } catch (e) {
       setState(() {
         _error = 'Failed to load messages: $e';
@@ -73,6 +117,45 @@ class _MessageHistoryScreenState extends State<MessageHistoryScreen> {
       setState(() {
         _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _loadUserAndAttendeeDetails() async {
+    // Load attendee details
+    final attendeeIds = _messages.map((m) => m.attendeeId).toSet();
+    for (final id in attendeeIds) {
+      if (!_attendeeCache.containsKey(id)) {
+        try {
+          final attendee = await _attendeeRepository.getAttendeeById(id.toString());
+          if (attendee != null) {
+            _attendeeCache[id] = attendee;
+          }
+        } catch (e) {
+          debugPrint('Error loading attendee $id: $e');
+        }
+      }
+    }
+
+    // Load user details for sentBy field
+    final userIds = _messages
+        .where((m) => m.sentBy != null)
+        .map((m) => m.sentBy!)
+        .toSet();
+    
+    for (final userId in userIds) {
+      if (!_userCache.containsKey(userId)) {
+        try {
+          // For now, we'll use a placeholder. In a full implementation,
+          // you'd have a UserRepository to get user details
+          _userCache[userId] = 'User $userId';
+        } catch (e) {
+          debugPrint('Error loading user $userId: $e');
+        }
+      }
+    }
+
+    if (mounted) {
+      setState(() {});
     }
   }
 
@@ -97,6 +180,13 @@ class _MessageHistoryScreenState extends State<MessageHistoryScreen> {
         backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
         actions: [
+          // Sync status indicator
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: SyncStatusIndicator(
+              onTap: () => _showSyncStatusDialog(context),
+            ),
+          ),
           IconButton(
             onPressed: _loadMessages,
             icon: const Icon(Icons.refresh),
@@ -108,6 +198,7 @@ class _MessageHistoryScreenState extends State<MessageHistoryScreen> {
         children: [
           _buildFilterChips(),
           _buildStatusSummary(),
+          _buildRealTimeIndicator(),
           Expanded(
             child: _buildMessageList(),
           ),
@@ -298,6 +389,28 @@ class _MessageHistoryScreenState extends State<MessageHistoryScreen> {
                     ],
                   ],
                 ),
+                // Show who sent the message
+                if (message.sentBy != null) ...[
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.person,
+                        size: 12,
+                        color: Colors.grey[500],
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Sent by: ${_userCache[message.sentBy] ?? message.sentBy}',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey[500],
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
                 if (message.errorMessage != null) ...[
                   const SizedBox(height: 4),
                   Text(
@@ -335,6 +448,8 @@ class _MessageHistoryScreenState extends State<MessageHistoryScreen> {
               if (attendee != null)
                 _buildDetailRow('Phone', attendee.phoneNumber),
               _buildDetailRow('Status', _getStatusText(message.sendStatus)),
+              if (message.sentBy != null)
+                _buildDetailRow('Sent By', _userCache[message.sentBy] ?? message.sentBy!),
               if (message.sentAt != null)
                 _buildDetailRow('Sent At', _formatDateTime(message.sentAt!)),
               if (message.errorMessage != null)
@@ -461,5 +576,55 @@ class _MessageHistoryScreenState extends State<MessageHistoryScreen> {
 
   String _formatDateTime(DateTime dateTime) {
     return '${dateTime.day}/${dateTime.month}/${dateTime.year} ${_formatTime(dateTime)}';
+  }
+
+  Widget _buildRealTimeIndicator() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.blue[50],
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.blue[200]!),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.update,
+            size: 16,
+            color: Colors.blue[700],
+          ),
+          const SizedBox(width: 4),
+          Text(
+            'Real-time updates enabled',
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.blue[700],
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSyncStatusDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Sync Status'),
+        content: const SyncStatusWidget(
+          showDetails: true,
+          showLastSyncTime: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
   }
 }

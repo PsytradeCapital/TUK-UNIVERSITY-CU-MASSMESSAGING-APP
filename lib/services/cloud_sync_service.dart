@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import '../repositories/firebase_attendee_repository.dart';
 import '../repositories/firebase_message_log_repository.dart';
 import '../repositories/attendee_repository.dart';
@@ -7,6 +6,7 @@ import '../repositories/message_log_repository.dart';
 import '../models/attendee_model.dart';
 import '../models/message_log_model.dart';
 import 'auth_service.dart';
+import 'connectivity_service.dart';
 
 // Sync result model
 class SyncResult {
@@ -142,12 +142,13 @@ class CloudSyncService {
   final AuthService _authService = AuthService();
 
   // Connectivity
-  final Connectivity _connectivity = Connectivity();
+  final ConnectivityService _connectivityService = ConnectivityService();
 
   // Sync state
   bool _isSyncing = false;
   DateTime? _lastSyncAt;
   bool _realTimeSyncEnabled = false;
+  bool _autoSyncEnabled = true;
   
   // Stream controllers
   final StreamController<SyncEvent> _syncEventsController = 
@@ -156,25 +157,21 @@ class CloudSyncService {
   // Real-time sync subscriptions
   StreamSubscription<List<AttendeeModel>>? _attendeesStreamSubscription;
   StreamSubscription<List<MessageLogModel>>? _messageLogsStreamSubscription;
+  StreamSubscription<bool>? _connectivitySubscription;
 
   /// Get sync status
   SyncStatus getSyncStatus() {
     return SyncStatus(
       isSyncing: _isSyncing,
-      isOnline: true, // Will be updated by connectivity check
+      isOnline: _connectivityService.isOnline(),
       lastSyncAt: _lastSyncAt,
       pendingChanges: 0, // Will be calculated from local unsynced items
     );
   }
 
   /// Check if device is online
-  Future<bool> _isOnline() async {
-    try {
-      final connectivityResult = await _connectivity.checkConnectivity();
-      return connectivityResult != ConnectivityResult.none;
-    } catch (e) {
-      return false;
-    }
+  bool _isOnline() {
+    return _connectivityService.isOnline();
   }
 
   /// Sync data to cloud
@@ -195,7 +192,7 @@ class CloudSyncService {
 
     try {
       // Check if online
-      if (!await _isOnline()) {
+      if (!_isOnline()) {
         throw CloudSyncException('No internet connection');
       }
 
@@ -344,7 +341,7 @@ class CloudSyncService {
 
     try {
       // Check if online
-      if (!await _isOnline()) {
+      if (!_isOnline()) {
         throw CloudSyncException('No internet connection');
       }
 
@@ -471,6 +468,42 @@ class CloudSyncService {
     } finally {
       _isSyncing = false;
     }
+  }
+
+  /// Initialize cloud sync service
+  /// Should be called once during app startup
+  Future<void> initialize() async {
+    // Initialize connectivity service
+    await _connectivityService.initialize();
+    
+    // Set up auto-sync on connection restoration
+    _setupAutoSync();
+    
+    _emitSyncEvent(SyncEventType.started, 'CloudSyncService initialized');
+  }
+
+  /// Enable auto-sync when connection is restored
+  void enableAutoSync() {
+    _autoSyncEnabled = true;
+    _setupAutoSync();
+    _emitSyncEvent(SyncEventType.started, 'Auto-sync enabled');
+  }
+
+  /// Disable auto-sync
+  void disableAutoSync() {
+    _autoSyncEnabled = false;
+    _connectivitySubscription?.cancel();
+    _emitSyncEvent(SyncEventType.completed, 'Auto-sync disabled');
+  }
+
+  /// Check if auto-sync is enabled
+  bool isAutoSyncEnabled() {
+    return _autoSyncEnabled;
+  }
+
+  /// Get connectivity status
+  ConnectivityStatus getConnectivityStatus() {
+    return _connectivityService.getConnectivityStatus();
   }
 
   /// Enable real-time sync
@@ -762,10 +795,58 @@ class CloudSyncService {
     ));
   }
 
+  /// Set up auto-sync on connection restoration
+  void _setupAutoSync() {
+    if (!_autoSyncEnabled) return;
+
+    // Cancel existing subscription
+    _connectivitySubscription?.cancel();
+
+    // Listen for connection restoration
+    _connectivitySubscription = _connectivityService.connectionRestoredStream().listen(
+      (restoredAt) async {
+        _emitSyncEvent(
+          SyncEventType.started,
+          'Connection restored at $restoredAt - triggering auto-sync',
+        );
+
+        try {
+          // Wait a moment for connection to stabilize
+          await Future.delayed(const Duration(seconds: 2));
+
+          // Check if still online and authenticated
+          if (_connectivityService.isOnline() && _authService.isAuthenticated()) {
+            // Trigger bidirectional sync
+            await syncFromCloud();
+            await syncToCloud();
+            
+            _emitSyncEvent(
+              SyncEventType.completed,
+              'Auto-sync completed after connection restoration',
+            );
+          }
+        } catch (e) {
+          _emitSyncEvent(
+            SyncEventType.failed,
+            'Auto-sync failed after connection restoration: $e',
+          );
+        }
+      },
+      onError: (error) {
+        _emitSyncEvent(
+          SyncEventType.failed,
+          'Auto-sync connection monitoring error: $error',
+        );
+      },
+    );
+  }
+
   /// Dispose resources
   void dispose() {
     disableRealTimeSync();
+    disableAutoSync();
     _syncEventsController.close();
+    _connectivityService.dispose();
   }
 }
 

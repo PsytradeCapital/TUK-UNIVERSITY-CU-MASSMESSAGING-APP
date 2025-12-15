@@ -1,9 +1,9 @@
 import '../models/attendee_model.dart';
-import '../repositories/attendee_repository.dart';
+import '../repositories/hybrid_attendee_repository.dart';
 import '../providers/service_session_provider.dart';
 
 class RegistrationService {
-  final AttendeeRepository _attendeeRepository = AttendeeRepository();
+  final HybridAttendeeRepository _attendeeRepository = HybridAttendeeRepository();
   final ServiceSessionProvider _sessionProvider = ServiceSessionProvider();
 
   // Register a new attendee with full validation and duplicate checking
@@ -38,7 +38,11 @@ class RegistrationService {
 
       // Register new attendee
       final attendeeId = await _attendeeRepository.createAttendee(attendee);
-      final registeredAttendee = attendee.copyWith(id: attendeeId);
+      // For hybrid repository, the ID might be a string (Firestore ID)
+      final registeredAttendee = attendee.copyWith(
+        id: int.tryParse(attendeeId) ?? attendee.id,
+        firestoreId: attendeeId,
+      );
 
       // Add to current service session if one is active
       if (_sessionProvider.hasActiveService) {
@@ -58,11 +62,15 @@ class RegistrationService {
         return RegistrationResult.failure('Invalid attendee data');
       }
 
-      // Increment attendance count
-      await _attendeeRepository.incrementAttendanceCount(existingAttendee.id!);
+      // Increment attendance count by updating the attendee
+      final updatedAttendeeWithCount = existingAttendee.copyWith(
+        attendanceCount: existingAttendee.attendanceCount + 1,
+        lastUpdated: DateTime.now(),
+      );
+      await _attendeeRepository.updateAttendee(updatedAttendeeWithCount);
       
       // Get updated attendee data
-      final updatedAttendee = await _attendeeRepository.getAttendeeById(existingAttendee.id!);
+      final updatedAttendee = await _attendeeRepository.getAttendeeById(existingAttendee.id!.toString());
       if (updatedAttendee == null) {
         return RegistrationResult.failure('Failed to retrieve updated attendee data');
       }
@@ -88,7 +96,7 @@ class RegistrationService {
   }) async {
     try {
       // Get existing attendee
-      final existingAttendee = await _attendeeRepository.getAttendeeById(attendeeId);
+      final existingAttendee = await _attendeeRepository.getAttendeeById(attendeeId.toString());
       if (existingAttendee == null) {
         return RegistrationResult.failure('Attendee not found');
       }
@@ -132,7 +140,7 @@ class RegistrationService {
         return [];
       }
 
-      return await _attendeeRepository.searchAttendeesByName(query.trim());
+      return await _attendeeRepository.searchAttendees(query.trim());
     } catch (e) {
       throw RegistrationServiceException('Search failed: $e');
     }
@@ -200,11 +208,15 @@ class RegistrationService {
         await _attendeeRepository.updateAttendee(updatedAttendee);
       }
 
-      // Increment attendance count
-      await _attendeeRepository.incrementAttendanceCount(existingAttendee.id!);
+      // Increment attendance count by updating the attendee
+      final attendeeWithIncrementedCount = updatedAttendee.copyWith(
+        attendanceCount: updatedAttendee.attendanceCount + 1,
+        lastUpdated: DateTime.now(),
+      );
+      await _attendeeRepository.updateAttendee(attendeeWithIncrementedCount);
       
       // Get updated attendee data with new attendance count
-      final finalAttendee = await _attendeeRepository.getAttendeeById(existingAttendee.id!);
+      final finalAttendee = await _attendeeRepository.getAttendeeById(existingAttendee.id!.toString());
       if (finalAttendee == null) {
         return RegistrationResult.failure('Failed to retrieve updated attendee data');
       }
@@ -250,7 +262,7 @@ class RegistrationService {
   // Delete attendee
   Future<bool> deleteAttendee(int attendeeId) async {
     try {
-      await _attendeeRepository.deleteAttendee(attendeeId);
+      await _attendeeRepository.deleteAttendee(attendeeId.toString());
       return true;
     } catch (e) {
       throw RegistrationServiceException('Failed to delete attendee: $e');
@@ -278,8 +290,32 @@ class RegistrationService {
   // Get attendance statistics
   Future<AttendanceStatistics> getAttendanceStatistics() async {
     try {
-      final stats = await _attendeeRepository.getAttendanceStatistics();
-      return AttendanceStatistics.fromMap(stats);
+      // Calculate statistics from all attendees since hybrid repository doesn't have this method
+      final allAttendees = await _attendeeRepository.getAllAttendees();
+      
+      if (allAttendees.isEmpty) {
+        return AttendanceStatistics(
+          totalAttendees: 0,
+          averageAttendance: 0.0,
+          maxAttendance: 0,
+          minAttendance: 0,
+          totalAttendanceCount: 0,
+        );
+      }
+      
+      final attendanceCounts = allAttendees.map((a) => a.attendanceCount).toList();
+      final totalAttendanceCount = attendanceCounts.fold(0, (sum, count) => sum + count);
+      final averageAttendance = totalAttendanceCount / allAttendees.length;
+      final maxAttendance = attendanceCounts.reduce((a, b) => a > b ? a : b);
+      final minAttendance = attendanceCounts.reduce((a, b) => a < b ? a : b);
+      
+      return AttendanceStatistics(
+        totalAttendees: allAttendees.length,
+        averageAttendance: averageAttendance,
+        maxAttendance: maxAttendance,
+        minAttendance: minAttendance,
+        totalAttendanceCount: totalAttendanceCount,
+      );
     } catch (e) {
       throw RegistrationServiceException('Failed to get attendance statistics: $e');
     }

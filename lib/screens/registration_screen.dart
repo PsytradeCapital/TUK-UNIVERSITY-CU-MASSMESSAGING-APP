@@ -4,6 +4,8 @@ import '../models/attendee_model.dart';
 import '../services/registration_service.dart';
 import '../widgets/attendee_search_widget.dart';
 import '../widgets/cu_logo_widget.dart';
+import '../widgets/sync_status_widget.dart';
+import '../widgets/offline_handler.dart';
 import '../providers/service_session_provider.dart';
 
 class RegistrationScreen extends StatefulWidget {
@@ -13,7 +15,7 @@ class RegistrationScreen extends StatefulWidget {
   State<RegistrationScreen> createState() => _RegistrationScreenState();
 }
 
-class _RegistrationScreenState extends State<RegistrationScreen> {
+class _RegistrationScreenState extends State<RegistrationScreen> with OfflineCapable {
   final _formKey = GlobalKey<FormState>();
   final _registrationService = RegistrationService();
   
@@ -158,35 +160,55 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           ? _customLocationController.text.trim() 
           : _selectedLocation!;
 
-      RegistrationResult result;
+      // Handle offline registration
+      final success = await handleOfflineOperation(
+        'registration',
+        () async {
+          RegistrationResult result;
 
-      if (_isReturningAttendee && _selectedAttendee != null) {
-        // Register returning attendee with potential updates
-        result = await _registrationService.registerReturningAttendeeWithValidation(
-          existingAttendee: _selectedAttendee!,
-          updatedName: _nameController.text.trim(),
-          updatedPhone: _phoneController.text.trim(),
-          updatedYear: _selectedYear,
-          updatedLocation: locationValue,
-        );
-      } else {
-        // Register new attendee
-        result = await _registrationService.registerAttendee(
-          name: _nameController.text.trim(),
-          phoneNumber: _phoneController.text.trim(),
-          yearOfStudy: _selectedYear ?? '',
-          location: locationValue,
-          category: _selectedCategory,
-        );
-      }
+          if (_isReturningAttendee && _selectedAttendee != null) {
+            // Register returning attendee with potential updates
+            result = await _registrationService.registerReturningAttendeeWithValidation(
+              existingAttendee: _selectedAttendee!,
+              updatedName: _nameController.text.trim(),
+              updatedPhone: _phoneController.text.trim(),
+              updatedYear: _selectedYear,
+              updatedLocation: locationValue,
+            );
+          } else {
+            // Register new attendee
+            result = await _registrationService.registerAttendee(
+              name: _nameController.text.trim(),
+              phoneNumber: _phoneController.text.trim(),
+              yearOfStudy: _selectedYear ?? '',
+              location: locationValue,
+              category: _selectedCategory,
+            );
+          }
 
-      if (result.isSuccess) {
-        _showSuccessDialog(result.attendee!, _isReturningAttendee);
+          if (result.isSuccess) {
+            _showSuccessDialog(result.attendee!, _isReturningAttendee);
+            _clearForm();
+          } else if (result.isDuplicate) {
+            _showDuplicateDialog(result.attendee!);
+          } else {
+            setState(() => _generalError = result.errorMessage);
+          }
+        },
+        operationData: {
+          'type': _isReturningAttendee ? 'returning' : 'new',
+          'name': _nameController.text.trim(),
+          'phone': _phoneController.text.trim(),
+          'year': _selectedYear ?? '',
+          'location': locationValue,
+          'category': _selectedCategory.toString(),
+        },
+      );
+
+      // If offline, show appropriate message
+      if (!success && isOffline) {
+        setState(() => _generalError = 'Registration saved offline. Will sync when online.');
         _clearForm();
-      } else if (result.isDuplicate) {
-        _showDuplicateDialog(result.attendee!);
-      } else {
-        setState(() => _generalError = result.errorMessage);
       }
     } catch (e) {
       setState(() => _generalError = 'Registration failed: $e');
@@ -223,6 +245,43 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 'Total Attendance: ${attendee.attendanceCount}',
                 style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
               ),
+            const SizedBox(height: 16),
+            // Show sync status
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey[300]!),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        isOffline ? Icons.wifi_off : Icons.cloud_done,
+                        size: 16,
+                        color: isOffline ? Colors.orange : Colors.green,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        isOffline ? 'Saved offline' : 'Synced to cloud',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isOffline ? Colors.orange : Colors.green,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (isOffline)
+                    const Text(
+                      'Will sync when connection is restored',
+                      style: TextStyle(fontSize: 10, color: Colors.grey),
+                    ),
+                ],
+              ),
+            ),
           ],
         ),
         actions: [
@@ -327,6 +386,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 children: [
                   // Service Session Management Card
                   _buildSessionManagementCard(sessionProvider),
+                  
+                  const SizedBox(height: 16),
+                  
+                  // Sync Status Card
+                  _buildSyncStatusCard(),
                   
                   const SizedBox(height: 16),
               // Search for returning attendees
@@ -988,6 +1052,35 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         content: Text(message),
         backgroundColor: Colors.green,
         duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  Widget _buildSyncStatusCard() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.cloud_sync, color: Colors.blue),
+                const SizedBox(width: 8),
+                const Text(
+                  'Cloud Sync Status',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            const SyncStatusWidget(
+              showDetails: true,
+              showLastSyncTime: true,
+              padding: EdgeInsets.all(0),
+            ),
+          ],
+        ),
       ),
     );
   }

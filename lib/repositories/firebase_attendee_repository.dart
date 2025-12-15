@@ -13,17 +13,19 @@ class FirebaseAttendeeRepository {
   // Create attendee in Firestore
   Future<String> createAttendee(AttendeeModel attendee) async {
     try {
-      // Encrypt sensitive data before uploading
+      // Get base data
       final data = attendee.toFirestore();
-      data['name'] = await EncryptionService.encryptSensitiveData(attendee.name);
-      data['phoneNumber'] = await EncryptionService.encryptSensitiveData(attendee.phoneNumber);
+      
+      // Encrypt sensitive fields using enhanced cloud encryption
+      final sensitiveFields = ['name', 'phoneNumber', 'location'];
+      final encryptedData = await EncryptionService.encryptFirestoreDocument(data, sensitiveFields);
       
       // Add searchable phone hash for lookups
       final phoneHash = await EncryptionService.createSearchablePhoneHash(attendee.phoneNumber);
-      data['phoneHash'] = phoneHash;
+      encryptedData['phoneHash'] = phoneHash;
       
       // Create document
-      final docRef = await _attendeesCollection.add(data);
+      final docRef = await _attendeesCollection.add(encryptedData);
       return docRef.id;
     } catch (e) {
       throw FirebaseAttendeeRepositoryException('Failed to create attendee: $e');
@@ -39,11 +41,11 @@ class FirebaseAttendeeRepository {
         return null;
       }
       
-      final data = docSnapshot.data() as Map<String, dynamic>;
+      final encryptedData = docSnapshot.data() as Map<String, dynamic>;
       
-      // Decrypt sensitive data
-      data['name'] = await EncryptionService.decryptSensitiveData(data['name']);
-      data['phoneNumber'] = await EncryptionService.decryptSensitiveData(data['phoneNumber']);
+      // Decrypt sensitive fields using enhanced cloud decryption
+      final sensitiveFields = ['name', 'phoneNumber', 'location'];
+      final data = await EncryptionService.decryptFirestoreDocument(encryptedData, sensitiveFields);
       
       return AttendeeModel.fromFirestore(data, docSnapshot.id);
     } catch (e) {
@@ -59,13 +61,13 @@ class FirebaseAttendeeRepository {
           .get();
       
       final List<AttendeeModel> attendees = [];
+      final sensitiveFields = ['name', 'phoneNumber', 'location'];
       
       for (final doc in querySnapshot.docs) {
-        final data = doc.data() as Map<String, dynamic>;
+        final encryptedData = doc.data() as Map<String, dynamic>;
         
-        // Decrypt sensitive data
-        data['name'] = await EncryptionService.decryptSensitiveData(data['name']);
-        data['phoneNumber'] = await EncryptionService.decryptSensitiveData(data['phoneNumber']);
+        // Decrypt sensitive fields using enhanced cloud decryption
+        final data = await EncryptionService.decryptFirestoreDocument(encryptedData, sensitiveFields);
         
         attendees.add(AttendeeModel.fromFirestore(data, doc.id));
       }
@@ -83,16 +85,18 @@ class FirebaseAttendeeRepository {
         throw FirebaseAttendeeRepositoryException('Cannot update attendee without Firestore ID');
       }
       
-      // Encrypt sensitive data before uploading
+      // Get base data
       final data = attendee.toFirestore();
-      data['name'] = await EncryptionService.encryptSensitiveData(attendee.name);
-      data['phoneNumber'] = await EncryptionService.encryptSensitiveData(attendee.phoneNumber);
+      
+      // Encrypt sensitive fields using enhanced cloud encryption
+      final sensitiveFields = ['name', 'phoneNumber', 'location'];
+      final encryptedData = await EncryptionService.encryptFirestoreDocument(data, sensitiveFields);
       
       // Update searchable phone hash
       final phoneHash = await EncryptionService.createSearchablePhoneHash(attendee.phoneNumber);
-      data['phoneHash'] = phoneHash;
+      encryptedData['phoneHash'] = phoneHash;
       
-      await _attendeesCollection.doc(attendee.firestoreId).update(data);
+      await _attendeesCollection.doc(attendee.firestoreId).update(encryptedData);
     } catch (e) {
       throw FirebaseAttendeeRepositoryException('Failed to update attendee: $e');
     }
@@ -143,11 +147,11 @@ class FirebaseAttendeeRepository {
       }
       
       final doc = querySnapshot.docs.first;
-      final data = doc.data() as Map<String, dynamic>;
+      final encryptedData = doc.data() as Map<String, dynamic>;
       
-      // Decrypt sensitive data
-      data['name'] = await EncryptionService.decryptSensitiveData(data['name']);
-      data['phoneNumber'] = await EncryptionService.decryptSensitiveData(data['phoneNumber']);
+      // Decrypt sensitive fields using enhanced cloud decryption
+      final sensitiveFields = ['name', 'phoneNumber', 'location'];
+      final data = await EncryptionService.decryptFirestoreDocument(encryptedData, sensitiveFields);
       
       return AttendeeModel.fromFirestore(data, doc.id);
     } catch (e) {
@@ -182,13 +186,13 @@ class FirebaseAttendeeRepository {
       
       final querySnapshot = await query.get();
       final List<AttendeeModel> attendees = [];
+      final sensitiveFields = ['name', 'phoneNumber', 'location'];
       
       for (final doc in querySnapshot.docs) {
-        final data = doc.data() as Map<String, dynamic>;
+        final encryptedData = doc.data() as Map<String, dynamic>;
         
-        // Decrypt sensitive data
-        data['name'] = await EncryptionService.decryptSensitiveData(data['name']);
-        data['phoneNumber'] = await EncryptionService.decryptSensitiveData(data['phoneNumber']);
+        // Decrypt sensitive fields using enhanced cloud decryption
+        final data = await EncryptionService.decryptFirestoreDocument(encryptedData, sensitiveFields);
         
         attendees.add(AttendeeModel.fromFirestore(data, doc.id));
       }
@@ -207,13 +211,13 @@ class FirebaseAttendeeRepository {
           .snapshots()
           .asyncMap((querySnapshot) async {
         final List<AttendeeModel> attendees = [];
+        final sensitiveFields = ['name', 'phoneNumber', 'location'];
         
         for (final doc in querySnapshot.docs) {
-          final data = doc.data() as Map<String, dynamic>;
+          final encryptedData = doc.data() as Map<String, dynamic>;
           
-          // Decrypt sensitive data
-          data['name'] = await EncryptionService.decryptSensitiveData(data['name']);
-          data['phoneNumber'] = await EncryptionService.decryptSensitiveData(data['phoneNumber']);
+          // Decrypt sensitive fields using enhanced cloud decryption
+          final data = await EncryptionService.decryptFirestoreDocument(encryptedData, sensitiveFields);
           
           attendees.add(AttendeeModel.fromFirestore(data, doc.id));
         }
@@ -233,13 +237,13 @@ class FirebaseAttendeeRepository {
           .get();
       
       final List<AttendeeModel> attendees = [];
+      final sensitiveFields = ['name', 'phoneNumber', 'location'];
       
       for (final doc in querySnapshot.docs) {
-        final data = doc.data() as Map<String, dynamic>;
+        final encryptedData = doc.data() as Map<String, dynamic>;
         
-        // Decrypt sensitive data
-        data['name'] = await EncryptionService.decryptSensitiveData(data['name']);
-        data['phoneNumber'] = await EncryptionService.decryptSensitiveData(data['phoneNumber']);
+        // Decrypt sensitive fields using enhanced cloud decryption
+        final data = await EncryptionService.decryptFirestoreDocument(encryptedData, sensitiveFields);
         
         attendees.add(AttendeeModel.fromFirestore(data, doc.id));
       }
@@ -258,13 +262,13 @@ class FirebaseAttendeeRepository {
           .get();
       
       final List<AttendeeModel> attendees = [];
+      final sensitiveFields = ['name', 'phoneNumber', 'location'];
       
       for (final doc in querySnapshot.docs) {
-        final data = doc.data() as Map<String, dynamic>;
+        final encryptedData = doc.data() as Map<String, dynamic>;
         
-        // Decrypt sensitive data
-        data['name'] = await EncryptionService.decryptSensitiveData(data['name']);
-        data['phoneNumber'] = await EncryptionService.decryptSensitiveData(data['phoneNumber']);
+        // Decrypt sensitive fields using enhanced cloud decryption
+        final data = await EncryptionService.decryptFirestoreDocument(encryptedData, sensitiveFields);
         
         attendees.add(AttendeeModel.fromFirestore(data, doc.id));
       }
@@ -284,13 +288,13 @@ class FirebaseAttendeeRepository {
           .get();
       
       final List<AttendeeModel> attendees = [];
+      final sensitiveFields = ['name', 'phoneNumber', 'location'];
       
       for (final doc in querySnapshot.docs) {
-        final data = doc.data() as Map<String, dynamic>;
+        final encryptedData = doc.data() as Map<String, dynamic>;
         
-        // Decrypt sensitive data
-        data['name'] = await EncryptionService.decryptSensitiveData(data['name']);
-        data['phoneNumber'] = await EncryptionService.decryptSensitiveData(data['phoneNumber']);
+        // Decrypt sensitive fields using enhanced cloud decryption
+        final data = await EncryptionService.decryptFirestoreDocument(encryptedData, sensitiveFields);
         
         attendees.add(AttendeeModel.fromFirestore(data, doc.id));
       }
@@ -342,16 +346,18 @@ class FirebaseAttendeeRepository {
         final docRef = _attendeesCollection.doc();
         documentIds.add(docRef.id);
         
-        // Encrypt sensitive data
+        // Get base data
         final data = attendee.toFirestore();
-        data['name'] = await EncryptionService.encryptSensitiveData(attendee.name);
-        data['phoneNumber'] = await EncryptionService.encryptSensitiveData(attendee.phoneNumber);
+        
+        // Encrypt sensitive fields using enhanced cloud encryption
+        final sensitiveFields = ['name', 'phoneNumber', 'location'];
+        final encryptedData = await EncryptionService.encryptFirestoreDocument(data, sensitiveFields);
         
         // Add searchable phone hash
         final phoneHash = await EncryptionService.createSearchablePhoneHash(attendee.phoneNumber);
-        data['phoneHash'] = phoneHash;
+        encryptedData['phoneHash'] = phoneHash;
         
-        batch.set(docRef, data);
+        batch.set(docRef, encryptedData);
       }
       
       await batch.commit();

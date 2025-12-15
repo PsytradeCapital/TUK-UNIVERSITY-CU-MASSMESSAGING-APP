@@ -4,11 +4,13 @@ import '../models/attendee_model.dart';
 import '../models/message_log_model.dart';
 import '../services/sms_manager.dart';
 import '../services/notification_service.dart';
-import '../repositories/message_log_repository.dart';
-import '../repositories/attendee_repository.dart';
+import '../repositories/hybrid_message_log_repository.dart';
+import '../repositories/hybrid_attendee_repository.dart';
 import '../providers/service_session_provider.dart';
 import '../widgets/cu_logo_widget.dart';
 import '../widgets/message_filter_widget.dart';
+import '../widgets/sync_status_widget.dart';
+import '../widgets/offline_handler.dart';
 import 'message_history_screen.dart';
 
 class MessagingScreen extends StatefulWidget {
@@ -25,12 +27,12 @@ class MessagingScreen extends StatefulWidget {
   State<MessagingScreen> createState() => _MessagingScreenState();
 }
 
-class _MessagingScreenState extends State<MessagingScreen> {
+class _MessagingScreenState extends State<MessagingScreen> with OfflineCapable {
   final _messageController = TextEditingController();
   final _smsManager = SMSManager();
-  final _messageLogRepository = MessageLogRepository();
+  final _messageLogRepository = HybridMessageLogRepository();
   final _notificationService = NotificationService();
-  final _attendeeRepository = AttendeeRepository();
+  final _attendeeRepository = HybridAttendeeRepository();
   
   bool _isLoading = false;
   bool _isSending = false;
@@ -71,6 +73,33 @@ class _MessagingScreenState extends State<MessagingScreen> {
     
     // Listen to notifications
     _notificationService.addListener(_handleNotification);
+    
+    // Listen to real-time attendee updates when online
+    _setupRealTimeUpdates();
+  }
+
+  void _setupRealTimeUpdates() {
+    try {
+      // Listen to attendee changes from cloud
+      _attendeeRepository.attendeesStream().listen(
+        (updatedAttendees) {
+          if (mounted) {
+            setState(() {
+              // Update the filtered attendees with real-time data
+              final sessionAttendeeIds = widget.attendees.map((a) => a.id).toSet();
+              _filteredAttendees = updatedAttendees
+                  .where((a) => sessionAttendeeIds.contains(a.id))
+                  .toList();
+            });
+          }
+        },
+        onError: (error) {
+          debugPrint('Real-time attendee updates error: $error');
+        },
+      );
+    } catch (e) {
+      debugPrint('Failed to setup real-time updates: $e');
+    }
   }
 
   @override
@@ -280,42 +309,63 @@ class _MessagingScreenState extends State<MessagingScreen> {
       _errorMessage = null;
     });
 
-    try {
-      await _smsManager.sendBulkSMS(
-        _filteredAttendees,
-        _messageController.text,
-        onMessageSent: (messageLog) async {
-          // Save successful message log
-          await _messageLogRepository.createMessageLog(
-            messageLog.copyWith(serviceId: widget.serviceId),
-          );
-        },
-        onMessageFailed: (messageLog) async {
-          // Save failed message log
-          await _messageLogRepository.createMessageLog(
-            messageLog.copyWith(serviceId: widget.serviceId),
-          );
-        },
-      );
+    // Handle offline messaging
+    final success = await handleOfflineOperation(
+      'messaging',
+      () async {
+        await _smsManager.sendBulkSMS(
+          _filteredAttendees,
+          _messageController.text,
+          onMessageSent: (messageLog) async {
+            // Save successful message log
+            await _messageLogRepository.createMessageLog(
+              messageLog.copyWith(serviceId: widget.serviceId),
+            );
+          },
+          onMessageFailed: (messageLog) async {
+            // Save failed message log
+            await _messageLogRepository.createMessageLog(
+              messageLog.copyWith(serviceId: widget.serviceId),
+            );
+          },
+        );
 
-      // Mark messages as sent in the service session
-      if (mounted) {
-        final sessionProvider = Provider.of<ServiceSessionProvider>(context, listen: false);
-        await sessionProvider.markMessagesSent(_messageController.text);
+        // Mark messages as sent in the service session
+        if (mounted) {
+          final sessionProvider = Provider.of<ServiceSessionProvider>(context, listen: false);
+          await sessionProvider.markMessagesSent(_messageController.text);
+        }
+      },
+      operationData: {
+        'message': _messageController.text,
+        'recipientCount': _filteredAttendees.length,
+        'serviceId': widget.serviceId,
+      },
+    );
+
+    if (!success) {
+      setState(() {
+        _errorMessage = isOffline 
+            ? 'Messages queued for sending when online'
+            : 'Failed to send messages';
+      });
+      
+      if (isOffline) {
+        _notificationService.showErrorNotification(
+          'Offline Mode',
+          'Messages will be sent when connection is restored.',
+        );
+      } else {
+        _notificationService.showErrorNotification(
+          'Sending Failed',
+          'Failed to send messages. Please try again.',
+        );
       }
-    } catch (e) {
-      setState(() {
-        _errorMessage = e.toString();
-      });
-      _notificationService.showErrorNotification(
-        'Sending Failed',
-        _smsManager.getUserFriendlyErrorMessage(e.toString()),
-      );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
     }
+
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   Future<void> _resumeSending() async {
@@ -410,6 +460,10 @@ class _MessagingScreenState extends State<MessagingScreen> {
                   
                   if (_availableYears.isNotEmpty || _availableLocations.isNotEmpty)
                     const SizedBox(height: 16),
+                  
+                  // Sync Status section
+                  _buildSyncStatusSection(),
+                  const SizedBox(height: 16),
                   
                   // Recipients section
                   _buildRecipientsSection(),
@@ -912,12 +966,64 @@ class _MessagingScreenState extends State<MessagingScreen> {
           '• Use {name} in your message to personalize it for each attendee\n'
           '• Messages will be sent using your device\'s SMS\n'
           '• You can pause and resume if there are issues\n'
-          '• Failed messages will be logged for review',
+          '• Failed messages will be logged for review\n'
+          '• Messages are queued when offline and sent when online',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
             color: Colors.grey[600],
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildSyncStatusSection() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.cloud_sync, color: Theme.of(context).primaryColor),
+                const SizedBox(width: 8),
+                Text(
+                  'Cloud Sync & Real-time Updates',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            const SyncStatusWidget(
+              showDetails: false,
+              showLastSyncTime: true,
+              padding: EdgeInsets.all(0),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(
+                  isOffline ? Icons.wifi_off : Icons.update,
+                  size: 16,
+                  color: isOffline ? Colors.orange : Colors.green,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  isOffline 
+                      ? 'Real-time updates unavailable offline'
+                      : 'Attendee list updates in real-time',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isOffline ? Colors.orange : Colors.green,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

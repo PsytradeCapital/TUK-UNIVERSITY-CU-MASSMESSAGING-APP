@@ -9,6 +9,7 @@ import '../providers/navigation_provider.dart';
 import '../providers/app_state_provider.dart';
 import '../widgets/global_error_handler.dart';
 import '../widgets/offline_handler.dart';
+import '../widgets/sync_status_widget.dart';
 import '../services/recovery_service.dart';
 import '../utils/accessibility_utils.dart';
 import '../utils/responsive_utils.dart';
@@ -152,9 +153,38 @@ class _HomeScreenState extends State<HomeScreen> {
           },
           child: OfflineHandler(
             child: Scaffold(
-            body: IndexedStack(
-              index: navigationProvider.currentIndex,
-              children: screens,
+            appBar: AppBar(
+              title: const Text('TUK CU Mass Messaging'),
+              backgroundColor: AppTheme.primaryBlue,
+              foregroundColor: Colors.white,
+              actions: [
+                // Sync status indicator in app bar
+                Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: SyncStatusIndicator(
+                    onTap: () => _showSyncStatusDialog(context),
+                  ),
+                ),
+              ],
+            ),
+            body: Column(
+              children: [
+                // Sync status widget at top of screen
+                Container(
+                  margin: const EdgeInsets.all(8.0),
+                  child: const SyncStatusWidget(
+                    showDetails: false,
+                    showLastSyncTime: true,
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  ),
+                ),
+                Expanded(
+                  child: IndexedStack(
+                    index: navigationProvider.currentIndex,
+                    children: screens,
+                  ),
+                ),
+              ],
             ),
             bottomNavigationBar: _buildAccessibleBottomNavigationBar(
               context, 
@@ -268,6 +298,25 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             },
             child: const Text('Go to Messaging'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSyncStatusDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Sync Status'),
+        content: const SyncStatusWidget(
+          showDetails: true,
+          showLastSyncTime: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
           ),
         ],
       ),

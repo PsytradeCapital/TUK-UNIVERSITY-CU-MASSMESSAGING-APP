@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/message_log_model.dart';
+import '../services/encryption_service.dart';
 
 class FirebaseMessageLogRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -14,8 +15,11 @@ class FirebaseMessageLogRepository {
     try {
       final data = messageLog.toFirestore();
       
+      // Encrypt message content if it contains sensitive information
+      final encryptedData = await EncryptionService.encryptMessageLogData(data);
+      
       // Create document
-      final docRef = await _messageLogsCollection.add(data);
+      final docRef = await _messageLogsCollection.add(encryptedData);
       return docRef.id;
     } catch (e) {
       throw FirebaseMessageLogRepositoryException('Failed to create message log: $e');
@@ -31,7 +35,11 @@ class FirebaseMessageLogRepository {
         return null;
       }
       
-      final data = docSnapshot.data() as Map<String, dynamic>;
+      final encryptedData = docSnapshot.data() as Map<String, dynamic>;
+      
+      // Decrypt message content if it was encrypted
+      final data = await EncryptionService.decryptMessageLogData(encryptedData);
+      
       return MessageLogModel.fromFirestore(data, docSnapshot.id);
     } catch (e) {
       throw FirebaseMessageLogRepositoryException('Failed to get message log by ID: $e');
@@ -49,7 +57,11 @@ class FirebaseMessageLogRepository {
       final List<MessageLogModel> messageLogs = [];
       
       for (final doc in querySnapshot.docs) {
-        final data = doc.data() as Map<String, dynamic>;
+        final encryptedData = doc.data() as Map<String, dynamic>;
+        
+        // Decrypt message content if it was encrypted
+        final data = await EncryptionService.decryptMessageLogData(encryptedData);
+        
         messageLogs.add(MessageLogModel.fromFirestore(data, doc.id));
       }
       
@@ -69,7 +81,11 @@ class FirebaseMessageLogRepository {
       final List<MessageLogModel> messageLogs = [];
       
       for (final doc in querySnapshot.docs) {
-        final data = doc.data() as Map<String, dynamic>;
+        final encryptedData = doc.data() as Map<String, dynamic>;
+        
+        // Decrypt message content if it was encrypted
+        final data = await EncryptionService.decryptMessageLogData(encryptedData);
+        
         messageLogs.add(MessageLogModel.fromFirestore(data, doc.id));
       }
       
@@ -99,7 +115,11 @@ class FirebaseMessageLogRepository {
       }
       
       final data = messageLog.toFirestore();
-      await _messageLogsCollection.doc(messageLog.firestoreId).update(data);
+      
+      // Encrypt message content if it contains sensitive information
+      final encryptedData = await EncryptionService.encryptMessageLogData(data);
+      
+      await _messageLogsCollection.doc(messageLog.firestoreId).update(encryptedData);
     } catch (e) {
       throw FirebaseMessageLogRepositoryException('Failed to update message log: $e');
     }
@@ -216,11 +236,15 @@ class FirebaseMessageLogRepository {
       return _messageLogsCollection
           .orderBy('createdAt', descending: true)
           .snapshots()
-          .map((querySnapshot) {
+          .asyncMap((querySnapshot) async {
         final List<MessageLogModel> messageLogs = [];
         
         for (final doc in querySnapshot.docs) {
-          final data = doc.data() as Map<String, dynamic>;
+          final encryptedData = doc.data() as Map<String, dynamic>;
+          
+          // Decrypt message content if it was encrypted
+          final data = await EncryptionService.decryptMessageLogData(encryptedData);
+          
           messageLogs.add(MessageLogModel.fromFirestore(data, doc.id));
         }
         
@@ -238,11 +262,15 @@ class FirebaseMessageLogRepository {
           .where('serviceId', isEqualTo: serviceId)
           .orderBy('createdAt', descending: true)
           .snapshots()
-          .map((querySnapshot) {
+          .asyncMap((querySnapshot) async {
         final List<MessageLogModel> messageLogs = [];
         
         for (final doc in querySnapshot.docs) {
-          final data = doc.data() as Map<String, dynamic>;
+          final encryptedData = doc.data() as Map<String, dynamic>;
+          
+          // Decrypt message content if it was encrypted
+          final data = await EncryptionService.decryptMessageLogData(encryptedData);
+          
           messageLogs.add(MessageLogModel.fromFirestore(data, doc.id));
         }
         
@@ -264,7 +292,11 @@ class FirebaseMessageLogRepository {
       final List<MessageLogModel> messageLogs = [];
       
       for (final doc in querySnapshot.docs) {
-        final data = doc.data() as Map<String, dynamic>;
+        final encryptedData = doc.data() as Map<String, dynamic>;
+        
+        // Decrypt message content if it was encrypted
+        final data = await EncryptionService.decryptMessageLogData(encryptedData);
+        
         messageLogs.add(MessageLogModel.fromFirestore(data, doc.id));
       }
       
@@ -286,7 +318,11 @@ class FirebaseMessageLogRepository {
       final List<MessageLogModel> messageLogs = [];
       
       for (final doc in querySnapshot.docs) {
-        final data = doc.data() as Map<String, dynamic>;
+        final encryptedData = doc.data() as Map<String, dynamic>;
+        
+        // Decrypt message content if it was encrypted
+        final data = await EncryptionService.decryptMessageLogData(encryptedData);
+        
         messageLogs.add(MessageLogModel.fromFirestore(data, doc.id));
       }
       
@@ -307,7 +343,11 @@ class FirebaseMessageLogRepository {
       final List<MessageLogModel> messageLogs = [];
       
       for (final doc in querySnapshot.docs) {
-        final data = doc.data() as Map<String, dynamic>;
+        final encryptedData = doc.data() as Map<String, dynamic>;
+        
+        // Decrypt message content if it was encrypted
+        final data = await EncryptionService.decryptMessageLogData(encryptedData);
+        
         messageLogs.add(MessageLogModel.fromFirestore(data, doc.id));
       }
       
@@ -332,7 +372,11 @@ class FirebaseMessageLogRepository {
       final List<MessageLogModel> messageLogs = [];
       
       for (final doc in querySnapshot.docs) {
-        final data = doc.data() as Map<String, dynamic>;
+        final encryptedData = doc.data() as Map<String, dynamic>;
+        
+        // Decrypt message content if it was encrypted
+        final data = await EncryptionService.decryptMessageLogData(encryptedData);
+        
         messageLogs.add(MessageLogModel.fromFirestore(data, doc.id));
       }
       
@@ -353,7 +397,11 @@ class FirebaseMessageLogRepository {
         documentIds.add(docRef.id);
         
         final data = messageLog.toFirestore();
-        batch.set(docRef, data);
+        
+        // Encrypt message content if it contains sensitive information
+        final encryptedData = await EncryptionService.encryptMessageLogData(data);
+        
+        batch.set(docRef, encryptedData);
       }
       
       await batch.commit();

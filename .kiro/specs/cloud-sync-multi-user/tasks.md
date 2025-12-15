@@ -258,55 +258,95 @@
     - Handle queue failures gracefully
     - _Requirements: 4.2, 4.3_
 
-- [ ] 11. Add Connectivity Monitoring
-  - [ ] 11.1 Create ConnectivityService
+- [x] 11. Add Connectivity Monitoring
+
+
+
+
+
+  - [x] 11.1 Create ConnectivityService
+
+
     - Monitor network connectivity using connectivity_plus
     - Provide isOnline() method
     - Provide connectivityStream() for real-time updates
     - Detect when connection is restored
     - _Requirements: 4.1, 4.3_
 
-  - [ ] 11.2 Integrate connectivity with sync service
+  - [x] 11.2 Integrate connectivity with sync service
+
+
     - Trigger auto-sync when connection restored
     - Show offline indicator in UI
     - Disable cloud operations when offline
     - Enable local-only mode
     - _Requirements: 4.1, 4.3, 4.5_
 
-- [ ] 12. Update UI for Cloud Sync Features
-  - [ ] 12.1 Add sync status indicators
+- [x] 12. Update UI for Cloud Sync Features
+
+
+
+
+
+  - [x] 12.1 Add sync status indicators
+
+
     - Show syncing spinner when sync in progress
     - Show last sync time
     - Show offline mode indicator
     - Show pending changes count
     - _Requirements: 4.5_
 
-  - [ ] 12.2 Update RegistrationScreen for cloud
+  - [x] 12.2 Update RegistrationScreen for cloud
+
+
     - Replace local AttendeeRepository with HybridAttendeeRepository
     - Show sync status after registration
     - Handle offline registration gracefully
     - _Requirements: 2.1, 4.1_
 
-  - [ ] 12.3 Update MessagingScreen for cloud
+  - [x] 12.3 Update MessagingScreen for cloud
+
+
     - Replace local repositories with hybrid repositories
     - Show real-time attendee updates
     - Handle offline messaging
     - _Requirements: 2.5, 3.1, 4.1_
 
-  - [ ] 12.4 Update MessageHistoryScreen for cloud
+  - [x] 12.4 Update MessageHistoryScreen for cloud
+
+
     - Use FirebaseMessageLogRepository
     - Show real-time message updates
     - Display who sent each message (sentBy field)
     - _Requirements: 3.2, 3.4_
 
-- [ ] 13. Implement Data Encryption for Cloud
-  - [ ] 13.1 Update EncryptionService for cloud data
+- [x] 13. Implement Data Encryption for Cloud
+
+
+
+
+
+
+
+
+
+  - [x] 13.1 Update EncryptionService for cloud data
+
+
+
+
     - Encrypt sensitive fields before uploading to Firestore
     - Decrypt data when retrieving from Firestore
     - Use same encryption keys as local database
     - _Requirements: 6.1, 6.2_
 
-  - [ ] 13.2 Implement secure password hashing
+
+  - [x] 13.2 Implement secure password hashing
+
+
+
+
     - Use Firebase Auth's built-in password hashing
     - Never store plain text passwords
     - _Requirements: 6.3_
@@ -315,7 +355,9 @@
     - **Property 4: Encryption round-trip**
     - **Validates: Requirements 6.1, 6.2**
 
+
 - [ ] 14. Implement Firestore Security Rules
+
   - Create security rules file (firestore.rules)
   - Implement authentication checks
   - Implement approval checks

@@ -10,6 +10,8 @@ import 'providers/app_state_provider.dart';
 import 'providers/navigation_provider.dart';
 import 'services/error_handling_service.dart';
 import 'services/recovery_service.dart';
+import 'services/connectivity_service.dart';
+import 'services/cloud_sync_service.dart';
 import 'theme/app_theme.dart';
 
 void main() {
@@ -23,6 +25,19 @@ void main() {
       debugPrint('Firebase initialized successfully');
     } catch (e) {
       debugPrint('Firebase initialization error: $e');
+    }
+    
+    // Initialize connectivity and sync services
+    try {
+      final connectivityService = ConnectivityService();
+      await connectivityService.initialize();
+      debugPrint('ConnectivityService initialized successfully');
+      
+      final cloudSyncService = CloudSyncService();
+      await cloudSyncService.initialize();
+      debugPrint('CloudSyncService initialized successfully');
+    } catch (e) {
+      debugPrint('Service initialization error: $e');
     }
     
     // Initialize error handling service
@@ -135,6 +150,7 @@ class _AppLifecycleHandlerState extends State<_AppLifecycleHandler> with Widgets
     switch (state) {
       case AppLifecycleState.resumed:
         appStateProvider.updateAppLifecycleState(true);
+        _handleAppResumed();
         break;
       case AppLifecycleState.paused:
       case AppLifecycleState.inactive:
@@ -143,6 +159,27 @@ class _AppLifecycleHandlerState extends State<_AppLifecycleHandler> with Widgets
         appStateProvider.updateAppLifecycleState(false);
         break;
     }
+  }
+
+  /// Handle app resumed - refresh connectivity and trigger sync if needed
+  void _handleAppResumed() {
+    final connectivityService = ConnectivityService();
+    final cloudSyncService = CloudSyncService();
+    
+    // Refresh connectivity status
+    connectivityService.refreshConnectivity().then((isOnline) {
+      if (isOnline && cloudSyncService.isAutoSyncEnabled()) {
+        // Trigger sync after a short delay to allow connection to stabilize
+        Future.delayed(const Duration(seconds: 1), () async {
+          try {
+            await cloudSyncService.syncFromCloud();
+            await cloudSyncService.syncToCloud();
+          } catch (e) {
+            debugPrint('Auto-sync on app resume failed: $e');
+          }
+        });
+      }
+    });
   }
 
   @override

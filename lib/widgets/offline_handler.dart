@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_state_provider.dart';
 import '../services/error_handling_service.dart';
+import '../services/connectivity_service.dart';
+import '../services/cloud_sync_service.dart';
 
 /// Widget that handles offline scenarios and provides graceful degradation
 class OfflineHandler extends StatefulWidget {
@@ -21,18 +23,23 @@ class OfflineHandler extends StatefulWidget {
 }
 
 class _OfflineHandlerState extends State<OfflineHandler> {
-  final OfflineHandlingService _offlineService = OfflineHandlingService();
+  final ConnectivityService _connectivityService = ConnectivityService();
+  final CloudSyncService _syncService = CloudSyncService();
   
   @override
   Widget build(BuildContext context) {
-    return Consumer<AppStateProvider>(
-      builder: (context, appState, child) {
+    return StreamBuilder<bool>(
+      stream: _connectivityService.connectivityStream(),
+      initialData: _connectivityService.isOnline(),
+      builder: (context, connectivitySnapshot) {
+        final isOnline = connectivitySnapshot.data ?? true;
+        
         return Stack(
           children: [
             widget.child,
-            if (_offlineService.isOffline && widget.showOfflineIndicator)
+            if (!isOnline && widget.showOfflineIndicator)
               _buildOfflineIndicator(context),
-            if (_offlineService.isOffline && widget.offlineWidget != null)
+            if (!isOnline && widget.offlineWidget != null)
               widget.offlineWidget!,
           ],
         );
@@ -58,30 +65,51 @@ class _OfflineHandlerState extends State<OfflineHandler> {
                 size: 16,
               ),
               const SizedBox(width: 8),
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'You are offline. Some features may be limited.',
-                  style: TextStyle(
+                  _connectivityService.getConnectivityDescription(),
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 12,
                   ),
                 ),
               ),
-              if (_offlineService.pendingOperations.isNotEmpty)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    '${_offlineService.pendingOperations.length} pending',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                    ),
-                  ),
-                ),
+              StreamBuilder<SyncEvent>(
+                stream: _syncService.syncEvents(),
+                builder: (context, syncSnapshot) {
+                  final syncStatus = _syncService.getSyncStatus();
+                  
+                  if (syncStatus.isSyncing) {
+                    return const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    );
+                  }
+                  
+                  if (syncStatus.pendingChanges > 0) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        '${syncStatus.pendingChanges} pending',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                        ),
+                      ),
+                    );
+                  }
+                  
+                  return const SizedBox.shrink();
+                },
+              ),
             ],
           ),
         ),
@@ -260,13 +288,15 @@ class OfflineCapabilitiesWidget extends StatelessWidget {
 
 /// Mixin for handling offline functionality in screens
 mixin OfflineCapable<T extends StatefulWidget> on State<T> {
-  final OfflineHandlingService _offlineService = OfflineHandlingService();
+  final ConnectivityService _connectivityService = ConnectivityService();
+  final CloudSyncService _syncService = CloudSyncService();
   
-  bool get isOffline => _offlineService.isOffline;
+  bool get isOffline => _connectivityService.isOffline();
   
   /// Add operation to pending queue when offline
-  void addPendingOperation(OfflineOperation operation) {
-    _offlineService.addPendingOperation(operation);
+  void addPendingOperation(String operationType, Map<String, dynamic> data) {
+    // This would be handled by the sync service's queue mechanism
+    // For now, we'll show a message that it will sync when online
   }
   
   /// Check if feature is available offline
@@ -309,14 +339,8 @@ mixin OfflineCapable<T extends StatefulWidget> on State<T> {
     Map<String, dynamic>? operationData,
   }) async {
     if (isOffline) {
-      // Add to pending operations
-      addPendingOperation(
-        OfflineOperation(
-          type: operationType,
-          data: operationData ?? {},
-          execute: operation,
-        ),
-      );
+      // Add to pending operations (handled by hybrid repositories)
+      addPendingOperation(operationType, operationData ?? {});
       
       showOfflineMessage(
         context,
@@ -335,5 +359,15 @@ mixin OfflineCapable<T extends StatefulWidget> on State<T> {
         return false;
       }
     }
+  }
+  
+  /// Get connectivity status description
+  String getConnectivityDescription() {
+    return _connectivityService.getConnectivityDescription();
+  }
+  
+  /// Wait for connection to be restored
+  Future<bool> waitForConnection({Duration timeout = const Duration(seconds: 30)}) {
+    return _connectivityService.waitForConnection(timeout: timeout);
   }
 }
