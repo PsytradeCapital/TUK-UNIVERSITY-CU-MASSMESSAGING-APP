@@ -1,0 +1,193 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions for authentication and authorization
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isApproved() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isApproved == true;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isLeaderOrAdmin() {
+      return isAuthenticated() && 
+             (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'leader');
+    }
+    
+    function isOwnerOrAdmin(userId) {
+      return isAuthenticated() && 
+             (request.auth.uid == userId || isAdmin());
+    }
+    
+    function isValidUserRole(role) {
+      return role in ['admin', 'leader', 'member'];
+    }
+    
+    function isValidUserData() {
+      return request.resource.data.keys().hasAll(['uid', 'email', 'name', 'role', 'isApproved', 'createdAt']) &&
+             request.resource.data.uid is string &&
+             request.resource.data.email is string &&
+             request.resource.data.name is string &&
+             isValidUserRole(request.resource.data.role) &&
+             request.resource.data.isApproved is bool &&
+             request.resource.data.createdAt is timestamp;
+    }
+    
+    // Users collection - manages user accounts and roles
+    match /users/{userId} {
+      // Allow users to read their own profile and admins to read all profiles
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      
+      // Allow user creation during registration (self-registration)
+      allow create: if isAuthenticated() && 
+                       request.auth.uid == userId &&
+                       isValidUserData() &&
+                       request.resource.data.uid == request.auth.uid &&
+                       request.resource.data.isApproved == false; // New users start unapproved
+      
+      // Allow users to update their own profile (except role and approval status)
+      // Allow admins to update any user (including role and approval status)
+      allow update: if isAuthenticated() && 
+                       isValidUserData() &&
+                       (
+                         // User updating their own profile (limited fields)
+                         (request.auth.uid == userId &&
+                          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'isApproved', 'uid'])) ||
+                         // Admin updating any user (all fields)
+                         isAdmin()
+                       );
+      
+      // Only admins can delete user accounts
+      allow delete: if isAdmin();
+    }
+    
+    // Attendees collection - manages attendee data with encryption
+    match /attendees/{attendeeId} {
+      // Approved users can read attendee data
+      allow read: if isApproved();
+      
+      // Approved leaders and admins can create attendees
+      allow create: if isApproved() && 
+                       isLeaderOrAdmin() &&
+                       request.resource.data.keys().hasAll(['name', 'phoneNumber', 'location', 'category', 'serviceId', 'registeredAt', 'createdBy', 'createdAt', 'version']) &&
+                       request.resource.data.createdBy == request.auth.uid &&
+                       request.resource.data.createdAt is timestamp &&
+                       request.resource.data.version is number &&
+                       request.resource.data.version == 1; // New attendees start at version 1
+      
+      // Approved leaders and admins can update attendees
+      allow update: if isApproved() && 
+                       isLeaderOrAdmin() &&
+                       request.resource.data.keys().hasAll(['name', 'phoneNumber', 'location', 'category', 'serviceId', 'registeredAt', 'createdBy', 'createdAt', 'modifiedBy', 'modifiedAt', 'version']) &&
+                       request.resource.data.createdBy == resource.data.createdBy && // Cannot change original creator
+                       request.resource.data.createdAt == resource.data.createdAt && // Cannot change creation time
+                       request.resource.data.modifiedBy == request.auth.uid &&
+                       request.resource.data.modifiedAt is timestamp &&
+                       request.resource.data.version == resource.data.version + 1; // Version must increment by 1
+      
+      // Approved leaders and admins can delete attendees
+      allow delete: if isApproved() && isLeaderOrAdmin();
+    }
+    
+    // Message logs collection - manages SMS message history
+    match /messageLogs/{messageLogId} {
+      // Approved users can read message logs
+      allow read: if isApproved();
+      
+      // Approved leaders and admins can create message logs
+      allow create: if isApproved() && 
+                       isLeaderOrAdmin() &&
+                       request.resource.data.keys().hasAll(['attendeeId', 'message', 'sendStatus', 'sentAt', 'serviceId', 'sentBy', 'createdAt', 'version']) &&
+                       request.resource.data.sentBy == request.auth.uid &&
+                       request.resource.data.createdAt is timestamp &&
+                       request.resource.data.version is number &&
+                       request.resource.data.version == 1; // New message logs start at version 1
+      
+      // Approved leaders and admins can update message logs (mainly for status updates)
+      allow update: if isApproved() && 
+                       isLeaderOrAdmin() &&
+                       request.resource.data.sentBy == resource.data.sentBy && // Cannot change who sent it
+                       request.resource.data.createdAt == resource.data.createdAt && // Cannot change creation time
+                       request.resource.data.version == resource.data.version + 1; // Version must increment by 1
+      
+      // Only admins can delete message logs (for data management)
+      allow delete: if isAdmin();
+    }
+    
+    // Services collection - manages service/event data
+    match /services/{serviceId} {
+      // Approved users can read service data
+      allow read: if isApproved();
+      
+      // Approved leaders and admins can create services
+      allow create: if isApproved() && 
+                       isLeaderOrAdmin() &&
+                       request.resource.data.keys().hasAll(['date', 'attendeeCount', 'messagesSent', 'createdBy', 'createdAt']) &&
+                       request.resource.data.createdBy == request.auth.uid &&
+                       request.resource.data.createdAt is timestamp &&
+                       request.resource.data.date is timestamp &&
+                       request.resource.data.attendeeCount is number &&
+                       request.resource.data.messagesSent is bool;
+      
+      // Approved leaders and admins can update services
+      allow update: if isApproved() && 
+                       isLeaderOrAdmin() &&
+                       request.resource.data.createdBy == resource.data.createdBy && // Cannot change original creator
+                       request.resource.data.createdAt == resource.data.createdAt; // Cannot change creation time
+      
+      // Only admins can delete services
+      allow delete: if isAdmin();
+    }
+    
+    // Sync queue collection - manages offline sync operations
+    match /syncQueue/{queueId} {
+      // Users can only access their own sync queue items
+      allow read, write: if isAuthenticated() && 
+                            request.auth.uid == resource.data.userId;
+      
+      // Users can create sync queue items for themselves
+      allow create: if isAuthenticated() && 
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.keys().hasAll(['userId', 'operation', 'collection', 'data', 'createdAt', 'status']) &&
+                       request.resource.data.operation in ['create', 'update', 'delete'] &&
+                       request.resource.data.collection in ['attendees', 'messageLogs'] &&
+                       request.resource.data.status in ['pending', 'processing', 'completed', 'failed'] &&
+                       request.resource.data.createdAt is timestamp;
+    }
+    
+    // Analytics collection - for system monitoring (admin only)
+    match /analytics/{analyticsId} {
+      allow read, write: if isAdmin();
+    }
+    
+    // Error logs collection - for system monitoring (admin only)
+    match /errorLogs/{errorLogId} {
+      allow read, write: if isAdmin();
+    }
+    
+    // System configuration collection (admin only)
+    match /config/{configId} {
+      allow read: if isApproved();
+      allow write: if isAdmin();
+    }
+    
+    // Backup collection - for data export/import (admin only)
+    match /backups/{backupId} {
+      allow read, write: if isAdmin();
+    }
+    
+    // Deny all other document access by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

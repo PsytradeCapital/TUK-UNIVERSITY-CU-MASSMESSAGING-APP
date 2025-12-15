@@ -1,0 +1,53 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isApproved() {
+      return isAuthenticated() && 
+             firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.isApproved == true;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // User profile images
+    match /users/{userId}/profile/{fileName} {
+      // Users can read/write their own profile images
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+      // Admins can read all profile images
+      allow read: if isAdmin();
+    }
+    
+    // Data backups (admin only)
+    match /backups/{fileName} {
+      allow read, write: if isAdmin();
+    }
+    
+    // Data exports (admin only)
+    match /exports/{fileName} {
+      allow read, write: if isAdmin();
+    }
+    
+    // System logs (admin only)
+    match /logs/{fileName} {
+      allow read, write: if isAdmin();
+    }
+    
+    // Temporary files for data processing (approved users only)
+    match /temp/{userId}/{fileName} {
+      allow read, write: if isApproved() && request.auth.uid == userId;
+    }
+    
+    // Deny all other access by default
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -331,6 +331,7 @@
 
 
 
+
   - [x] 13.1 Update EncryptionService for cloud data
 
 
@@ -347,6 +348,10 @@
 
 
 
+
+
+
+
     - Use Firebase Auth's built-in password hashing
     - Never store plain text passwords
     - _Requirements: 6.3_
@@ -356,7 +361,9 @@
     - **Validates: Requirements 6.1, 6.2**
 
 
-- [ ] 14. Implement Firestore Security Rules
+
+- [-] 14. Implement Firestore Security Rules
+
 
   - Create security rules file (firestore.rules)
   - Implement authentication checks
@@ -366,8 +373,10 @@
   - Test security rules with Firebase Emulator
   - _Requirements: 5.1, 5.2, 5.3, 5.4, 6.4_
 
+
 - [ ] 15. Checkpoint - Ensure cloud sync works
   - Ensure all tests pass, ask the user if questions arise.
+
 
 - [ ] 16. Implement Data Migration Tool
   - [ ] 16.1 Create migration script
@@ -388,6 +397,7 @@
     - Store backup in Firebase Storage
     - _Requirements: 7.1, 7.3, 7.5_
 
+
 - [ ] 17. Add Real-Time Sync Listeners
   - [ ] 17.1 Implement real-time attendee updates
     - Listen to Firestore attendees collection changes
@@ -399,6 +409,7 @@
     - Listen to Firestore message logs collection changes
     - Update message history automatically
     - Show notifications for new messages
+
     - _Requirements: 3.2, 3.4_
 
 - [ ] 18. Implement Analytics and Error Tracking
@@ -421,6 +432,7 @@
     - Show error logs
     - Provide filtering and search
     - _Requirements: 8.2, 8.5_
+
 
 - [ ] 19. Update App Initialization Flow
   - [ ] 19.1 Add authentication check on app start
