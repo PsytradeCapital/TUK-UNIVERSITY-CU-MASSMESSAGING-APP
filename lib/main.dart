@@ -12,6 +12,9 @@ import 'services/error_handling_service.dart';
 import 'services/recovery_service.dart';
 import 'services/connectivity_service.dart';
 import 'services/cloud_sync_service.dart';
+import 'services/real_time_sync_service.dart';
+import 'services/analytics_service.dart';
+import 'services/auth_service.dart';
 import 'theme/app_theme.dart';
 
 void main() {
@@ -25,6 +28,28 @@ void main() {
       debugPrint('Firebase initialized successfully');
     } catch (e) {
       debugPrint('Firebase initialization error: $e');
+      // Continue app initialization even if Firebase fails
+    }
+    
+    // Initialize Analytics Service
+    try {
+      final analyticsService = AnalyticsService();
+      await analyticsService.initialize();
+      debugPrint('AnalyticsService initialized successfully');
+      
+      // Track app open event
+      await analyticsService.trackAppOpen();
+    } catch (e) {
+      debugPrint('Analytics initialization error: $e');
+    }
+    
+    // Initialize Auth Service
+    try {
+      final authService = AuthService();
+      await authService.initialize();
+      debugPrint('AuthService initialized successfully');
+    } catch (e) {
+      debugPrint('Auth service initialization error: $e');
     }
     
     // Initialize connectivity and sync services
@@ -36,6 +61,10 @@ void main() {
       final cloudSyncService = CloudSyncService();
       await cloudSyncService.initialize();
       debugPrint('CloudSyncService initialized successfully');
+
+      final realTimeSyncService = RealTimeSyncService();
+      await realTimeSyncService.initialize();
+      debugPrint('RealTimeSyncService initialized successfully');
     } catch (e) {
       debugPrint('Service initialization error: $e');
     }

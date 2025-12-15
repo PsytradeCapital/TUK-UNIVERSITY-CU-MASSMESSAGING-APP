@@ -4,6 +4,7 @@ import '../models/attendee_model.dart';
 import '../models/message_log_model.dart';
 import '../services/sms_manager.dart';
 import '../services/notification_service.dart';
+import '../services/real_time_sync_service.dart';
 import '../repositories/hybrid_message_log_repository.dart';
 import '../repositories/hybrid_attendee_repository.dart';
 import '../providers/service_session_provider.dart';
@@ -33,6 +34,7 @@ class _MessagingScreenState extends State<MessagingScreen> with OfflineCapable {
   final _messageLogRepository = HybridMessageLogRepository();
   final _notificationService = NotificationService();
   final _attendeeRepository = HybridAttendeeRepository();
+  final _realTimeSyncService = RealTimeSyncService();
   
   bool _isLoading = false;
   bool _isSending = false;
@@ -54,6 +56,10 @@ class _MessagingScreenState extends State<MessagingScreen> with OfflineCapable {
   List<String> _availableYears = [];
   List<String> _availableLocations = [];
 
+  // Real-time updates
+  List<MessageLogModel> _realtimeMessageLogs = [];
+  bool _hasNewMessages = false;
+
   @override
   void initState() {
     super.initState();
@@ -74,7 +80,7 @@ class _MessagingScreenState extends State<MessagingScreen> with OfflineCapable {
     // Listen to notifications
     _notificationService.addListener(_handleNotification);
     
-    // Listen to real-time attendee updates when online
+    // Listen to real-time updates when online
     _setupRealTimeUpdates();
   }
 
@@ -97,6 +103,37 @@ class _MessagingScreenState extends State<MessagingScreen> with OfflineCapable {
           debugPrint('Real-time attendee updates error: $error');
         },
       );
+
+      // Listen to message log changes from cloud
+      _realTimeSyncService.messageLogUpdatesStream.listen(
+        (updatedMessageLogs) {
+          if (mounted) {
+            setState(() {
+              _realtimeMessageLogs = updatedMessageLogs;
+              _hasNewMessages = true;
+            });
+            
+            // Auto-hide the new messages indicator after 5 seconds
+            Future.delayed(const Duration(seconds: 5), () {
+              if (mounted) {
+                setState(() {
+                  _hasNewMessages = false;
+                });
+              }
+            });
+          }
+        },
+        onError: (error) {
+          debugPrint('Real-time message log updates error: $error');
+        },
+      );
+
+      // Start listening if online and authenticated
+      if (!isOffline) {
+        _realTimeSyncService.startListening().catchError((error) {
+          debugPrint('Failed to start real-time sync: $error');
+        });
+      }
     } catch (e) {
       debugPrint('Failed to setup real-time updates: $e');
     }
@@ -993,6 +1030,23 @@ class _MessagingScreenState extends State<MessagingScreen> with OfflineCapable {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+                const Spacer(),
+                if (_hasNewMessages)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.blue,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Text(
+                      'NEW MESSAGES',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
               ],
             ),
             const SizedBox(height: 12),
@@ -1002,28 +1056,110 @@ class _MessagingScreenState extends State<MessagingScreen> with OfflineCapable {
               padding: EdgeInsets.all(0),
             ),
             const SizedBox(height: 8),
-            Row(
+            
+            // Real-time status indicators
+            Column(
               children: [
-                Icon(
-                  isOffline ? Icons.wifi_off : Icons.update,
-                  size: 16,
-                  color: isOffline ? Colors.orange : Colors.green,
+                // Attendee updates
+                Row(
+                  children: [
+                    Icon(
+                      isOffline ? Icons.wifi_off : Icons.people,
+                      size: 16,
+                      color: isOffline ? Colors.orange : Colors.green,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      isOffline 
+                          ? 'Attendee updates unavailable offline'
+                          : 'Attendee list updates in real-time',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isOffline ? Colors.orange : Colors.green,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 4),
-                Text(
-                  isOffline 
-                      ? 'Real-time updates unavailable offline'
-                      : 'Attendee list updates in real-time',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: isOffline ? Colors.orange : Colors.green,
-                  ),
+                const SizedBox(height: 4),
+                
+                // Message log updates
+                Row(
+                  children: [
+                    Icon(
+                      isOffline ? Icons.wifi_off : Icons.message,
+                      size: 16,
+                      color: isOffline ? Colors.orange : Colors.green,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      isOffline 
+                          ? 'Message updates unavailable offline'
+                          : 'Message history updates in real-time',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isOffline ? Colors.orange : Colors.green,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
+
+            // New messages indicator
+            if (_hasNewMessages && _realtimeMessageLogs.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.blue.shade200),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.message, color: Colors.blue.shade700, size: 16),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '${_realtimeMessageLogs.length} messages in history (updated in real-time)',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.blue.shade700,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+
+            // Last update info
+            if (_realTimeSyncService.lastMessageLogUpdate != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                'Last message update: ${_formatLastUpdateTime(_realTimeSyncService.lastMessageLogUpdate!)}',
+                style: const TextStyle(fontSize: 11, color: Colors.grey),
+              ),
+            ],
           ],
         ),
       ),
     );
+  }
+
+  String _formatLastUpdateTime(DateTime lastUpdate) {
+    final now = DateTime.now();
+    final difference = now.difference(lastUpdate);
+    
+    if (difference.inMinutes < 1) {
+      return 'Just now';
+    } else if (difference.inMinutes < 60) {
+      return '${difference.inMinutes}m ago';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours}h ago';
+    } else {
+      return '${difference.inDays}d ago';
+    }
   }
 }

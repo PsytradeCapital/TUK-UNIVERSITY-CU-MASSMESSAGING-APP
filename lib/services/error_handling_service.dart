@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'dart:async';
 import 'dart:io';
 import '../providers/app_state_provider.dart';
+import 'analytics_service.dart';
 
 /// Comprehensive error handling service for the app
 class ErrorHandlingService {
@@ -12,6 +13,7 @@ class ErrorHandlingService {
   AppStateProvider? _appStateProvider;
   final List<ErrorHandler> _errorHandlers = [];
   final StreamController<AppError> _errorStreamController = StreamController<AppError>.broadcast();
+  final AnalyticsService _analyticsService = AnalyticsService();
 
   /// Initialize error handling service
   void initialize(AppStateProvider appStateProvider) {
@@ -65,6 +67,9 @@ class ErrorHandlingService {
     // Add to error stream
     _errorStreamController.add(appError);
 
+    // Log error to Firebase Analytics and Crashlytics
+    await _logErrorToFirebase(error, stackTrace, context, metadata);
+
     // Try each error handler until one handles the error
     for (final handler in _errorHandlers) {
       if (handler.canHandle(error)) {
@@ -98,10 +103,63 @@ class ErrorHandlingService {
     );
   }
 
+  /// Log error to Firebase Analytics and Crashlytics
+  Future<void> _logErrorToFirebase(
+    dynamic error,
+    StackTrace? stackTrace,
+    String? context,
+    Map<String, dynamic>? metadata,
+  ) async {
+    try {
+      // Determine error type and log appropriately
+      if (context?.contains('auth') == true || error.toString().contains('auth')) {
+        await _analyticsService.logAuthError(
+          errorCode: error.runtimeType.toString(),
+          errorMessage: error.toString(),
+        );
+      } else if (context?.contains('sync') == true || error.toString().contains('sync')) {
+        await _analyticsService.logSyncError(
+          operation: context ?? 'unknown',
+          errorMessage: error.toString(),
+          collection: metadata?['collection'],
+          documentId: metadata?['documentId'],
+        );
+      } else if (context?.contains('sms') == true || error.toString().contains('sms')) {
+        await _analyticsService.logSMSError(
+          errorMessage: error.toString(),
+          phoneNumber: metadata?['phoneNumber'],
+          messageId: metadata?['messageId'],
+        );
+      } else {
+        // Generic error logging
+        await _analyticsService.logError(
+          error: error.toString(),
+          context: context ?? 'Unknown',
+          stackTrace: stackTrace,
+          additionalData: metadata,
+        );
+      }
+    } catch (loggingError) {
+      debugPrint('Failed to log error to Firebase: $loggingError');
+    }
+  }
+
   /// Handle unhandled exceptions
   Future<void> handleUnhandledException(dynamic error, StackTrace stackTrace) async {
     debugPrint('Unhandled exception: $error');
     debugPrint('Stack trace: $stackTrace');
+    
+    // Log fatal error to Crashlytics
+    try {
+      await _analyticsService.crashlytics.recordError(
+        error,
+        stackTrace,
+        reason: 'Unhandled Exception',
+        fatal: true,
+      );
+    } catch (e) {
+      debugPrint('Failed to log fatal error to Crashlytics: $e');
+    }
     
     await handleError(
       error, 
@@ -398,33 +456,76 @@ class GenericErrorHandler extends ErrorHandler {
   }
 }
 
-/// Crash reporting service (placeholder for future implementation)
+/// Crash reporting service using Firebase Crashlytics
 class CrashReportingService {
   static final CrashReportingService _instance = CrashReportingService._internal();
   factory CrashReportingService() => _instance;
   CrashReportingService._internal();
 
-  /// Report crash to external service (placeholder)
+  final AnalyticsService _analyticsService = AnalyticsService();
+
+  /// Report crash to Firebase Crashlytics
   Future<void> reportCrash(
     dynamic error, 
     StackTrace stackTrace, {
     Map<String, dynamic>? metadata,
   }) async {
-    // In a real implementation, this would send crash reports to
-    // services like Firebase Crashlytics, Sentry, etc.
-    debugPrint('Crash reported: $error');
-    debugPrint('Metadata: $metadata');
+    try {
+      await _analyticsService.crashlytics.recordError(
+        error,
+        stackTrace,
+        reason: 'Application Crash',
+        information: metadata?.entries.map((e) => '${e.key}: ${e.value}').toList() ?? [],
+        fatal: true,
+      );
+      
+      debugPrint('Crash reported to Firebase Crashlytics: $error');
+    } catch (e) {
+      debugPrint('Failed to report crash to Firebase Crashlytics: $e');
+      debugPrint('Original crash: $error');
+      debugPrint('Metadata: $metadata');
+    }
   }
 
-  /// Report non-fatal error
+  /// Report non-fatal error to Firebase Crashlytics
   Future<void> reportError(
     dynamic error, 
     StackTrace? stackTrace, {
     Map<String, dynamic>? metadata,
   }) async {
-    // Report non-fatal errors for monitoring
-    debugPrint('Error reported: $error');
-    debugPrint('Metadata: $metadata');
+    try {
+      await _analyticsService.crashlytics.recordError(
+        error,
+        stackTrace,
+        reason: 'Non-fatal Error',
+        information: metadata?.entries.map((e) => '${e.key}: ${e.value}').toList() ?? [],
+        fatal: false,
+      );
+      
+      debugPrint('Error reported to Firebase Crashlytics: $error');
+    } catch (e) {
+      debugPrint('Failed to report error to Firebase Crashlytics: $e');
+      debugPrint('Original error: $error');
+      debugPrint('Metadata: $metadata');
+    }
+  }
+
+  /// Set user identifier for crash reports
+  Future<void> setUserId(String userId) async {
+    try {
+      await _analyticsService.setCrashlyticsUserId(userId);
+    } catch (e) {
+      debugPrint('Failed to set Crashlytics user ID: $e');
+    }
+  }
+
+  /// Set custom key for crash reports
+  Future<void> setCustomKey(String key, String value) async {
+    try {
+      await _analyticsService.setCrashlyticsCustomKey(key, value);
+    } catch (e) {
+      debugPrint('Failed to set Crashlytics custom key: $e');
+    }
   }
 }
 

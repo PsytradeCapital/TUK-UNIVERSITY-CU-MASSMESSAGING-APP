@@ -18,6 +18,8 @@ dependencies:
   firebase_auth: ^4.15.3
   cloud_firestore: ^4.13.6
   firebase_storage: ^11.5.6
+  firebase_analytics: ^10.7.4
+  firebase_crashlytics: ^3.4.9
   
   # Database
   sqflite: ^2.3.0
@@ -40,6 +42,9 @@ dependencies:
   # CSV export and sharing
   csv: ^5.0.2
   share_plus: ^7.2.1
+  
+  # File picker
+  file_picker: ^6.1.1
   
   # Network connectivity
   connectivity_plus: ^5.0.2

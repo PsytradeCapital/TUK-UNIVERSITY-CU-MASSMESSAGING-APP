@@ -5,6 +5,7 @@ import '../models/attendee_model.dart';
 import '../repositories/firebase_message_log_repository.dart';
 import '../repositories/hybrid_attendee_repository.dart';
 import '../services/auth_service.dart';
+import '../services/real_time_sync_service.dart';
 import '../widgets/cu_logo_widget.dart';
 import '../widgets/sync_status_widget.dart';
 
@@ -24,6 +25,7 @@ class _MessageHistoryScreenState extends State<MessageHistoryScreen> {
   final _messageLogRepository = FirebaseMessageLogRepository();
   final _attendeeRepository = HybridAttendeeRepository();
   final _authService = AuthService();
+  final _realTimeSyncService = RealTimeSyncService();
   
   List<MessageLogModel> _messages = [];
   Map<int, AttendeeModel> _attendeeCache = {};
@@ -34,6 +36,7 @@ class _MessageHistoryScreenState extends State<MessageHistoryScreen> {
   MessageStatus? _filterStatus;
   
   StreamSubscription<List<MessageLogModel>>? _messageStreamSubscription;
+  bool _hasNewMessages = false;
 
   @override
   void initState() {
@@ -50,7 +53,38 @@ class _MessageHistoryScreenState extends State<MessageHistoryScreen> {
 
   void _setupRealTimeUpdates() {
     try {
-      // Listen to real-time message log updates
+      // Listen to real-time message log updates from the sync service
+      _realTimeSyncService.messageLogUpdatesStream.listen(
+        (updatedMessageLogs) {
+          if (mounted) {
+            // Filter messages by service if specified
+            final filteredMessages = widget.serviceId != null
+                ? updatedMessageLogs.where((m) => m.serviceId == widget.serviceId).toList()
+                : updatedMessageLogs;
+
+            setState(() {
+              _messages = filteredMessages;
+              _hasNewMessages = true;
+            });
+            
+            _loadUserAndAttendeeDetails();
+            
+            // Auto-hide the new messages indicator after 5 seconds
+            Future.delayed(const Duration(seconds: 5), () {
+              if (mounted) {
+                setState(() {
+                  _hasNewMessages = false;
+                });
+              }
+            });
+          }
+        },
+        onError: (error) {
+          debugPrint('Real-time message log updates error: $error');
+        },
+      );
+
+      // Also listen to direct Firestore streams as backup
       if (widget.serviceId != null) {
         _messageStreamSubscription = _messageLogRepository
             .messageLogsByServiceStream(widget.serviceId!)
@@ -64,7 +98,7 @@ class _MessageHistoryScreenState extends State<MessageHistoryScreen> {
             }
           },
           onError: (error) {
-            debugPrint('Real-time message updates error: $error');
+            debugPrint('Direct Firestore message updates error: $error');
           },
         );
       } else {
@@ -80,10 +114,15 @@ class _MessageHistoryScreenState extends State<MessageHistoryScreen> {
             }
           },
           onError: (error) {
-            debugPrint('Real-time message updates error: $error');
+            debugPrint('Direct Firestore message updates error: $error');
           },
         );
       }
+
+      // Start the real-time sync service
+      _realTimeSyncService.startListening().catchError((error) {
+        debugPrint('Failed to start real-time sync: $error');
+      });
     } catch (e) {
       debugPrint('Failed to setup real-time message updates: $e');
     }
@@ -583,27 +622,49 @@ class _MessageHistoryScreenState extends State<MessageHistoryScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.blue[50],
+        color: _hasNewMessages ? Colors.green[50] : Colors.blue[50],
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.blue[200]!),
+        border: Border.all(color: _hasNewMessages ? Colors.green[200]! : Colors.blue[200]!),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            Icons.update,
+            _hasNewMessages ? Icons.fiber_new : Icons.update,
             size: 16,
-            color: Colors.blue[700],
+            color: _hasNewMessages ? Colors.green[700] : Colors.blue[700],
           ),
           const SizedBox(width: 4),
           Text(
-            'Real-time updates enabled',
+            _hasNewMessages 
+                ? 'New messages received!'
+                : _realTimeSyncService.isListening
+                    ? 'Real-time updates enabled'
+                    : 'Real-time updates disabled',
             style: TextStyle(
               fontSize: 12,
-              color: Colors.blue[700],
+              color: _hasNewMessages ? Colors.green[700] : Colors.blue[700],
               fontWeight: FontWeight.w500,
             ),
           ),
+          if (_hasNewMessages) ...[
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.green[700],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Text(
+                'NEW',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/attendee_model.dart';
 import '../services/registration_service.dart';
+import '../services/real_time_sync_service.dart';
 import '../widgets/attendee_search_widget.dart';
 import '../widgets/cu_logo_widget.dart';
 import '../widgets/sync_status_widget.dart';
@@ -18,6 +19,7 @@ class RegistrationScreen extends StatefulWidget {
 class _RegistrationScreenState extends State<RegistrationScreen> with OfflineCapable {
   final _formKey = GlobalKey<FormState>();
   final _registrationService = RegistrationService();
+  final _realTimeSyncService = RealTimeSyncService();
   
   // Form controllers
   final _nameController = TextEditingController();
@@ -43,12 +45,56 @@ class _RegistrationScreenState extends State<RegistrationScreen> with OfflineCap
   String? _categoryError;
   String? _generalError;
 
+  // Real-time updates
+  List<AttendeeModel> _realtimeAttendees = [];
+  bool _hasNewAttendees = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _setupRealTimeUpdates();
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
     _phoneController.dispose();
     _customLocationController.dispose();
     super.dispose();
+  }
+
+  /// Set up real-time attendee updates
+  void _setupRealTimeUpdates() {
+    // Listen to real-time attendee updates
+    _realTimeSyncService.attendeeUpdatesStream.listen(
+      (updatedAttendees) {
+        if (mounted) {
+          setState(() {
+            _realtimeAttendees = updatedAttendees;
+            _hasNewAttendees = true;
+          });
+          
+          // Auto-hide the new attendees indicator after 5 seconds
+          Future.delayed(const Duration(seconds: 5), () {
+            if (mounted) {
+              setState(() {
+                _hasNewAttendees = false;
+              });
+            }
+          });
+        }
+      },
+      onError: (error) {
+        debugPrint('Real-time attendee updates error: $error');
+      },
+    );
+
+    // Start listening if online and authenticated
+    if (!isOffline) {
+      _realTimeSyncService.startListening().catchError((error) {
+        debugPrint('Failed to start real-time sync: $error');
+      });
+    }
   }
 
   void _onAttendeeSelected(AttendeeModel attendee) {
@@ -393,6 +439,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> with OfflineCap
                   _buildSyncStatusCard(),
                   
                   const SizedBox(height: 16),
+
+                  // Real-time Updates Card
+                  if (!isOffline)
+                    _buildRealTimeUpdatesCard(),
+                  
+                  if (!isOffline)
+                    const SizedBox(height: 16),
               // Search for returning attendees
               Card(
                 child: Padding(
@@ -1083,5 +1136,126 @@ class _RegistrationScreenState extends State<RegistrationScreen> with OfflineCap
         ),
       ),
     );
+  }
+
+  Widget _buildRealTimeUpdatesCard() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  _realTimeSyncService.isListening ? Icons.update : Icons.update_disabled,
+                  color: _realTimeSyncService.isListening ? Colors.green : Colors.grey,
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  'Real-time Updates',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                const Spacer(),
+                if (_hasNewAttendees)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.blue,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Text(
+                      'NEW',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            
+            // Status indicator
+            Row(
+              children: [
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: _realTimeSyncService.isListening ? Colors.green : Colors.grey,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  _realTimeSyncService.isListening 
+                      ? 'Listening for new attendees from other users'
+                      : 'Real-time updates unavailable',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: _realTimeSyncService.isListening ? Colors.green : Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+            
+            // Last update info
+            if (_realTimeSyncService.lastAttendeeUpdate != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                'Last update: ${_formatLastUpdateTime(_realTimeSyncService.lastAttendeeUpdate!)}',
+                style: const TextStyle(fontSize: 11, color: Colors.grey),
+              ),
+            ],
+
+            // New attendees indicator
+            if (_hasNewAttendees && _realtimeAttendees.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.blue.shade200),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.people, color: Colors.blue.shade700, size: 16),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '${_realtimeAttendees.length} attendees in database (updated in real-time)',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.blue.shade700,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatLastUpdateTime(DateTime lastUpdate) {
+    final now = DateTime.now();
+    final difference = now.difference(lastUpdate);
+    
+    if (difference.inMinutes < 1) {
+      return 'Just now';
+    } else if (difference.inMinutes < 60) {
+      return '${difference.inMinutes}m ago';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours}h ago';
+    } else {
+      return '${difference.inDays}d ago';
+    }
   }
 }
