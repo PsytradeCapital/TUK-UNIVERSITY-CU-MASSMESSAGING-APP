@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/security_service.dart';
 import '../services/auth_service.dart';
+import '../services/initial_sync_service.dart';
 import '../screens/pin_auth_screen.dart';
 import '../screens/pin_setup_screen.dart';
 import '../screens/login_screen.dart';
 import '../screens/pending_approval_screen.dart';
+import '../screens/initial_sync_screen.dart';
 import '../providers/app_state_provider.dart';
 
 class AuthWrapper extends StatefulWidget {
@@ -26,7 +28,9 @@ class _AuthWrapperState extends State<AuthWrapper> with WidgetsBindingObserver {
   bool _isLoading = true;
   bool _isFirebaseAuthenticated = false;
   bool _isUserApproved = false;
+  bool _needsInitialSync = false;
   final AuthService _authService = AuthService();
+  final InitialSyncService _initialSyncService = InitialSyncService();
 
   @override
   void initState() {
@@ -81,8 +85,14 @@ class _AuthWrapperState extends State<AuthWrapper> with WidgetsBindingObserver {
       
       // Check user approval status if Firebase authenticated
       bool isApproved = false;
+      bool needsSync = false;
       if (isFirebaseAuth) {
         isApproved = await _authService.isUserApproved();
+        
+        // Check if initial sync is needed
+        if (isApproved) {
+          needsSync = await _initialSyncService.needsInitialSync();
+        }
       }
       
       // Check PIN status
@@ -91,6 +101,7 @@ class _AuthWrapperState extends State<AuthWrapper> with WidgetsBindingObserver {
       setState(() {
         _isFirebaseAuthenticated = isFirebaseAuth;
         _isUserApproved = isApproved;
+        _needsInitialSync = needsSync;
         _isPinSet = isPinSet;
         _isAuthenticated = !isPinSet; // If no PIN is set, consider authenticated for PIN
         _isLoading = false;
@@ -106,6 +117,7 @@ class _AuthWrapperState extends State<AuthWrapper> with WidgetsBindingObserver {
         _isPinSet = false;
         _isFirebaseAuthenticated = false;
         _isUserApproved = false;
+        _needsInitialSync = false;
       });
       
       // Report error to app state provider
@@ -146,6 +158,20 @@ class _AuthWrapperState extends State<AuthWrapper> with WidgetsBindingObserver {
     }
   }
 
+  void _onSyncComplete() {
+    setState(() {
+      _needsInitialSync = false;
+    });
+  }
+
+  void _onSyncFailed() {
+    // Restart the app or show error
+    setState(() {
+      _isLoading = true;
+    });
+    _checkAuthenticationStatus();
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -164,6 +190,14 @@ class _AuthWrapperState extends State<AuthWrapper> with WidgetsBindingObserver {
     // Check user approval status
     if (!_isUserApproved) {
       return const PendingApprovalScreen();
+    }
+
+    // Check if initial sync is needed
+    if (_needsInitialSync) {
+      return InitialSyncScreen(
+        onSyncComplete: _onSyncComplete,
+        onSyncFailed: _onSyncFailed,
+      );
     }
 
     // Then check PIN authentication

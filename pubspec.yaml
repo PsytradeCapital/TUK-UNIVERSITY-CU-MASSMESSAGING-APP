@@ -38,6 +38,7 @@ dependencies:
   
   # File system access
   path_provider: ^2.1.1
+  shared_preferences: ^2.2.2
   
   # CSV export and sharing
   csv: ^5.0.2

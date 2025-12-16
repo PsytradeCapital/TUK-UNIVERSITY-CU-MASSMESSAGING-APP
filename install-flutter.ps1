@@ -1,201 +1,150 @@
 # Flutter Installation Script for Windows
-# Run this script as Administrator in PowerShell
+# This script downloads and installs Flutter SDK
 
-param(
-    [string]$InstallPath = "C:\flutter",
-    [switch]$SkipAndroidStudio
-)
-
-Write-Host "TUK CU Mass Messaging App - Flutter Installation Script" -ForegroundColor Green
-Write-Host "=======================================================" -ForegroundColor Green
-Write-Host ""
+Write-Host "🚀 Flutter Installation Script" -ForegroundColor Cyan
+Write-Host "================================" -ForegroundColor Cyan
 
 # Check if running as Administrator
-$currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
-if (-not $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    Write-Host "ERROR: This script must be run as Administrator" -ForegroundColor Red
-    Write-Host "Right-click PowerShell and select 'Run as Administrator'" -ForegroundColor Yellow
-    Read-Host "Press Enter to exit"
+$isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
+
+if (-not $isAdmin) {
+    Write-Host "⚠️  This script should be run as Administrator for best results" -ForegroundColor Yellow
+    Write-Host "   Some features may not work properly without admin privileges" -ForegroundColor Yellow
+    Write-Host ""
+}
+
+# Configuration
+$flutterVersion = "3.16.5"  # Stable version
+$installPath = "C:\flutter"
+$downloadUrl = "https://storage.googleapis.com/flutter_infra_release/releases/stable/windows/flutter_windows_$flutterVersion-stable.zip"
+$zipPath = "$env:TEMP\flutter_windows.zip"
+
+Write-Host "📋 Installation Configuration:" -ForegroundColor Green
+Write-Host "   Flutter Version: $flutterVersion" -ForegroundColor White
+Write-Host "   Install Path: $installPath" -ForegroundColor White
+Write-Host "   Download URL: $downloadUrl" -ForegroundColor White
+Write-Host ""
+
+# Check if Flutter is already installed
+if (Test-Path "$installPath\bin\flutter.bat") {
+    Write-Host "✅ Flutter is already installed at $installPath" -ForegroundColor Green
+    
+    # Check version
+    $currentVersion = & "$installPath\bin\flutter.bat" --version 2>$null | Select-String "Flutter" | ForEach-Object { $_.ToString().Split()[1] }
+    Write-Host "   Current version: $currentVersion" -ForegroundColor White
+    
+    $continue = Read-Host "Do you want to reinstall? (y/N)"
+    if ($continue -ne "y" -and $continue -ne "Y") {
+        Write-Host "Installation cancelled." -ForegroundColor Yellow
+        exit 0
+    }
+}
+
+# Step 1: Download Flutter
+Write-Host "📥 Step 1: Downloading Flutter SDK..." -ForegroundColor Blue
+try {
+    if (Test-Path $zipPath) {
+        Remove-Item $zipPath -Force
+    }
+    
+    Write-Host "   Downloading from: $downloadUrl" -ForegroundColor Gray
+    Invoke-WebRequest -Uri $downloadUrl -OutFile $zipPath -UseBasicParsing
+    Write-Host "   ✅ Download completed" -ForegroundColor Green
+} catch {
+    Write-Host "   ❌ Download failed: $($_.Exception.Message)" -ForegroundColor Red
     exit 1
 }
 
-# Function to add to PATH
-function Add-ToPath {
-    param([string]$PathToAdd)
-    
-    $currentPath = [Environment]::GetEnvironmentVariable("PATH", "Machine")
-    if ($currentPath -notlike "*$PathToAdd*") {
-        Write-Host "Adding $PathToAdd to system PATH..." -ForegroundColor Yellow
-        [Environment]::SetEnvironmentVariable("PATH", "$currentPath;$PathToAdd", "Machine")
-        $env:PATH = "$env:PATH;$PathToAdd"
-        Write-Host "Added to PATH successfully" -ForegroundColor Green
-    } else {
-        Write-Host "$PathToAdd already in PATH" -ForegroundColor Green
-    }
-}
-
-# Function to download file
-function Download-File {
-    param(
-        [string]$Url,
-        [string]$OutputPath
-    )
-    
-    Write-Host "Downloading from $Url..." -ForegroundColor Yellow
-    try {
-        # Use System.Net.WebClient for better compatibility
-        $webClient = New-Object System.Net.WebClient
-        $webClient.DownloadFile($Url, $OutputPath)
-        Write-Host "Download completed: $OutputPath" -ForegroundColor Green
-        return $true
-    } catch {
-        Write-Host "Download failed: $($_.Exception.Message)" -ForegroundColor Red
-        return $false
-    }
-}
-
-# Function to extract ZIP file
-function Extract-ZipFile {
-    param(
-        [string]$ZipPath,
-        [string]$ExtractPath
-    )
-    
-    Write-Host "Extracting $ZipPath to $ExtractPath..." -ForegroundColor Yellow
-    try {
-        Add-Type -AssemblyName System.IO.Compression.FileSystem
-        [System.IO.Compression.ZipFile]::ExtractToDirectory($ZipPath, $ExtractPath)
-        Write-Host "Extraction completed" -ForegroundColor Green
-        return $true
-    } catch {
-        Write-Host "Extraction failed: $($_.Exception.Message)" -ForegroundColor Red
-        return $false
-    }
-}
-
-# Check if Flutter is already installed
-Write-Host "Checking for existing Flutter installation..." -ForegroundColor Cyan
+# Step 2: Extract Flutter
+Write-Host "📦 Step 2: Extracting Flutter SDK..." -ForegroundColor Blue
 try {
-    $flutterVersion = flutter --version 2>$null
-    if ($LASTEXITCODE -eq 0) {
-        Write-Host "Flutter is already installed:" -ForegroundColor Green
-        Write-Host $flutterVersion -ForegroundColor White
-        $continue = Read-Host "Do you want to reinstall Flutter? (y/N)"
-        if ($continue -ne "y" -and $continue -ne "Y") {
-            Write-Host "Skipping Flutter installation" -ForegroundColor Yellow
-            $skipFlutter = $true
-        }
+    if (Test-Path $installPath) {
+        Write-Host "   Removing existing installation..." -ForegroundColor Gray
+        Remove-Item $installPath -Recurse -Force
+    }
+    
+    Write-Host "   Extracting to: $installPath" -ForegroundColor Gray
+    Expand-Archive -Path $zipPath -DestinationPath "C:\" -Force
+    Write-Host "   ✅ Extraction completed" -ForegroundColor Green
+} catch {
+    Write-Host "   ❌ Extraction failed: $($_.Exception.Message)" -ForegroundColor Red
+    exit 1
+}
+
+# Step 3: Add to PATH
+Write-Host "🔧 Step 3: Adding Flutter to PATH..." -ForegroundColor Blue
+try {
+    $flutterBinPath = "$installPath\bin"
+    
+    # Get current PATH
+    $currentPath = [Environment]::GetEnvironmentVariable("PATH", "User")
+    
+    # Check if Flutter is already in PATH
+    if ($currentPath -notlike "*$flutterBinPath*") {
+        # Add Flutter to user PATH
+        $newPath = "$currentPath;$flutterBinPath"
+        [Environment]::SetEnvironmentVariable("PATH", $newPath, "User")
+        Write-Host "   ✅ Flutter added to PATH" -ForegroundColor Green
+        Write-Host "   📝 Note: You may need to restart your terminal/IDE" -ForegroundColor Yellow
+    } else {
+        Write-Host "   ✅ Flutter is already in PATH" -ForegroundColor Green
     }
 } catch {
-    Write-Host "Flutter not found, proceeding with installation..." -ForegroundColor Yellow
+    Write-Host "   ❌ Failed to add to PATH: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "   📝 Please manually add $flutterBinPath to your PATH" -ForegroundColor Yellow
 }
 
-if (-not $skipFlutter) {
-    # Create installation directory
-    Write-Host "Creating installation directory: $InstallPath" -ForegroundColor Cyan
-    if (Test-Path $InstallPath) {
-        Write-Host "Directory already exists, removing old installation..." -ForegroundColor Yellow
-        Remove-Item -Path $InstallPath -Recurse -Force -ErrorAction SilentlyContinue
-    }
-    New-Item -ItemType Directory -Path $InstallPath -Force | Out-Null
-
-    # Download Flutter SDK
-    $flutterUrl = "https://storage.googleapis.com/flutter_infra_release/releases/stable/windows/flutter_windows_3.16.5-stable.zip"
-    $flutterZip = "$env:TEMP\flutter_windows.zip"
-    
-    Write-Host "Downloading Flutter SDK..." -ForegroundColor Cyan
-    if (-not (Download-File -Url $flutterUrl -OutputPath $flutterZip)) {
-        Write-Host "Failed to download Flutter SDK" -ForegroundColor Red
-        Read-Host "Press Enter to exit"
-        exit 1
-    }
-
-    # Extract Flutter SDK
-    Write-Host "Extracting Flutter SDK..." -ForegroundColor Cyan
-    $extractPath = Split-Path $InstallPath -Parent
-    if (-not (Extract-ZipFile -ZipPath $flutterZip -ExtractPath $extractPath)) {
-        Write-Host "Failed to extract Flutter SDK" -ForegroundColor Red
-        Read-Host "Press Enter to exit"
-        exit 1
-    }
-
-    # Add Flutter to PATH
-    $flutterBinPath = "$InstallPath\bin"
-    Add-ToPath -PathToAdd $flutterBinPath
-
-    # Clean up
-    Remove-Item $flutterZip -Force -ErrorAction SilentlyContinue
-
-    Write-Host "Flutter SDK installed successfully!" -ForegroundColor Green
-}
-
-# Install Git if not present
-Write-Host "Checking for Git..." -ForegroundColor Cyan
+# Step 4: Run Flutter Doctor
+Write-Host "🩺 Step 4: Running Flutter Doctor..." -ForegroundColor Blue
 try {
-    git --version | Out-Null
-    Write-Host "Git is already installed" -ForegroundColor Green
-} catch {
-    Write-Host "Installing Git..." -ForegroundColor Yellow
-    $gitUrl = "https://github.com/git-for-windows/git/releases/download/v2.42.0.windows.2/Git-2.42.0.2-64-bit.exe"
-    $gitInstaller = "$env:TEMP\git-installer.exe"
+    # Update PATH for current session
+    $env:PATH = "$env:PATH;$installPath\bin"
     
-    if (Download-File -Url $gitUrl -OutputPath $gitInstaller) {
-        Write-Host "Running Git installer..." -ForegroundColor Yellow
-        Start-Process -FilePath $gitInstaller -ArgumentList "/SILENT" -Wait
-        Remove-Item $gitInstaller -Force -ErrorAction SilentlyContinue
-        Write-Host "Git installed successfully!" -ForegroundColor Green
-    } else {
-        Write-Host "Failed to download Git installer" -ForegroundColor Red
-    }
-}
-
-# Install Android Studio if not skipped
-if (-not $SkipAndroidStudio) {
-    Write-Host "Checking for Android Studio..." -ForegroundColor Cyan
-    $androidStudioPath = "${env:ProgramFiles}\Android\Android Studio\bin\studio64.exe"
-    if (Test-Path $androidStudioPath) {
-        Write-Host "Android Studio is already installed" -ForegroundColor Green
-    } else {
-        Write-Host "Downloading Android Studio..." -ForegroundColor Yellow
-        $androidStudioUrl = "https://redirector.gvt1.com/edgedl/android/studio/install/2023.1.1.28/android-studio-2023.1.1.28-windows.exe"
-        $androidStudioInstaller = "$env:TEMP\android-studio-installer.exe"
-        
-        if (Download-File -Url $androidStudioUrl -OutputPath $androidStudioInstaller) {
-            Write-Host "Running Android Studio installer..." -ForegroundColor Yellow
-            Write-Host "Please follow the installation wizard and install Android SDK" -ForegroundColor Cyan
-            Start-Process -FilePath $androidStudioInstaller -Wait
-            Remove-Item $androidStudioInstaller -Force -ErrorAction SilentlyContinue
-            Write-Host "Android Studio installation completed!" -ForegroundColor Green
-        } else {
-            Write-Host "Failed to download Android Studio installer" -ForegroundColor Red
-        }
-    }
-}
-
-# Refresh environment variables
-Write-Host "Refreshing environment variables..." -ForegroundColor Cyan
-$env:PATH = [System.Environment]::GetEnvironmentVariable("PATH", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH", "User")
-
-# Run Flutter Doctor
-Write-Host "Running Flutter Doctor..." -ForegroundColor Cyan
-Write-Host "This will check your Flutter installation and show any remaining setup steps" -ForegroundColor Yellow
-Write-Host ""
-
-try {
-    flutter doctor
+    Write-Host "   Checking Flutter installation..." -ForegroundColor Gray
+    & "$installPath\bin\flutter.bat" doctor
+    Write-Host "   ✅ Flutter doctor completed" -ForegroundColor Green
 } catch {
-    Write-Host "Flutter command not found. Please restart your terminal and run 'flutter doctor'" -ForegroundColor Yellow
+    Write-Host "   ❌ Flutter doctor failed: $($_.Exception.Message)" -ForegroundColor Red
 }
 
+# Step 5: Accept Android Licenses (if Android SDK is available)
+Write-Host "📱 Step 5: Checking Android setup..." -ForegroundColor Blue
+try {
+    $androidSdkPath = [Environment]::GetEnvironmentVariable("ANDROID_HOME", "User")
+    if ($androidSdkPath -and (Test-Path "$androidSdkPath\cmdline-tools")) {
+        Write-Host "   Android SDK found, accepting licenses..." -ForegroundColor Gray
+        & "$installPath\bin\flutter.bat" doctor --android-licenses
+        Write-Host "   ✅ Android licenses accepted" -ForegroundColor Green
+    } else {
+        Write-Host "   ⚠️  Android SDK not found" -ForegroundColor Yellow
+        Write-Host "   📝 Install Android Studio to set up Android development" -ForegroundColor Gray
+    }
+} catch {
+    Write-Host "   ⚠️  Could not accept Android licenses: $($_.Exception.Message)" -ForegroundColor Yellow
+}
+
+# Cleanup
+Write-Host "🧹 Cleaning up..." -ForegroundColor Blue
+if (Test-Path $zipPath) {
+    Remove-Item $zipPath -Force
+    Write-Host "   ✅ Temporary files cleaned" -ForegroundColor Green
+}
+
+# Final verification
+Write-Host "🎉 Installation Complete!" -ForegroundColor Green
+Write-Host "================================" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "Installation completed!" -ForegroundColor Green
-Write-Host ""
-Write-Host "Next steps:" -ForegroundColor Cyan
-Write-Host "1. Restart your terminal/PowerShell" -ForegroundColor White
+Write-Host "📋 Next Steps:" -ForegroundColor Yellow
+Write-Host "1. Restart your terminal/command prompt" -ForegroundColor White
 Write-Host "2. Run 'flutter doctor' to verify installation" -ForegroundColor White
-Write-Host "3. Run 'flutter doctor --android-licenses' to accept Android licenses" -ForegroundColor White
-Write-Host "4. Navigate to your project directory and run 'flutter pub get'" -ForegroundColor White
-Write-Host "5. Run 'flutter run' to start the app" -ForegroundColor White
+Write-Host "3. Install Android Studio for Android development" -ForegroundColor White
+Write-Host "4. Install VS Code with Flutter extension" -ForegroundColor White
 Write-Host ""
-
-Read-Host "Press Enter to exit"
+Write-Host "🔧 Useful Commands:" -ForegroundColor Yellow
+Write-Host "   flutter doctor          - Check installation" -ForegroundColor White
+Write-Host "   flutter create myapp    - Create new project" -ForegroundColor White
+Write-Host "   flutter run             - Run your app" -ForegroundColor White
+Write-Host "   flutter build apk       - Build APK" -ForegroundColor White
+Write-Host ""
+Write-Host "📁 Flutter installed at: $installPath" -ForegroundColor Cyan
+Write-Host "🌐 Documentation: https://docs.flutter.dev" -ForegroundColor Cyan

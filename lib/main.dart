@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'widgets/auth_wrapper.dart';
 import 'widgets/global_error_handler.dart';
 import 'screens/home_screen.dart';
@@ -17,6 +18,29 @@ import 'services/analytics_service.dart';
 import 'services/auth_service.dart';
 import 'theme/app_theme.dart';
 
+/// Configure Firestore settings for offline persistence and performance
+Future<void> _configureFirestore() async {
+  try {
+    final firestore = FirebaseFirestore.instance;
+    
+    // Enable offline persistence
+    await firestore.enablePersistence(
+      const PersistenceSettings(synchronizeTabs: true),
+    );
+    
+    // Configure cache settings
+    await firestore.settings = const Settings(
+      persistenceEnabled: true,
+      cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+    );
+    
+    debugPrint('Firestore offline persistence enabled');
+  } catch (e) {
+    debugPrint('Firestore configuration error: $e');
+    // Continue even if offline persistence fails
+  }
+}
+
 void main() {
   // Set up global error handling
   runZonedGuarded(() async {
@@ -26,6 +50,10 @@ void main() {
     try {
       await Firebase.initializeApp();
       debugPrint('Firebase initialized successfully');
+      
+      // Configure Firestore settings
+      await _configureFirestore();
+      debugPrint('Firestore configured successfully');
     } catch (e) {
       debugPrint('Firebase initialization error: $e');
       // Continue app initialization even if Firebase fails
@@ -186,6 +214,7 @@ class _AppLifecycleHandlerState extends State<_AppLifecycleHandler> with Widgets
       case AppLifecycleState.detached:
       case AppLifecycleState.hidden:
         appStateProvider.updateAppLifecycleState(false);
+        _handleAppPaused();
         break;
     }
   }
@@ -194,6 +223,10 @@ class _AppLifecycleHandlerState extends State<_AppLifecycleHandler> with Widgets
   void _handleAppResumed() {
     final connectivityService = ConnectivityService();
     final cloudSyncService = CloudSyncService();
+    final analyticsService = AnalyticsService();
+    
+    // Track app foreground event
+    analyticsService.trackAppForeground();
     
     // Refresh connectivity status
     connectivityService.refreshConnectivity().then((isOnline) {
@@ -209,6 +242,14 @@ class _AppLifecycleHandlerState extends State<_AppLifecycleHandler> with Widgets
         });
       }
     });
+  }
+
+  /// Handle app paused/backgrounded
+  void _handleAppPaused() {
+    final analyticsService = AnalyticsService();
+    
+    // Track app background event
+    analyticsService.trackAppBackground();
   }
 
   @override

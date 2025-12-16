@@ -36,6 +36,25 @@ class AuthService {
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  bool _initialized = false;
+
+  /// Initialize the AuthService
+  Future<void> initialize() async {
+    if (_initialized) return;
+    
+    try {
+      // Configure Firebase Auth settings
+      await _auth.setSettings(
+        appVerificationDisabledForTesting: false,
+        forceRecaptchaFlow: false,
+      );
+      
+      _initialized = true;
+    } catch (e) {
+      debugPrint('AuthService initialization error: $e');
+      rethrow;
+    }
+  }
 
   /// Get current Firebase user
   User? getCurrentUser() {
