@@ -8,6 +8,7 @@ import '../widgets/cu_logo_widget.dart';
 import '../widgets/sync_status_widget.dart';
 import '../widgets/offline_handler.dart';
 import '../providers/service_session_provider.dart';
+import 'document_scanner_screen.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({Key? key}) : super(key: key);
@@ -138,6 +139,15 @@ class _RegistrationScreenState extends State<RegistrationScreen> with OfflineCap
       _showCustomLocation = false;
       _clearErrors();
     });
+  }
+
+  void _openDocumentScanner() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const DocumentScannerScreen(),
+      ),
+    );
   }
 
   void _clearErrors() {
@@ -416,6 +426,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> with OfflineCap
             foregroundColor: Colors.white,
             toolbarHeight: 70,
             actions: [
+              IconButton(
+                onPressed: _openDocumentScanner,
+                icon: const Icon(Icons.document_scanner),
+                tooltip: 'Scan Attendance Sheet',
+              ),
               IconButton(
                 onPressed: _clearForm,
                 icon: const Icon(Icons.clear_all),
