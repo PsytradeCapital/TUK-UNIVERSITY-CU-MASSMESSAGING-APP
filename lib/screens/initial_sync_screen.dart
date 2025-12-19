@@ -220,7 +220,7 @@ class _InitialSyncScreenState extends State<InitialSyncScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.primaryColor,
+      backgroundColor: AppTheme.primaryBlue,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -233,7 +233,8 @@ class _InitialSyncScreenState extends State<InitialSyncScreen>
               FadeTransition(
                 opacity: _fadeAnimation,
                 child: const CULogoWidget(
-                  size: 120,
+                  width: 120,
+                  height: 120,
                   showText: false,
                 ),
               ),
@@ -364,7 +365,7 @@ class _InitialSyncScreenState extends State<InitialSyncScreen>
                         label: Text(_isRetrying ? 'Retrying...' : 'Retry'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
-                          foregroundColor: AppTheme.primaryColor,
+                          foregroundColor: AppTheme.primaryBlue,
                         ),
                       ),
                     

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/scanned_attendee_model.dart';
+import '../models/attendee_model.dart';
 import '../services/analytics_service.dart';
 import '../services/registration_service.dart';
 import '../theme/app_theme.dart';
@@ -125,7 +126,6 @@ class _ScannedAttendeesReviewScreenState extends State<ScannedAttendeesReviewScr
             location: attendee.location,
             yearOfStudy: null,
             category: attendeeData['category'],
-            serviceId: _currentServiceId,
           );
 
           savedCount++;
@@ -229,7 +229,7 @@ class _ScannedAttendeesReviewScreenState extends State<ScannedAttendeesReviewScr
     return Scaffold(
       appBar: AppBar(
         title: Text('Review Scanned Attendees (${_attendees.length})'),
-        backgroundColor: AppTheme.primaryColor,
+        backgroundColor: AppTheme.primaryBlue,
         foregroundColor: Colors.white,
         actions: [
           IconButton(
@@ -272,13 +272,13 @@ class _ScannedAttendeesReviewScreenState extends State<ScannedAttendeesReviewScr
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryColor.withOpacity(0.1),
+                    color: AppTheme.primaryBlue.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Text(
                     'Service ${_currentServiceId}',
                     style: TextStyle(
-                      color: AppTheme.primaryColor,
+                      color: AppTheme.primaryBlue,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -301,7 +301,7 @@ class _ScannedAttendeesReviewScreenState extends State<ScannedAttendeesReviewScr
                     leading: Checkbox(
                       value: isSelected,
                       onChanged: (value) => _toggleSelection(index),
-                      activeColor: AppTheme.primaryColor,
+                      activeColor: AppTheme.primaryBlue,
                     ),
                     title: Row(
                       children: [
@@ -407,7 +407,7 @@ class _ScannedAttendeesReviewScreenState extends State<ScannedAttendeesReviewScr
                   child: ElevatedButton(
                     onPressed: _selectedIndices.isEmpty || _isSaving ? null : _saveSelectedAttendees,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryColor,
+                      backgroundColor: AppTheme.primaryBlue,
                       foregroundColor: Colors.white,
                     ),
                     child: _isSaving
@@ -507,8 +507,8 @@ class _EditAttendeeDialogState extends State<_EditAttendeeDialog> {
                   if (value == null || value.trim().isEmpty) {
                     return 'Phone number is required';
                   }
-                  final normalized = PhoneValidator.normalizePhoneNumber(value.trim());
-                  if (normalized == null) {
+                  final normalized = AttendeeModel.normalizePhoneNumber(value.trim());
+                  if (normalized.isEmpty) {
                     return 'Invalid phone number format';
                   }
                   return null;
@@ -586,7 +586,7 @@ class _EditAttendeeDialogState extends State<_EditAttendeeDialog> {
             if (_formKey.currentState!.validate()) {
               final updatedAttendee = widget.attendee.copyWith(
                 name: _nameController.text.trim(),
-                phoneNumber: PhoneValidator.normalizePhoneNumber(_phoneController.text.trim())!,
+                phoneNumber: AttendeeModel.normalizePhoneNumber(_phoneController.text.trim()),
                 location: _locationController.text.trim(),
                 notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
                 isVerified: true, // Mark as verified after manual edit
@@ -595,7 +595,7 @@ class _EditAttendeeDialogState extends State<_EditAttendeeDialog> {
             }
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppTheme.primaryColor,
+            backgroundColor: AppTheme.primaryBlue,
             foregroundColor: Colors.white,
           ),
           child: const Text('Save'),

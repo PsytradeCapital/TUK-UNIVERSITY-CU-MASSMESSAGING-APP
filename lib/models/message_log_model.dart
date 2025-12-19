@@ -10,6 +10,9 @@ enum MessageStatus {
 class MessageLogModel {
   final int? messageId; // Local SQLite ID
   final int serviceId;
+  
+  // Getter for compatibility with hybrid repository
+  int? get id => messageId;
   final int attendeeId;
   final String messageText;
   final MessageStatus sendStatus;

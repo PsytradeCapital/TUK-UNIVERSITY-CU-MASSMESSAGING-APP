@@ -7,6 +7,7 @@ import 'package:image/image.dart' as img;
 import 'package:file_picker/file_picker.dart';
 import 'package:pdf_text/pdf_text.dart';
 import '../models/scanned_attendee_model.dart';
+import '../models/attendee_model.dart';
 import '../utils/phone_validator.dart';
 import 'analytics_service.dart';
 
@@ -199,15 +200,16 @@ class DocumentScannerService {
         success: true,
       );
 
-      await _analyticsService.logEvent(
-        name: 'document_processed',
-        parameters: {
-          'attendees_found': attendees.length,
-          'processing_time_ms': duration.inMilliseconds,
-          'file_type': file.extension ?? 'unknown',
-          'file_size_bytes': file.size,
-        },
-      );
+      // TODO: Replace with appropriate analytics tracking
+      // await _analyticsService.logEvent(
+      //   name: 'document_processed',
+      //   parameters: {
+      //     'attendees_found': attendees.length,
+      //     'processing_time_ms': duration.inMilliseconds,
+      //     'file_type': file.extension ?? 'unknown',
+      //     'file_size_bytes': file.size,
+      //   },
+      // );
 
       return ScanResult(
         success: true,
@@ -355,14 +357,15 @@ class DocumentScannerService {
         success: true,
       );
 
-      await _analyticsService.logEvent(
-        name: 'document_scanned',
-        parameters: {
-          'attendees_found': attendees.length,
-          'processing_time_ms': duration.inMilliseconds,
-          'image_source': 'camera_or_gallery',
-        },
-      );
+      // TODO: Replace with appropriate analytics tracking
+      // await _analyticsService.logEvent(
+      //   name: 'document_scanned',
+      //   parameters: {
+      //     'attendees_found': attendees.length,
+      //     'processing_time_ms': duration.inMilliseconds,
+      //     'image_source': 'camera_or_gallery',
+      //   },
+      // );
 
       return ScanResult(
         success: true,
@@ -516,8 +519,8 @@ class DocumentScannerService {
         
         if (name != null) {
           for (final phone in phones) {
-            final normalizedPhone = PhoneValidator.normalizePhoneNumber(phone);
-            if (normalizedPhone != null) {
+            final normalizedPhone = AttendeeModel.normalizePhoneNumber(phone);
+            if (normalizedPhone.isNotEmpty) {
               attendees.add(ScannedAttendee(
                 name: name,
                 phoneNumber: normalizedPhone,
@@ -586,8 +589,8 @@ class DocumentScannerService {
           final location = match.groupCount >= 3 ? match.group(3)?.trim() : null;
           
           if (name != null && phone != null) {
-            final normalizedPhone = PhoneValidator.normalizePhoneNumber(phone);
-            if (normalizedPhone != null) {
+            final normalizedPhone = AttendeeModel.normalizePhoneNumber(phone);
+            if (normalizedPhone.isNotEmpty) {
               attendees.add(ScannedAttendee(
                 name: name,
                 phoneNumber: normalizedPhone,
@@ -665,8 +668,8 @@ class DocumentScannerService {
     }
     
     if (name != null && phone != null) {
-      final normalizedPhone = PhoneValidator.normalizePhoneNumber(phone);
-      if (normalizedPhone != null) {
+      final normalizedPhone = AttendeeModel.normalizePhoneNumber(phone);
+      if (normalizedPhone.isNotEmpty) {
         return ScannedAttendee(
           name: name,
           phoneNumber: normalizedPhone,
@@ -759,7 +762,7 @@ class DocumentScannerService {
     if (nameWords.every((word) => word.isNotEmpty && word[0].toUpperCase() == word[0])) confidence += 0.05;
 
     // Phone quality (40% weight)
-    if (PhoneValidator.isValidKenyanNumber(phone)) confidence += 0.35;
+    if (phone.startsWith('+254') || phone.startsWith('07') || phone.startsWith('01')) confidence += 0.35;
     if (phone.startsWith('+254')) confidence += 0.05;
 
     // Location quality (15% weight)
@@ -889,7 +892,7 @@ class DocumentScannerService {
     if (name.length >= 5) confidence += 0.1;
 
     // Phone confidence (0.4 weight)
-    if (PhoneValidator.isValidKenyanNumber(phone)) confidence += 0.4;
+    if (phone.startsWith('+254') || phone.startsWith('07') || phone.startsWith('01')) confidence += 0.4;
 
     // Location confidence (0.2 weight)
     if (location != null && location != 'Unknown') confidence += 0.2;

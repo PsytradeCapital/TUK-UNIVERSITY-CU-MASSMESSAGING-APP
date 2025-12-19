@@ -29,7 +29,7 @@ Future<void> _configureFirestore() async {
     );
     
     // Configure cache settings
-    await firestore.settings = const Settings(
+    firestore.settings = const Settings(
       persistenceEnabled: true,
       cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
     );

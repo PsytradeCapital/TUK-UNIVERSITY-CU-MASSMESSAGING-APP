@@ -100,8 +100,9 @@ class HybridAttendeeRepository {
 
       // Queue for sync when online
       await _syncQueueRepo.addToQueue(SyncQueueModel(
+        userId: _authService.getCurrentUser()!.uid,
         operation: SyncOperation.create,
-        collection: 'attendees',
+        collection: SyncCollection.attendees,
         documentId: localId.toString(),
         data: attendeeToCreate.toMap(),
         createdAt: DateTime.now(),
@@ -248,8 +249,9 @@ class HybridAttendeeRepository {
 
       // Queue for sync when online
       await _syncQueueRepo.addToQueue(SyncQueueModel(
+        userId: _authService.getCurrentUser()!.uid,
         operation: SyncOperation.update,
-        collection: 'attendees',
+        collection: SyncCollection.attendees,
         documentId: attendee.firestoreId ?? attendee.id.toString(),
         data: attendeeToUpdate.toMap(),
         createdAt: DateTime.now(),
@@ -314,8 +316,9 @@ class HybridAttendeeRepository {
       // Queue for sync when online (if it has a Firestore ID)
       if (attendee.firestoreId != null) {
         await _syncQueueRepo.addToQueue(SyncQueueModel(
+          userId: _authService.getCurrentUser()!.uid,
           operation: SyncOperation.delete,
-          collection: 'attendees',
+          collection: SyncCollection.attendees,
           documentId: attendee.firestoreId!,
           data: {},
           createdAt: DateTime.now(),

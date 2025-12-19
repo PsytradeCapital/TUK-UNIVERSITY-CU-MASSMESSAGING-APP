@@ -514,6 +514,65 @@ class MessageLogRepository {
       throw MessageLogRepositoryException('Failed to get total message logs count: $e');
     }
   }
+
+  // Get message logs by user (for hybrid repository compatibility)
+  Future<List<MessageLogModel>> getMessageLogsByUser(String userId) async {
+    try {
+      final db = await _databaseManager.database;
+      
+      final List<Map<String, dynamic>> maps = await db.query(
+        'message_log',
+        where: 'sent_by = ?',
+        whereArgs: [userId],
+        orderBy: 'created_at DESC',
+      );
+
+      return List.generate(maps.length, (i) {
+        return MessageLogModel.fromMap(maps[i]);
+      });
+    } catch (e) {
+      throw MessageLogRepositoryException('Failed to get message logs by user: $e');
+    }
+  }
+
+  // Update message status (for hybrid repository compatibility)
+  Future<void> updateMessageStatus(int messageId, MessageStatus status) async {
+    await updateMessageLogStatus(messageId, status);
+  }
+
+  // Delete message log by ID (for hybrid repository compatibility)
+  Future<void> deleteMessageLog(int messageId) async {
+    try {
+      final db = await _databaseManager.database;
+      
+      final count = await db.delete(
+        'message_log',
+        where: 'message_id = ?',
+        whereArgs: [messageId],
+      );
+
+      if (count == 0) {
+        throw MessageLogRepositoryException('Message log not found for deletion');
+      }
+    } catch (e) {
+      throw MessageLogRepositoryException('Failed to delete message log: $e');
+    }
+  }
+
+  // Get message statistics (for hybrid repository compatibility)
+  Future<Map<String, dynamic>> getMessageStatistics() async {
+    return await getOverallSendingStatistics();
+  }
+
+  // Get message statistics by service (for hybrid repository compatibility)
+  Future<Map<String, dynamic>> getMessageStatisticsByService(int serviceId) async {
+    return await getSendingStatistics(serviceId);
+  }
+
+  // Get total message count (for hybrid repository compatibility)
+  Future<int> getTotalMessageCount() async {
+    return await getTotalMessageLogsCount();
+  }
 }
 
 // Custom exception for message log repository operations

@@ -189,7 +189,7 @@ class RealTimeSyncService {
         // Check if this is a new attendee
         final existingAttendee = _lastKnownAttendees.firstWhere(
           (a) => a.firestoreId == cloudAttendee.firestoreId,
-          orElse: () => AttendeeModel(name: '', phoneNumber: '', location: ''),
+          orElse: () => AttendeeModel(name: '', phoneNumber: '', yearOfStudy: '', location: ''),
         );
 
         if (existingAttendee.name.isEmpty) {

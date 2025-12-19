@@ -95,8 +95,9 @@ class HybridMessageLogRepository {
 
       // Queue for sync when online
       await _syncQueueRepo.addToQueue(SyncQueueModel(
+        userId: _authService.getCurrentUser()!.uid,
         operation: SyncOperation.create,
-        collection: 'messageLogs',
+        collection: SyncCollection.messageLogs,
         documentId: localId.toString(),
         data: messageLogToCreate.toMap(),
         createdAt: DateTime.now(),
@@ -349,8 +350,9 @@ class HybridMessageLogRepository {
 
       // Queue for sync when online
       await _syncQueueRepo.addToQueue(SyncQueueModel(
+        userId: _authService.getCurrentUser()!.uid,
         operation: SyncOperation.update,
-        collection: 'messageLogs',
+        collection: SyncCollection.messageLogs,
         documentId: messageLog.firestoreId ?? messageLog.id.toString(),
         data: messageLogToUpdate.toMap(),
         createdAt: DateTime.now(),
@@ -406,8 +408,9 @@ class HybridMessageLogRepository {
       final messageLog = await _localRepo.getMessageLogById(localId);
       if (messageLog != null) {
         await _syncQueueRepo.addToQueue(SyncQueueModel(
+          userId: _authService.getCurrentUser()!.uid,
           operation: SyncOperation.update,
-          collection: 'messageLogs',
+          collection: SyncCollection.messageLogs,
           documentId: messageLog.firestoreId ?? localId.toString(),
           data: messageLog.toMap(),
           createdAt: DateTime.now(),
@@ -473,8 +476,9 @@ class HybridMessageLogRepository {
       // Queue for sync when online (if it has a Firestore ID)
       if (messageLog.firestoreId != null) {
         await _syncQueueRepo.addToQueue(SyncQueueModel(
+          userId: _authService.getCurrentUser()!.uid,
           operation: SyncOperation.delete,
-          collection: 'messageLogs',
+          collection: SyncCollection.messageLogs,
           documentId: messageLog.firestoreId!,
           data: {},
           createdAt: DateTime.now(),
@@ -628,8 +632,9 @@ class HybridMessageLogRepository {
 
         // Queue for sync when online
         await _syncQueueRepo.addToQueue(SyncQueueModel(
+          userId: _authService.getCurrentUser()!.uid,
           operation: SyncOperation.create,
-          collection: 'messageLogs',
+          collection: SyncCollection.messageLogs,
           documentId: localId.toString(),
           data: messageLogToCreate.toMap(),
           createdAt: DateTime.now(),
