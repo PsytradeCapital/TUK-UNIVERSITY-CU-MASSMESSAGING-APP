@@ -5,7 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:image/image.dart' as img;
 import 'package:file_picker/file_picker.dart';
-import 'package:pdf_text/pdf_text.dart';
+// import 'package:pdf_text/pdf_text.dart'; // Commented out - package not available
 import '../models/scanned_attendee_model.dart';
 import '../models/attendee_model.dart';
 import '../utils/phone_validator.dart';
@@ -244,16 +244,19 @@ class DocumentScannerService {
   /// Extract text from PDF file
   Future<String> _extractTextFromPDF(PlatformFile file) async {
     try {
-      final pdfDoc = await PDFDoc.fromPath(file.path!);
-      final pages = await pdfDoc.length;
+      // PDF functionality disabled - pdf_text package not available
+      throw UnimplementedError('PDF scanning not available - pdf_text package missing');
       
-      String fullText = '';
-      for (int i = 1; i <= pages; i++) {
-        final pageText = await pdfDoc.pageAt(i).text;
-        fullText += pageText + '\n';
-      }
-      
-      return fullText;
+      // final pdfDoc = await PDFDoc.fromPath(file.path!);
+      // final pages = await pdfDoc.length;
+      // 
+      // String fullText = '';
+      // for (int i = 1; i <= pages; i++) {
+      //   final pageText = await pdfDoc.pageAt(i).text;
+      //   fullText += pageText + '\n';
+      // }
+      // 
+      // return fullText;
     } catch (e) {
       throw Exception('Failed to extract text from PDF: $e');
     }
@@ -415,12 +418,13 @@ class DocumentScannerService {
       // 3. Convert to grayscale for better text recognition
       enhanced = img.grayscale(enhanced);
       
-      // 4. Apply sharpening
-      enhanced = img.convolution(enhanced, [
+      // 4. Apply sharpening (fixed convolution call)
+      final kernel = [
         0, -1, 0,
         -1, 5, -1,
         0, -1, 0
-      ]);
+      ];
+      enhanced = img.convolution(enhanced, filter: kernel);
 
       // Save enhanced image
       final enhancedBytes = img.encodeJpg(enhanced, quality: 95);

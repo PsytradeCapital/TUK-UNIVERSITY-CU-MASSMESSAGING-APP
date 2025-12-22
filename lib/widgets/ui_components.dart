@@ -198,7 +198,7 @@ class UIComponents {
               label: semanticLabel ?? label,
               value: value,
               items: items,
-              onChanged: isEnabled ? onChanged : null,
+              onChanged: isEnabled ? onChanged : (_) {},
               hint: hint,
               error: error,
               isRequired: isRequired,

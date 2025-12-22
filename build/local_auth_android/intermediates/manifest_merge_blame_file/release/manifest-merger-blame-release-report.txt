@@ -4,12 +4,12 @@
 4
 5    <uses-sdk
 6        android:minSdkVersion="19"
-6-->C:\Users\Evelyn\AppData\Local\Pub\Cache\hosted\pub.dev\local_auth_android-1.0.38\android\src\main\AndroidManifest.xml
+6-->C:\Users\Martin Mbugua\AppData\Local\Pub\Cache\hosted\pub.dev\local_auth_android-1.0.38\android\src\main\AndroidManifest.xml
 7        android:targetSdkVersion="19" />
-7-->C:\Users\Evelyn\AppData\Local\Pub\Cache\hosted\pub.dev\local_auth_android-1.0.38\android\src\main\AndroidManifest.xml
+7-->C:\Users\Martin Mbugua\AppData\Local\Pub\Cache\hosted\pub.dev\local_auth_android-1.0.38\android\src\main\AndroidManifest.xml
 8
 9    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
-9-->C:\Users\Evelyn\AppData\Local\Pub\Cache\hosted\pub.dev\local_auth_android-1.0.38\android\src\main\AndroidManifest.xml:3:5-72
-9-->C:\Users\Evelyn\AppData\Local\Pub\Cache\hosted\pub.dev\local_auth_android-1.0.38\android\src\main\AndroidManifest.xml:3:22-69
+9-->C:\Users\Martin Mbugua\AppData\Local\Pub\Cache\hosted\pub.dev\local_auth_android-1.0.38\android\src\main\AndroidManifest.xml:3:5-72
+9-->C:\Users\Martin Mbugua\AppData\Local\Pub\Cache\hosted\pub.dev\local_auth_android-1.0.38\android\src\main\AndroidManifest.xml:3:22-69
 10
 11</manifest>

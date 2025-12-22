@@ -157,7 +157,7 @@ class CloudSyncService {
   // Real-time sync subscriptions
   StreamSubscription<List<AttendeeModel>>? _attendeesStreamSubscription;
   StreamSubscription<List<MessageLogModel>>? _messageLogsStreamSubscription;
-  StreamSubscription<bool>? _connectivitySubscription;
+  StreamSubscription<DateTime>? _connectivitySubscription;
 
   /// Get sync status
   SyncStatus getSyncStatus() {
@@ -167,6 +167,73 @@ class CloudSyncService {
       lastSyncAt: _lastSyncAt,
       pendingChanges: 0, // Will be calculated from local unsynced items
     );
+  }
+
+  /// Check if service is initialized
+  bool get isInitialized => _authService.isAuthenticated();
+
+  /// Sync attendees from cloud
+  Future<SyncResult> syncAttendeesFromCloud() async {
+    if (!_isOnline()) {
+      return SyncResult(success: false, itemsSynced: 0, errors: [SyncError(message: 'No internet connection')]);
+    }
+    
+    try {
+      final cloudAttendees = await _firebaseAttendeeRepo.getAllAttendees();
+      int synced = 0;
+      
+      for (final attendee in cloudAttendees) {
+        await _localAttendeeRepo.createAttendee(attendee);
+        synced++;
+      }
+      
+      return SyncResult(success: true, itemsSynced: synced, errors: []);
+    } catch (e) {
+      return SyncResult(success: false, itemsSynced: 0, errors: [SyncError(message: e.toString())]);
+    }
+  }
+
+  /// Sync message logs from cloud
+  Future<SyncResult> syncMessageLogsFromCloud() async {
+    if (!_isOnline()) {
+      return SyncResult(success: false, itemsSynced: 0, errors: [SyncError(message: 'No internet connection')]);
+    }
+    
+    try {
+      final cloudLogs = await _firebaseMessageLogRepo.getAllMessageLogs();
+      int synced = 0;
+      
+      for (final log in cloudLogs) {
+        await _localMessageLogRepo.createMessageLog(log);
+        synced++;
+      }
+      
+      return SyncResult(success: true, itemsSynced: synced, errors: []);
+    } catch (e) {
+      return SyncResult(success: false, itemsSynced: 0, errors: [SyncError(message: e.toString())]);
+    }
+  }
+
+  /// Sync services from cloud
+  Future<SyncResult> syncServicesFromCloud() async {
+    // For now, return empty result as services sync is not implemented
+    return SyncResult(success: true, itemsSynced: 0, errors: []);
+  }
+
+  /// Check if there are pending operations
+  Future<bool> hasPendingOperations() async {
+    // Check for unsynced local data
+    final attendees = await _localAttendeeRepo.getAllAttendees();
+    final logs = await _localMessageLogRepo.getAllMessageLogs();
+    
+    // Simple check - in real implementation, would check sync status flags
+    return attendees.isNotEmpty || logs.isNotEmpty;
+  }
+
+  /// Sync pending operations
+  Future<SyncResult> syncPendingOperations() async {
+    // Simply delegate to syncToCloud for now
+    return await syncToCloud();
   }
 
   /// Check if device is online
@@ -803,8 +870,7 @@ class CloudSyncService {
     _connectivitySubscription?.cancel();
 
     // Listen for connection restoration
-    _connectivitySubscription = _connectivityService.connectionRestoredStream().listen(
-      (restoredAt) async {
+    _connectivitySubscription = _connectivityService.connectionRestoredStream().listen((restoredAt) async {
         _emitSyncEvent(
           SyncEventType.started,
           'Connection restored at $restoredAt - triggering auto-sync',

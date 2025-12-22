@@ -32,7 +32,7 @@ class RealTimeSyncService {
   // Stream subscriptions
   StreamSubscription<List<AttendeeModel>>? _attendeesStreamSubscription;
   StreamSubscription<List<MessageLogModel>>? _messageLogsStreamSubscription;
-  StreamSubscription<bool>? _connectivitySubscription;
+  StreamSubscription<DateTime>? _connectivitySubscription;
 
   // Stream controllers for UI updates
   final StreamController<List<AttendeeModel>> _attendeeUpdatesController = 
@@ -405,8 +405,7 @@ class RealTimeSyncService {
 
   /// Set up connectivity monitoring to restart listeners when online
   void _setupConnectivityMonitoring() {
-    _connectivitySubscription = _connectivityService.connectionRestoredStream().listen(
-      (restoredAt) async {
+    _connectivitySubscription = _connectivityService.connectionRestoredStream().listen((restoredAt) async {
         _emitSyncEvent(
           RealTimeSyncEventType.reconnected,
           'Connection restored at $restoredAt - restarting real-time listeners',

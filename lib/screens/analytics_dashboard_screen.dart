@@ -167,7 +167,7 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen>
     return Scaffold(
       appBar: AppBar(
         title: const Text('Analytics Dashboard'),
-        backgroundColor: AppTheme.primaryColor,
+        backgroundColor: AppTheme.primaryBlue,
         foregroundColor: Colors.white,
         bottom: TabBar(
           controller: _tabController,
@@ -487,17 +487,17 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen>
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppTheme.primaryColor.withOpacity(0.1),
+        color: AppTheme.primaryBlue.withOpacity(0.1),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         children: [
-          Icon(Icons.access_time, color: AppTheme.primaryColor),
+          Icon(Icons.access_time, color: AppTheme.primaryBlue),
           const SizedBox(width: 8),
           Text(
             'Showing data for: ${_getTimeRangeText()}',
             style: TextStyle(
-              color: AppTheme.primaryColor,
+              color: AppTheme.primaryBlue,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -627,12 +627,12 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen>
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: AppTheme.primaryColor.withOpacity(0.1),
+              color: AppTheme.primaryBlue.withOpacity(0.1),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Icon(
               Icons.message,
-              color: AppTheme.primaryColor,
+              color: AppTheme.primaryBlue,
             ),
           ),
           const SizedBox(width: 12),

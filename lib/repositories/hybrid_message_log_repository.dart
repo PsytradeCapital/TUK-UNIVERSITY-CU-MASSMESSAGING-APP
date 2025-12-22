@@ -506,7 +506,14 @@ class HybridMessageLogRepository {
       }
 
       // Get from local database
-      return await _localRepo.getMessageStatistics();
+      final localStats = await _localRepo.getMessageStatistics();
+      return MessageStatistics(
+        totalMessages: localStats['totalMessages'] ?? 0,
+        sentMessages: localStats['sentMessages'] ?? 0,
+        failedMessages: localStats['failedMessages'] ?? 0,
+        pendingMessages: localStats['pendingMessages'] ?? 0,
+        deliveredMessages: localStats['deliveredMessages'] ?? 0,
+      );
     } catch (e) {
       throw HybridMessageLogRepositoryException('Failed to get message statistics: $e');
     }
@@ -528,7 +535,15 @@ class HybridMessageLogRepository {
       }
 
       // Get from local database
-      return await _localRepo.getMessageStatisticsByService(serviceId);
+      // Get from local database
+      final localStats = await _localRepo.getMessageStatisticsByService(serviceId);
+      return MessageStatistics(
+        totalMessages: localStats['totalMessages'] ?? 0,
+        sentMessages: localStats['sentMessages'] ?? 0,
+        failedMessages: localStats['failedMessages'] ?? 0,
+        pendingMessages: localStats['pendingMessages'] ?? 0,
+        deliveredMessages: localStats['deliveredMessages'] ?? 0,
+      );
     } catch (e) {
       throw HybridMessageLogRepositoryException('Failed to get message statistics by service: $e');
     }

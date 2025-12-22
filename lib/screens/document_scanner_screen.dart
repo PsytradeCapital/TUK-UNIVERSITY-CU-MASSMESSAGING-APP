@@ -244,7 +244,7 @@ class _DocumentScannerScreenState extends State<DocumentScannerScreen>
     return Scaffold(
       appBar: AppBar(
         title: const Text('Document Scanner'),
-        backgroundColor: AppTheme.primaryColor,
+        backgroundColor: AppTheme.primaryBlue,
         foregroundColor: Colors.white,
         actions: [
           IconButton(
@@ -265,8 +265,8 @@ class _DocumentScannerScreenState extends State<DocumentScannerScreen>
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    AppTheme.primaryColor.withOpacity(0.1),
-                    AppTheme.primaryColor.withOpacity(0.05),
+                    AppTheme.primaryBlue.withOpacity(0.1),
+                    AppTheme.primaryBlue.withOpacity(0.05),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -278,7 +278,7 @@ class _DocumentScannerScreenState extends State<DocumentScannerScreen>
                   Icon(
                     Icons.document_scanner,
                     size: 48,
-                    color: AppTheme.primaryColor,
+                    color: AppTheme.primaryBlue,
                   ),
                   const SizedBox(height: 12),
                   const Text(
@@ -308,10 +308,10 @@ class _DocumentScannerScreenState extends State<DocumentScannerScreen>
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryColor.withOpacity(0.1),
+                  color: AppTheme.primaryBlue.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: AppTheme.primaryColor.withOpacity(0.3),
+                    color: AppTheme.primaryBlue.withOpacity(0.3),
                   ),
                 ),
                 child: Column(
@@ -324,7 +324,7 @@ class _DocumentScannerScreenState extends State<DocumentScannerScreen>
                           child: Icon(
                             Icons.scanner,
                             size: 48,
-                            color: AppTheme.primaryColor,
+                            color: AppTheme.primaryBlue,
                           ),
                         );
                       },
@@ -335,13 +335,13 @@ class _DocumentScannerScreenState extends State<DocumentScannerScreen>
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
-                        color: AppTheme.primaryColor,
+                        color: AppTheme.primaryBlue,
                       ),
                     ),
                     const SizedBox(height: 12),
                     LinearProgressIndicator(
                       backgroundColor: Colors.white.withOpacity(0.3),
-                      valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
+                      valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryBlue),
                     ),
                   ],
                 ),
@@ -413,7 +413,7 @@ class _DocumentScannerScreenState extends State<DocumentScannerScreen>
                 ),
                 const SizedBox(height: 16),
                 
-                ...._recentScans.map((attendee) => _buildRecentScanItem(attendee)),
+                ..._recentScans.map((attendee) => _buildRecentScanItem(attendee)),
                 
                 const SizedBox(height: 16),
                 

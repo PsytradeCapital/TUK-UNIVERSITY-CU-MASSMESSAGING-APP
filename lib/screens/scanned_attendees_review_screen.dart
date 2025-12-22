@@ -124,7 +124,7 @@ class _ScannedAttendeesReviewScreenState extends State<ScannedAttendeesReviewScr
             name: attendee.name,
             phoneNumber: attendee.phoneNumber,
             location: attendee.location,
-            yearOfStudy: null,
+            yearOfStudy: '',
             category: attendeeData['category'],
           );
 

@@ -1,1 +1,0 @@
-com.example.christian_union_attendance_app

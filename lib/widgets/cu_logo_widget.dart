@@ -5,12 +5,14 @@ class CULogoWidget extends StatelessWidget {
   final double? width;
   final double? height;
   final bool useDarkVersion;
+  final bool showText;
 
   const CULogoWidget({
     Key? key,
     this.width,
     this.height,
     this.useDarkVersion = false,
+    this.showText = true,
   }) : super(key: key);
 
   @override

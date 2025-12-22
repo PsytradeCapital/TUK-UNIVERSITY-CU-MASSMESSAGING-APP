@@ -680,14 +680,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.0"
-  pdf_text:
-    dependency: "direct main"
-    description:
-      name: pdf_text
-      sha256: ea906fbc95c3c13bf91be826daaec5524182db0a0bfa5eae702f78e8dd1d26c8
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.5.0"
   petitparser:
     dependency: transitive
     description:

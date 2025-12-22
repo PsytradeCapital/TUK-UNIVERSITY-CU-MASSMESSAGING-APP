@@ -81,7 +81,7 @@ class InitialSyncService {
       // Sync attendees from cloud
       final attendeeResult = await _cloudSyncService.syncAttendeesFromCloud();
       if (!attendeeResult.success) {
-        throw Exception('Failed to sync attendees: ${attendeeResult.error}');
+        throw Exception('Failed to sync attendees: ${attendeeResult.errors.isNotEmpty ? attendeeResult.errors.first.message : "Unknown error"}');
       }
 
       onStatusUpdate?.call('Syncing message history...');
@@ -90,7 +90,7 @@ class InitialSyncService {
       // Sync message logs from cloud
       final messageResult = await _cloudSyncService.syncMessageLogsFromCloud();
       if (!messageResult.success) {
-        throw Exception('Failed to sync messages: ${messageResult.error}');
+        throw Exception('Failed to sync messages: ${messageResult.errors.isNotEmpty ? messageResult.errors.first.message : "Unknown error"}');
       }
 
       onStatusUpdate?.call('Syncing services data...');
@@ -99,7 +99,7 @@ class InitialSyncService {
       // Sync services data from cloud
       final servicesResult = await _cloudSyncService.syncServicesFromCloud();
       if (!servicesResult.success) {
-        throw Exception('Failed to sync services: ${servicesResult.error}');
+        throw Exception('Failed to sync services: ${servicesResult.errors.isNotEmpty ? servicesResult.errors.first.message : "Unknown error"}');
       }
 
       onStatusUpdate?.call('Finalizing sync...');
@@ -230,7 +230,7 @@ class InitialSyncService {
           direction: 'bidirectional',
           itemsSynced: result.itemsSynced,
           success: result.success,
-          errorMessage: result.error,
+          errorMessage: result.errors.isNotEmpty ? result.errors.first.message : "Unknown error",
         );
         
         return result.success;
