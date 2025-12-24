@@ -98,12 +98,16 @@ class AuthService {
 
       // Create user document in Firestore
       if (userCredential.user != null) {
+        // Check if this is the first user (should be admin)
+        final usersQuery = await _firestore.collection('users').limit(1).get();
+        final isFirstUser = usersQuery.docs.isEmpty;
+        
         final userModel = UserModel(
           uid: userCredential.user!.uid,
           email: email,
           name: name,
-          role: UserRole.leader,  // Default role
-          isApproved: false,      // Requires admin approval
+          role: isFirstUser ? UserRole.admin : UserRole.leader,  // First user is admin
+          isApproved: isFirstUser ? true : false,      // First user is auto-approved
           createdAt: DateTime.now(),
         );
 
@@ -112,7 +116,11 @@ class AuthService {
             .doc(userCredential.user!.uid)
             .set(userModel.toFirestore());
 
-        debugPrint('User created successfully: ${userCredential.user!.uid}');
+        if (isFirstUser) {
+          debugPrint('First user created as admin: ${userCredential.user!.uid}');
+        } else {
+          debugPrint('User created successfully: ${userCredential.user!.uid}');
+        }
       }
 
       return userCredential;
