@@ -45,3 +45,4 @@ app.*.map.json
 
 # Kiro
 /.kiro
+build/ 

@@ -398,10 +398,7 @@ class SMSManager {
         .replaceAll('[Name]', attendeeName)
         .replaceAll('[NAME]', attendeeName.toUpperCase());
 
-    // If no placeholders found, add a personal greeting
-    if (personalizedMessage == message && !message.toLowerCase().contains(attendeeName.toLowerCase())) {
-      personalizedMessage = 'Hi $attendeeName, $message';
-    }
+    // No automatic greeting added - only replace explicit placeholders
 
     return personalizedMessage;
   }

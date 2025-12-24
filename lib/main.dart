@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'firebase_options.dart';
 import 'widgets/auth_wrapper.dart';
 import 'widgets/global_error_handler.dart';
 import 'screens/home_screen.dart';
@@ -46,32 +47,41 @@ void main() {
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
     
-    // Initialize Firebase
+    // Initialize Firebase with proper options
+    bool firebaseInitialized = false;
     try {
-      await Firebase.initializeApp();
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+      firebaseInitialized = true;
       debugPrint('Firebase initialized successfully');
       
-      // Configure Firestore settings
+      // Configure Firestore settings only if Firebase is initialized
       await _configureFirestore();
       debugPrint('Firestore configured successfully');
     } catch (e) {
       debugPrint('Firebase initialization error: $e');
-      // Continue app initialization even if Firebase fails
+      debugPrint('App will run in offline mode');
+      firebaseInitialized = false;
+      // Continue without Firebase - app will work in offline mode
     }
     
-    // Initialize Analytics Service
+    // Initialize services with Firebase availability check
     try {
-      final analyticsService = AnalyticsService();
-      await analyticsService.initialize();
-      debugPrint('AnalyticsService initialized successfully');
-      
-      // Track app open event
-      await analyticsService.trackAppOpen();
+      // Initialize Analytics Service only if Firebase is available
+      if (firebaseInitialized) {
+        final analyticsService = AnalyticsService();
+        await analyticsService.initialize();
+        debugPrint('AnalyticsService initialized successfully');
+        
+        // Track app open event
+        await analyticsService.trackAppOpen();
+      }
     } catch (e) {
       debugPrint('Analytics initialization error: $e');
     }
     
-    // Initialize Auth Service
+    // Initialize Auth Service with offline fallback
     try {
       final authService = AuthService();
       await authService.initialize();
@@ -80,19 +90,23 @@ void main() {
       debugPrint('Auth service initialization error: $e');
     }
     
-    // Initialize connectivity and sync services
+    // Initialize connectivity and sync services with Firebase check
     try {
       final connectivityService = ConnectivityService();
       await connectivityService.initialize();
       debugPrint('ConnectivityService initialized successfully');
       
-      final cloudSyncService = CloudSyncService();
-      await cloudSyncService.initialize();
-      debugPrint('CloudSyncService initialized successfully');
+      if (firebaseInitialized) {
+        final cloudSyncService = CloudSyncService();
+        await cloudSyncService.initialize();
+        debugPrint('CloudSyncService initialized successfully');
 
-      final realTimeSyncService = RealTimeSyncService();
-      await realTimeSyncService.initialize();
-      debugPrint('RealTimeSyncService initialized successfully');
+        final realTimeSyncService = RealTimeSyncService();
+        await realTimeSyncService.initialize();
+        debugPrint('RealTimeSyncService initialized successfully');
+      } else {
+        debugPrint('Cloud services disabled - Firebase not available');
+      }
     } catch (e) {
       debugPrint('Service initialization error: $e');
     }
