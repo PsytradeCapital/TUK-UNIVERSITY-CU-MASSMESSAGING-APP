@@ -54,12 +54,12 @@ class FastRegistrationService {
         yearOfStudy: yearOfStudy,
         location: location.trim(),
         category: category,
-        registeredAt: DateTime.now(),
+        firstRegistered: DateTime.now(),
         isSynced: false, // Mark as not synced yet
       );
 
       // INSTANT LOCAL REGISTRATION (no waiting)
-      final localId = await _localRepo.insertAttendee(attendee);
+      final localId = await _localRepo.createAttendee(attendee);
       final registeredAttendee = attendee.copyWith(id: localId);
 
       // Add to background sync queue (non-blocking)
@@ -112,11 +112,11 @@ class FastRegistrationService {
     _syncQueue.clear();
 
     try {
-      // Batch sync to cloud
+      // Batch sync to cloud - use the general sync method
+      await _cloudSync.syncToCloud();
+      
+      // Mark all synced items as synced in local database
       for (final attendee in toSync) {
-        await _cloudSync.syncAttendeeToCloud(attendee);
-        
-        // Mark as synced in local database
         await _localRepo.updateAttendee(
           attendee.copyWith(isSynced: true)
         );
@@ -129,7 +129,7 @@ class FastRegistrationService {
 
   /// Get registration statistics
   Future<RegistrationStats> getStats() async {
-    final totalAttendees = await _localRepo.getAttendeeCount();
+    final totalAttendees = await _localRepo.getTotalAttendeesCount();
     final unsyncedCount = _syncQueue.length;
     final isOnline = _connectivity.isOnline();
     

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/attendee_model.dart';
 import '../services/registration_service.dart';
+import '../services/fast_registration_service.dart';
 import '../services/real_time_sync_service.dart';
 import '../widgets/attendee_search_widget.dart';
 import '../widgets/cu_logo_widget.dart';
@@ -19,6 +20,7 @@ class RegistrationScreen extends StatefulWidget {
 
 class _RegistrationScreenState extends State<RegistrationScreen> with OfflineCapable {
   final _formKey = GlobalKey<FormState>();
+  final _fastRegistrationService = FastRegistrationService();
   final _registrationService = RegistrationService();
   final _realTimeSyncService = RealTimeSyncService();
   
