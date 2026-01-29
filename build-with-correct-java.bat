@@ -1,43 +1,40 @@
-@echo off
-echo Setting up Java environment for Flutter build...
+tk@echo off
+echo Building TUK CU App with Correct Java Path
+echo ==========================================
+echo.
 
-REM Set Java Home to Android Studio's JDK
+REM Set correct Java path
 set JAVA_HOME=C:\Program Files\Android\Android Studio\jbr
 set PATH=%JAVA_HOME%\bin;%PATH%
 
-REM Verify Java is working
-echo Testing Java installation...
+echo Using Java: %JAVA_HOME%
+echo.
+
+REM Verify Java is accessible
 "%JAVA_HOME%\bin\java.exe" -version
-if %errorlevel% neq 0 (
-    echo ERROR: Java not found at %JAVA_HOME%\bin\java.exe
+if errorlevel 1 (
+    echo ERROR: Java not found at %JAVA_HOME%
     pause
     exit /b 1
 )
 
-echo Java found successfully!
+echo.
+echo Java verified successfully. Building APK...
 echo.
 
-REM Clean previous build
-echo Cleaning previous build...
+REM Clean and build
 C:\flutter\bin\flutter.bat clean
-
-REM Build APK with correct Java
-echo Building APK with correct Java environment...
+C:\flutter\bin\flutter.bat pub get
 C:\flutter\bin\flutter.bat build apk --release
 
-if %errorlevel% equ 0 (
+if exist "build\app\outputs\flutter-apk\app-release.apk" (
     echo.
-    echo ✅ SUCCESS! APK built successfully!
-    echo.
-    if exist "build\app\outputs\flutter-apk\app-release.apk" (
-        echo 📱 APK Location: build\app\outputs\flutter-apk\app-release.apk
-        for %%I in ("build\app\outputs\flutter-apk\app-release.apk") do echo 📊 Size: %%~zI bytes
-        echo.
-        echo 🚀 Ready for deployment!
-    )
+    echo SUCCESS! Release APK built successfully.
+    echo File: build\app\outputs\flutter-apk\app-release.apk
+    dir "build\app\outputs\flutter-apk\app-release.apk"
 ) else (
     echo.
-    echo ❌ Build failed. Check errors above.
+    echo BUILD FAILED - APK not found.
 )
 
 pause
