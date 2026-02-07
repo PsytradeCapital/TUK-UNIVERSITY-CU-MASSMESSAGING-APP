@@ -3,7 +3,6 @@ import 'package:csv/csv.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../models/attendee_model.dart';
-import '../models/service_model.dart';
 import '../repositories/attendee_repository.dart';
 import '../repositories/service_repository.dart';
 import '../services/database_manager.dart';

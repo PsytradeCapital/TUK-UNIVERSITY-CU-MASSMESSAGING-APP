@@ -1,11 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 import '../models/attendee_model.dart';
-import '../models/message_log_model.dart';
-import '../models/service_model.dart';
 import '../services/auth_service.dart';
 import '../services/encryption_service.dart';
 
@@ -426,7 +423,7 @@ class DataImportService {
       final encryptedData = await file.readAsString();
       
       // Decrypt data
-      final decryptedJson = await EncryptionService.decryptData(encryptedData);
+      final decryptedJson = await EncryptionService.decryptSensitiveData(encryptedData);
       final Map<String, dynamic> importData = json.decode(decryptedJson);
 
       // Validate decrypted data

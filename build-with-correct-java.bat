@@ -1,4 +1,4 @@
-tk@echo off
+@echo off
 echo Building TUK CU App with Correct Java Path
 echo ==========================================
 echo.

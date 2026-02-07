@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_state_provider.dart';
-import '../services/error_handling_service.dart';
 import '../services/connectivity_service.dart';
 import '../services/cloud_sync_service.dart';
 

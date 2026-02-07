@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
@@ -8,7 +7,6 @@ import 'package:file_picker/file_picker.dart';
 // import 'package:pdf_text/pdf_text.dart'; // Commented out - package not available
 import '../models/scanned_attendee_model.dart';
 import '../models/attendee_model.dart';
-import '../utils/phone_validator.dart';
 import 'analytics_service.dart';
 
 /// Service for scanning and processing attendance sheets

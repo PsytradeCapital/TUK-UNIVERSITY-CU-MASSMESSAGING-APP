@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:async';
 import 'cli_parser.dart';
 import '../core/terminal_test_runner.dart';
+import '../core/test_suite.dart';
 import '../reporters/test_reporter.dart';
 import '../mocks/mock_environment.dart';
 import '../test_suites/test_suite_registry.dart';

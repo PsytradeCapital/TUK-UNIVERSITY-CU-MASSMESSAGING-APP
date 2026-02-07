@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
@@ -367,7 +366,7 @@ class DataMigrationService {
 
       // Encrypt the data
       final jsonString = json.encode(exportData);
-      final encryptedData = await EncryptionService.encryptData(jsonString);
+      final encryptedData = await EncryptionService.encryptSensitiveData(jsonString);
 
       // Create export directory
       final directory = await getApplicationDocumentsDirectory();

@@ -1,13 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
-import '../models/attendee_model.dart';
-import '../models/message_log_model.dart';
-import '../models/service_model.dart';
 import '../services/auth_service.dart';
 import '../services/encryption_service.dart';
 
@@ -49,7 +45,7 @@ class DataExportService {
 
       // Convert to JSON and encrypt
       final jsonString = json.encode(exportPackage);
-      final encryptedData = await EncryptionService.encryptData(jsonString);
+      final encryptedData = await EncryptionService.encryptSensitiveData(jsonString);
 
       // Save to local file
       final filePath = await _saveEncryptedDataToFile(encryptedData, 'firestore_backup');
@@ -234,7 +230,7 @@ class DataExportService {
 
       // Convert to JSON and encrypt
       final jsonString = json.encode(exportPackage);
-      final encryptedData = await EncryptionService.encryptData(jsonString);
+      final encryptedData = await EncryptionService.encryptSensitiveData(jsonString);
 
       // Save to local file
       final filePath = await _saveEncryptedDataToFile(encryptedData, 'attendees_export');
@@ -287,7 +283,7 @@ class DataExportService {
 
       // Convert to JSON and encrypt
       final jsonString = json.encode(exportPackage);
-      final encryptedData = await EncryptionService.encryptData(jsonString);
+      final encryptedData = await EncryptionService.encryptSensitiveData(jsonString);
 
       // Save to local file
       final filePath = await _saveEncryptedDataToFile(encryptedData, 'message_logs_export');
@@ -390,7 +386,7 @@ class DataExportService {
 
       // Convert to JSON and encrypt
       final jsonString = json.encode(exportPackage);
-      final encryptedData = await EncryptionService.encryptData(jsonString);
+      final encryptedData = await EncryptionService.encryptSensitiveData(jsonString);
 
       // Save to local file
       final filePath = await _saveEncryptedDataToFile(encryptedData, 'date_range_export');
