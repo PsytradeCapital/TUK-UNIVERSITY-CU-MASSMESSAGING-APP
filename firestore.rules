@@ -56,14 +56,19 @@ service cloud.firestore {
       
       // Allow users to update their own profile (except role and approval status)
       // Allow admins to update any user (including role and approval status)
+      // Allow auto-approval for specific pre-approved admin email
       allow update: if isAuthenticated() && 
-                       isValidUserData() &&
+                       request.auth.uid == userId &&
                        (
                          // User updating their own profile (limited fields)
-                         (request.auth.uid == userId &&
+                         (isValidUserData() &&
                           !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'isApproved', 'uid'])) ||
                          // Admin updating any user (all fields)
-                         isAdmin()
+                         (isAdmin() && isValidUserData()) ||
+                         // Auto-approve specific admin email during login (allow any fields)
+                         (request.auth.token.email == 'martinmbugua300@gmail.com') ||
+                         // Allow lastLoginAt updates for any authenticated user
+                         (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastLoginAt']))
                        );
       
       // Only admins can delete user accounts

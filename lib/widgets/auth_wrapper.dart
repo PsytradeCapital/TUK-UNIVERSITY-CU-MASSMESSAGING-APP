@@ -189,7 +189,16 @@ class _AuthWrapperState extends State<AuthWrapper> with WidgetsBindingObserver {
 
     // Check user approval status
     if (!_isUserApproved) {
-      return const PendingApprovalScreen();
+      // Auto-approve martinmbugua300@gmail.com
+      final user = _authService.getCurrentUser();
+      if (user?.email?.toLowerCase() == 'martinmbugua300@gmail.com') {
+        // Force approval for this specific email
+        setState(() {
+          _isUserApproved = true;
+        });
+      } else {
+        return const PendingApprovalScreen();
+      }
     }
 
     // Check if initial sync is needed

@@ -102,12 +102,15 @@ class AuthService {
         final usersQuery = await _firestore.collection('users').limit(1).get();
         final isFirstUser = usersQuery.docs.isEmpty;
         
+        // Auto-approve specific admin email
+        final isPreApprovedAdmin = email.toLowerCase() == 'martinmbugua300@gmail.com';
+        
         final userModel = UserModel(
           uid: userCredential.user!.uid,
           email: email,
           name: name,
-          role: isFirstUser ? UserRole.admin : UserRole.leader,  // First user is admin
-          isApproved: isFirstUser ? true : false,      // First user is auto-approved
+          role: (isFirstUser || isPreApprovedAdmin) ? UserRole.admin : UserRole.leader,
+          isApproved: (isFirstUser || isPreApprovedAdmin) ? true : false,
           createdAt: DateTime.now(),
         );
 
@@ -116,8 +119,8 @@ class AuthService {
             .doc(userCredential.user!.uid)
             .set(userModel.toFirestore());
 
-        if (isFirstUser) {
-          debugPrint('First user created as admin: ${userCredential.user!.uid}');
+        if (isFirstUser || isPreApprovedAdmin) {
+          debugPrint('Admin user created: ${userCredential.user!.uid}');
         } else {
           debugPrint('User created successfully: ${userCredential.user!.uid}');
         }
@@ -152,25 +155,70 @@ class AuthService {
 
       // Update last login time
       if (userCredential.user != null) {
-        await _firestore
-            .collection('users')
-            .doc(userCredential.user!.uid)
-            .update({
-          'lastLoginAt': Timestamp.now(),
-        });
-
-        // Check if user is approved
+        // Check if user document exists in Firestore
         final userDoc = await _firestore
             .collection('users')
             .doc(userCredential.user!.uid)
             .get();
 
-        if (userDoc.exists) {
-          final userData = userDoc.data() as Map<String, dynamic>;
-          final isApproved = userData['isApproved'] as bool? ?? false;
+        if (!userDoc.exists) {
+          // User exists in Auth but not in Firestore - create document
+          debugPrint('User document missing in Firestore, creating...');
+          
+          final isPreApprovedAdmin = email.toLowerCase() == 'martinmbugua300@gmail.com';
+          
+          final userModel = UserModel(
+            uid: userCredential.user!.uid,
+            email: email,
+            name: userCredential.user!.displayName ?? 'User',
+            role: isPreApprovedAdmin ? UserRole.admin : UserRole.leader,
+            isApproved: isPreApprovedAdmin ? true : false,
+            createdAt: DateTime.now(),
+          );
 
-          if (!isApproved) {
-            // Sign out if not approved
+          await _firestore
+              .collection('users')
+              .doc(userCredential.user!.uid)
+              .set(userModel.toFirestore());
+          
+          // Wait a moment for Firestore to propagate
+          await Future.delayed(const Duration(milliseconds: 500));
+          
+          debugPrint('Created user document for: ${userCredential.user!.uid}');
+        } else {
+          // User document exists, update last login
+          await _firestore
+              .collection('users')
+              .doc(userCredential.user!.uid)
+              .update({
+            'lastLoginAt': Timestamp.now(),
+          });
+
+          final userData = userDoc.data() as Map<String, dynamic>;
+          final userEmail = userData['email'] as String? ?? '';
+          final isApproved = userData['isApproved'] as bool? ?? false;
+          
+          // Auto-approve specific admin email if not already approved
+          final isPreApprovedAdmin = userEmail.toLowerCase() == 'martinmbugua300@gmail.com';
+          if (isPreApprovedAdmin && !isApproved) {
+            debugPrint('Auto-approving admin user: ${userCredential.user!.uid}');
+            await _firestore
+                .collection('users')
+                .doc(userCredential.user!.uid)
+                .update({
+              'isApproved': true,
+              'role': 'admin',
+              'approvedAt': Timestamp.now(),
+              'approvedBy': 'system',
+            });
+            
+            // Wait a moment for Firestore to propagate
+            await Future.delayed(const Duration(milliseconds: 500));
+            
+            debugPrint('Auto-approved admin user successfully');
+            // Don't throw error - user is now approved
+          } else if (!isApproved && !isPreApprovedAdmin) {
+            // Sign out if not approved and not pre-approved admin
             await signOut();
             throw AuthException(
               code: 'account-not-approved',
@@ -180,6 +228,9 @@ class AuthService {
         }
 
         debugPrint('User signed in successfully: ${userCredential.user!.uid}');
+        
+        // Force reload user data to ensure approval status is current
+        await reloadUser();
       }
 
       return userCredential;

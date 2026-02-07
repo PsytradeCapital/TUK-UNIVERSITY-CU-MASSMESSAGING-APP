@@ -5,7 +5,7 @@ import 'package:path_provider/path_provider.dart';
 
 class DatabaseManager {
   static const String _databaseName = 'christian_union_attendance.db';
-  static const int _databaseVersion = 5;
+  static const int _databaseVersion = 6;
   
   static Database? _database;
   static DatabaseManager? _instance;
@@ -60,7 +60,14 @@ class DatabaseManager {
           category TEXT DEFAULT 'student',
           attendance_count INTEGER DEFAULT 0,
           first_registered TEXT NOT NULL,
-          last_updated TEXT NOT NULL
+          last_updated TEXT NOT NULL,
+          firestore_id TEXT,
+          created_by TEXT,
+          created_at TEXT,
+          modified_by TEXT,
+          modified_at TEXT,
+          is_synced INTEGER DEFAULT 0,
+          version INTEGER DEFAULT 1
         )
       ''');
 
@@ -214,6 +221,19 @@ class DatabaseManager {
         ''');
         await db.execute('CREATE INDEX idx_sync_queue_status ON sync_queue(status)');
         await db.execute('CREATE INDEX idx_sync_queue_user ON sync_queue(user_id)');
+      }
+      
+      // Migration from version 5 to 6: Add Firestore sync columns to attendees table
+      if (oldVersion < 6) {
+        await db.execute('ALTER TABLE attendees ADD COLUMN firestore_id TEXT');
+        await db.execute('ALTER TABLE attendees ADD COLUMN created_by TEXT');
+        await db.execute('ALTER TABLE attendees ADD COLUMN created_at TEXT');
+        await db.execute('ALTER TABLE attendees ADD COLUMN modified_by TEXT');
+        await db.execute('ALTER TABLE attendees ADD COLUMN modified_at TEXT');
+        await db.execute('ALTER TABLE attendees ADD COLUMN is_synced INTEGER DEFAULT 0');
+        await db.execute('ALTER TABLE attendees ADD COLUMN version INTEGER DEFAULT 1');
+        await db.execute('CREATE INDEX idx_attendees_firestore_id ON attendees(firestore_id)');
+        await db.execute('CREATE INDEX idx_attendees_is_synced ON attendees(is_synced)');
       }
       
       // Add more migration logic as needed for future versions
