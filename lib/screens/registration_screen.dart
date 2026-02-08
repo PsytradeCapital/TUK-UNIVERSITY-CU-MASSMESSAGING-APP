@@ -208,6 +208,22 @@ class _RegistrationScreenState extends State<RegistrationScreen> with OfflineCap
       return;
     }
 
+    // Check if already registered in current session
+    final sessionProvider = Provider.of<ServiceSessionProvider>(context, listen: false);
+    if (sessionProvider.hasActiveService) {
+      final phoneNumber = _phoneController.text.trim();
+      final alreadyInSession = sessionProvider.currentAttendees.any(
+        (attendee) => attendee.phoneNumber == phoneNumber
+      );
+      
+      if (alreadyInSession) {
+        final shouldContinue = await _showAlreadyRegisteredDialog();
+        if (!shouldContinue) {
+          return;
+        }
+      }
+    }
+
     setState(() {
       _isLoading = true;
       _generalError = null;
@@ -273,6 +289,64 @@ class _RegistrationScreenState extends State<RegistrationScreen> with OfflineCap
     } finally {
       setState(() => _isLoading = false);
     }
+  }
+
+  Future<bool> _showAlreadyRegisteredDialog() async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.warning, color: Colors.orange, size: 32),
+            SizedBox(width: 12),
+            Expanded(child: Text('Already Registered')),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'This phone number is already registered in the current session.',
+              style: TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.orange.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.orange.shade200),
+              ),
+              child: const Text(
+                'Registering again will count as a duplicate attendance for this service.',
+                style: TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Do you want to continue?',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Continue Anyway'),
+          ),
+        ],
+      ),
+    );
+    
+    return result ?? false;
   }
 
   void _showSuccessDialog(AttendeeModel attendee, bool isReturning) {

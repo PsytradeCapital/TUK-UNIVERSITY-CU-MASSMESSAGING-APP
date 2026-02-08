@@ -4,6 +4,7 @@ import 'registration_screen.dart';
 import 'messaging_screen.dart';
 import 'reports_screen.dart';
 import 'settings_screen.dart';
+import 'all_contacts_screen.dart';
 import '../providers/service_session_provider.dart';
 import '../providers/navigation_provider.dart';
 import '../providers/app_state_provider.dart';
@@ -109,6 +110,16 @@ class _HomeScreenState extends State<HomeScreen> {
               child: ScreenLoadingIndicator(
                 screenName: 'Registration',
                 child: const RegistrationScreen(),
+              ),
+            ),
+          ),
+          ErrorBoundary(
+            context: 'AllMembersScreen',
+            child: ScreenErrorHandler(
+              screenName: 'All Members',
+              child: ScreenLoadingIndicator(
+                screenName: 'All Members',
+                child: const AllMembersScreen(),
               ),
             ),
           ),
@@ -338,7 +349,7 @@ class _HomeScreenState extends State<HomeScreen> {
           navigationProvider.navigateToTab(index);
           
           // Announce tab change to screen reader
-          final tabNames = ['Registration', 'Messaging', 'Reports', 'Settings'];
+          final tabNames = ['Registration', 'All Members', 'Messaging', 'Reports', 'Settings'];
           AccessibilityUtils.announceToScreenReader(
             context, 
             'Switched to ${tabNames[index]} tab'
@@ -356,8 +367,15 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           BottomNavigationBarItem(
             icon: Semantics(
+              label: AccessibilityUtils.getTabSemantics(1, 'All Members'),
+              child: const Icon(Icons.people),
+            ),
+            label: 'Members',
+          ),
+          BottomNavigationBarItem(
+            icon: Semantics(
               label: AccessibilityUtils.getTabSemantics(
-                1, 
+                2, 
                 'Messaging', 
                 isEnabled: navigationProvider.canNavigateToMessaging,
                 badgeCount: sessionProvider.attendeeCount > 0 ? sessionProvider.attendeeCount : null,
@@ -407,7 +425,7 @@ class _HomeScreenState extends State<HomeScreen> {
           BottomNavigationBarItem(
             icon: Semantics(
               label: AccessibilityUtils.getTabSemantics(
-                2, 
+                3, 
                 'Reports', 
                 isEnabled: navigationProvider.canNavigateToReports
               ),
@@ -423,7 +441,7 @@ class _HomeScreenState extends State<HomeScreen> {
           BottomNavigationBarItem(
             icon: Semantics(
               label: AccessibilityUtils.getTabSemantics(
-                3, 
+                4, 
                 'Settings', 
                 isEnabled: navigationProvider.canNavigateToSettings
               ),
