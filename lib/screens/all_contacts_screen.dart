@@ -54,7 +54,10 @@ class _AllMembersScreenState extends State<AllMembersScreen> {
     });
     
     try {
+      // Load attendees in background
       final attendees = await _attendeeRepository.getAllAttendees();
+      
+      if (!mounted) return;
       
       // Sort by name A-Z
       attendees.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
@@ -77,17 +80,8 @@ class _AllMembersScreenState extends State<AllMembersScreen> {
         _years = years;
         _isLoading = false;
       });
-      
-      // Show count
-      if (mounted && attendees.isNotEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Loaded ${attendees.length} members'),
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _errorMessage = 'Failed to load members: $e';
         _isLoading = false;
@@ -183,46 +177,65 @@ class _AllMembersScreenState extends State<AllMembersScreen> {
     }
     
     final messageController = TextEditingController();
+    bool personalizeMessage = false;
     
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Send Message'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('Send to ${_filteredAttendees.length} members'),
-            const SizedBox(height: 16),
-            TextField(
-              controller: messageController,
-              decoration: const InputDecoration(
-                labelText: 'Message',
-                border: OutlineInputBorder(),
-              ),
-              maxLines: 3,
-              maxLength: 160,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Send Message'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Send to ${_filteredAttendees.length} members'),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: messageController,
+                  decoration: const InputDecoration(
+                    labelText: 'Message',
+                    hintText: 'Use {name} to personalize',
+                    border: OutlineInputBorder(),
+                    helperText: 'Max 500 characters',
+                  ),
+                  maxLines: 5,
+                  maxLength: 500,
+                ),
+                const SizedBox(height: 8),
+                CheckboxListTile(
+                  title: const Text('Personalize with names'),
+                  subtitle: const Text('Replace {name} with each member\'s name'),
+                  value: personalizeMessage,
+                  onChanged: (value) {
+                    setDialogState(() {
+                      personalizeMessage = value ?? false;
+                    });
+                  },
+                  dense: true,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Send'),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Send'),
-          ),
-        ],
       ),
     );
     
     if (confirmed == true && messageController.text.isNotEmpty) {
-      await _sendMessages(messageController.text);
+      await _sendMessages(messageController.text, personalizeMessage);
     }
   }
   
-  Future<void> _sendMessages(String message) async {
+  Future<void> _sendMessages(String message, bool personalize) async {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -242,12 +255,28 @@ class _AllMembersScreenState extends State<AllMembersScreen> {
       int sent = 0;
       int failed = 0;
       
-      await _smsManager.sendBulkSMS(
-        _filteredAttendees,
-        message,
-        onMessageSent: (_) => sent++,
-        onMessageFailed: (_) => failed++,
-      );
+      // If personalizing, send individually with personalized messages
+      if (personalize) {
+        for (final attendee in _filteredAttendees) {
+          try {
+            final personalizedMsg = message.replaceAll('{name}', attendee.name)
+                                           .replaceAll('{Name}', attendee.name)
+                                           .replaceAll('{NAME}', attendee.name.toUpperCase());
+            await _smsManager.sendBulkSMS([attendee], personalizedMsg);
+            sent++;
+          } catch (e) {
+            failed++;
+          }
+        }
+      } else {
+        // Send same message to all
+        await _smsManager.sendBulkSMS(
+          _filteredAttendees,
+          message,
+          onMessageSent: (_) => sent++,
+          onMessageFailed: (_) => failed++,
+        );
+      }
       
       Navigator.pop(context); // Close progress dialog
       
@@ -582,36 +611,66 @@ class _AllMembersScreenState extends State<AllMembersScreen> {
   
   Future<void> _sendMessageToOne(AttendeeModel attendee) async {
     final messageController = TextEditingController();
+    bool personalizeMessage = false;
     
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Message ${attendee.name}'),
-        content: TextField(
-          controller: messageController,
-          decoration: const InputDecoration(
-            labelText: 'Message',
-            border: OutlineInputBorder(),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text('Message ${attendee.name}'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: messageController,
+                  decoration: const InputDecoration(
+                    labelText: 'Message',
+                    hintText: 'Use {name} to personalize',
+                    border: OutlineInputBorder(),
+                    helperText: 'Max 500 characters',
+                  ),
+                  maxLines: 5,
+                  maxLength: 500,
+                ),
+                const SizedBox(height: 8),
+                CheckboxListTile(
+                  title: const Text('Personalize with name'),
+                  subtitle: Text('Replace {name} with ${attendee.name}'),
+                  value: personalizeMessage,
+                  onChanged: (value) {
+                    setDialogState(() {
+                      personalizeMessage = value ?? false;
+                    });
+                  },
+                  dense: true,
+                ),
+              ],
+            ),
           ),
-          maxLines: 3,
-          maxLength: 160,
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Send'),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Send'),
-          ),
-        ],
       ),
     );
     
     if (confirmed == true && messageController.text.isNotEmpty) {
       try {
-        await _smsManager.sendBulkSMS([attendee], messageController.text);
+        String finalMessage = messageController.text;
+        if (personalizeMessage) {
+          finalMessage = finalMessage.replaceAll('{name}', attendee.name)
+                                     .replaceAll('{Name}', attendee.name)
+                                     .replaceAll('{NAME}', attendee.name.toUpperCase());
+        }
+        await _smsManager.sendBulkSMS([attendee], finalMessage);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Message sent!')),
         );
@@ -634,14 +693,33 @@ class _AllMembersScreenState extends State<AllMembersScreen> {
             children: [
               ListTile(
                 title: const Text('All Locations'),
+                leading: Radio<String?>(
+                  value: null,
+                  groupValue: _selectedLocation,
+                  onChanged: (value) {
+                    setState(() => _selectedLocation = null);
+                    Navigator.pop(context);
+                    _applyFilters();
+                  },
+                ),
                 onTap: () {
                   setState(() => _selectedLocation = null);
                   Navigator.pop(context);
                   _applyFilters();
                 },
               ),
+              const Divider(),
               ..._locations.map((location) => ListTile(
                     title: Text(location),
+                    leading: Radio<String?>(
+                      value: location,
+                      groupValue: _selectedLocation,
+                      onChanged: (value) {
+                        setState(() => _selectedLocation = location);
+                        Navigator.pop(context);
+                        _applyFilters();
+                      },
+                    ),
                     onTap: () {
                       setState(() => _selectedLocation = location);
                       Navigator.pop(context);
@@ -651,11 +729,19 @@ class _AllMembersScreenState extends State<AllMembersScreen> {
             ],
           ),
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+        ],
       ),
     );
   }
   
   void _showYearFilter() {
+    final years = ['Year 1', 'Year 2', 'Year 3', 'Year 4', 'Year 5', 'Year 6'];
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -666,14 +752,33 @@ class _AllMembersScreenState extends State<AllMembersScreen> {
             children: [
               ListTile(
                 title: const Text('All Years'),
+                leading: Radio<String?>(
+                  value: null,
+                  groupValue: _selectedYear,
+                  onChanged: (value) {
+                    setState(() => _selectedYear = null);
+                    Navigator.pop(context);
+                    _applyFilters();
+                  },
+                ),
                 onTap: () {
                   setState(() => _selectedYear = null);
                   Navigator.pop(context);
                   _applyFilters();
                 },
               ),
-              ..._years.map((year) => ListTile(
+              const Divider(),
+              ...years.map((year) => ListTile(
                     title: Text(year),
+                    leading: Radio<String?>(
+                      value: year,
+                      groupValue: _selectedYear,
+                      onChanged: (value) {
+                        setState(() => _selectedYear = year);
+                        Navigator.pop(context);
+                        _applyFilters();
+                      },
+                    ),
                     onTap: () {
                       setState(() => _selectedYear = year);
                       Navigator.pop(context);
@@ -683,6 +788,12 @@ class _AllMembersScreenState extends State<AllMembersScreen> {
             ],
           ),
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+        ],
       ),
     );
   }
