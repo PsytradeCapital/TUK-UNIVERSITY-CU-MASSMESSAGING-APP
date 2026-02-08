@@ -189,17 +189,49 @@ class _AllMembersScreenState extends State<AllMembersScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text('Send to ${_filteredAttendees.length} members'),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.orange.shade200),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.warning, size: 16, color: Colors.orange.shade700),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Keep under 160 chars for reliable delivery',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.orange.shade700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 const SizedBox(height: 16),
                 TextField(
                   controller: messageController,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Message',
                     hintText: 'Use {name} to personalize',
-                    border: OutlineInputBorder(),
-                    helperText: 'Max 500 characters',
+                    border: const OutlineInputBorder(),
+                    helperText: 'Recommended: 160 chars or less',
+                    helperStyle: TextStyle(
+                      color: messageController.text.length > 160 
+                          ? Colors.red 
+                          : Colors.grey,
+                    ),
                   ),
                   maxLines: 5,
                   maxLength: 500,
+                  onChanged: (text) {
+                    setDialogState(() {}); // Rebuild to update helper color
+                  },
                 ),
                 const SizedBox(height: 8),
                 CheckboxListTile(
@@ -236,16 +268,105 @@ class _AllMembersScreenState extends State<AllMembersScreen> {
   }
   
   Future<void> _sendMessages(String message, bool personalize) async {
+    // Check message length and warn user
+    if (message.length > 160) {
+      final proceed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.warning, color: Colors.orange),
+              SizedBox(width: 8),
+              Text('Long Message Warning'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Your message is ${message.length} characters long.',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.red.shade200),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.error, color: Colors.red.shade700, size: 20),
+                        const SizedBox(width: 8),
+                        const Expanded(
+                          child: Text(
+                            'Messages over 160 characters may FAIL to send on many networks!',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      '• Standard SMS limit is 160 characters\n'
+                      '• Longer messages need multipart SMS\n'
+                      '• Many carriers block or fail multipart SMS\n'
+                      '• You may waste airtime on failed messages',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Sending to ${_filteredAttendees.length} members',
+                style: const TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Recommendation: Shorten your message to 160 characters or less for reliable delivery.',
+                style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel & Edit'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+              ),
+              child: const Text('Send Anyway (Risky)'),
+            ),
+          ],
+        ),
+      );
+      
+      if (proceed != true) return;
+    }
+    
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const AlertDialog(
+      builder: (context) => AlertDialog(
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text('Sending messages...'),
+            const CircularProgressIndicator(),
+            const SizedBox(height: 16),
+            Text('Sending messages... (${message.length} chars)'),
+            if (message.length > 160)
+              const Text(
+                'Long messages may take longer',
+                style: TextStyle(fontSize: 12, color: Colors.orange),
+              ),
           ],
         ),
       ),
@@ -283,8 +404,33 @@ class _AllMembersScreenState extends State<AllMembersScreen> {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Messages Sent'),
-          content: Text('Sent: $sent\nFailed: $failed'),
+          title: Text(
+            failed > 0 ? 'Messages Sent (Some Failed)' : 'Messages Sent',
+            style: TextStyle(
+              color: failed > 0 ? Colors.orange : Colors.green,
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('✅ Sent: $sent'),
+              if (failed > 0) Text('❌ Failed: $failed'),
+              const SizedBox(height: 12),
+              if (message.length > 160)
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text(
+                    'Note: Long messages (>160 chars) may show as "sent" but fail to deliver. Check with recipients to confirm.',
+                    style: TextStyle(fontSize: 12),
+                  ),
+                ),
+            ],
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
@@ -622,16 +768,48 @@ class _AllMembersScreenState extends State<AllMembersScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.orange.shade200),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.warning, size: 16, color: Colors.orange.shade700),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Keep under 160 chars for reliable delivery',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.orange.shade700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
                 TextField(
                   controller: messageController,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Message',
                     hintText: 'Use {name} to personalize',
-                    border: OutlineInputBorder(),
-                    helperText: 'Max 500 characters',
+                    border: const OutlineInputBorder(),
+                    helperText: 'Recommended: 160 chars or less',
+                    helperStyle: TextStyle(
+                      color: messageController.text.length > 160 
+                          ? Colors.red 
+                          : Colors.grey,
+                    ),
                   ),
                   maxLines: 5,
                   maxLength: 500,
+                  onChanged: (text) {
+                    setDialogState(() {}); // Rebuild to update helper color
+                  },
                 ),
                 const SizedBox(height: 8),
                 CheckboxListTile(
@@ -670,9 +848,50 @@ class _AllMembersScreenState extends State<AllMembersScreen> {
                                      .replaceAll('{Name}', attendee.name)
                                      .replaceAll('{NAME}', attendee.name.toUpperCase());
         }
+        
+        // Warn if message is too long
+        if (finalMessage.length > 160) {
+          final proceed = await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Row(
+                children: [
+                  Icon(Icons.warning, color: Colors.orange),
+                  SizedBox(width: 8),
+                  Text('Long Message'),
+                ],
+              ),
+              content: Text(
+                'Your message is ${finalMessage.length} characters. Messages over 160 characters may fail to send on some networks.\n\nDo you want to send anyway?'
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                  ),
+                  child: const Text('Send Anyway'),
+                ),
+              ],
+            ),
+          );
+          
+          if (proceed != true) return;
+        }
+        
         await _smsManager.sendBulkSMS([attendee], finalMessage);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Message sent!')),
+          SnackBar(
+            content: Text(
+              finalMessage.length > 160 
+                  ? 'Message sent (${finalMessage.length} chars - may take longer)'
+                  : 'Message sent!'
+            ),
+          ),
         );
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(

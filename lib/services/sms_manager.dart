@@ -374,13 +374,21 @@ class SMSManager {
       // Normalize phone number to ensure proper format
       final normalizedPhone = AttendeeModel.normalizePhoneNumber(phoneNumber);
       
+      // Check message length - SMS standard is 160 chars for single message
+      // Multipart SMS can be unreliable, so warn if message is too long
+      if (message.length > 160) {
+        debugPrint('WARNING: Message length ${message.length} exceeds 160 chars. May fail on some networks.');
+      }
+      
       // Send SMS using telephony plugin
+      // Note: sendSms handles multipart automatically but may fail silently on some carriers
       await _telephony.sendSms(
         to: normalizedPhone,
         message: message,
+        isMultipart: message.length > 160, // Explicitly mark as multipart if needed
       );
       
-      debugPrint('SMS sent successfully to $normalizedPhone');
+      debugPrint('SMS sent successfully to $normalizedPhone (${message.length} chars)');
     } catch (e) {
       debugPrint('Failed to send SMS to $phoneNumber: $e');
       rethrow;
