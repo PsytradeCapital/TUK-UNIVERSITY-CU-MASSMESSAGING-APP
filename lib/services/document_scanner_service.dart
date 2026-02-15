@@ -329,71 +329,187 @@ class DocumentScannerService {
     final startTime = DateTime.now();
     
     try {
-      // Load and preprocess image
+      debugPrint('Starting image processing...');
+      
+      // Load image directly without enhancement (faster)
       final inputImage = InputImage.fromFilePath(imageFile.path);
       
-      // Enhance image quality for better OCR
-      final enhancedImage = await _enhanceImageForOCR(imageFile.path);
-      final enhancedInputImage = enhancedImage != null 
-          ? InputImage.fromFilePath(enhancedImage.path)
-          : inputImage;
-
-      // Perform text recognition
-      final RecognizedText recognizedText = await _textRecognizer.processImage(enhancedInputImage);
+      debugPrint('Performing text recognition...');
+      
+      // Perform text recognition with timeout
+      final recognizedText = await _textRecognizer.processImage(inputImage)
+          .timeout(
+            const Duration(seconds: 30),
+            onTimeout: () {
+              throw Exception('Text recognition timed out after 30 seconds');
+            },
+          );
+      
+      debugPrint('Text recognized, extracting attendee data...');
       
       // Extract attendee data from recognized text
-      final attendees = _extractAttendeeData(recognizedText);
+      final attendees = await _extractAttendeeDataFast(recognizedText);
       
-      // Clean up enhanced image
-      if (enhancedImage != null) {
-        await enhancedImage.delete();
-      }
-
       final duration = DateTime.now().difference(startTime);
-
-      // Track scanning analytics
-      await _analyticsService.trackPerformance(
-        operation: 'document_scan',
-        durationMs: duration.inMilliseconds,
-        success: true,
-      );
-
-      // TODO: Replace with appropriate analytics tracking
-      // await _analyticsService.logEvent(
-      //   name: 'document_scanned',
-      //   parameters: {
-      //     'attendees_found': attendees.length,
-      //     'processing_time_ms': duration.inMilliseconds,
-      //     'image_source': 'camera_or_gallery',
-      //   },
-      // );
+      
+      debugPrint('Processing complete: ${attendees.length} attendees found in ${duration.inSeconds}s');
 
       return ScanResult(
-        success: true,
+        success: attendees.isNotEmpty,
         attendees: attendees,
         processingTime: duration,
+        error: attendees.isEmpty ? 'No attendees found. Please ensure the image contains names and phone numbers.' : null,
       );
-
     } catch (e) {
       final duration = DateTime.now().difference(startTime);
       
       debugPrint('Image processing error: $e');
       
-      await _analyticsService.logError(
-        error: 'DocumentScanError',
-        context: 'Image Processing',
-        additionalData: {
-          'error_message': e.toString(),
-          'processing_time_ms': duration.inMilliseconds,
-        },
-      );
-
       return ScanResult(
         success: false,
         error: 'Processing failed: $e',
         processingTime: duration,
       );
     }
+  }
+
+  /// Fast attendee data extraction - optimized for speed
+  Future<List<ScannedAttendee>> _extractAttendeeDataFast(RecognizedText recognizedText) async {
+    final attendees = <ScannedAttendee>[];
+    final processedPhones = <String>{};
+    
+    // Get all text as single string for easier processing
+    final fullText = recognizedText.text;
+    
+    // Find all phone numbers (10 digits: 07XXXXXXXX or 01XXXXXXXX)
+    final phoneRegex = RegExp(r'\b(0[17]\d{8})\b');
+    final phoneMatches = phoneRegex.allMatches(fullText);
+    
+    debugPrint('Found ${phoneMatches.length} phone numbers');
+    
+    for (final match in phoneMatches) {
+      final phone = match.group(0)!;
+      
+      // Skip if already processed
+      if (processedPhones.contains(phone)) continue;
+      processedPhones.add(phone);
+      
+      // Find name near this phone number
+      final name = _findNameNearPhone(recognizedText, phone);
+      
+      // Find location near this phone number
+      final location = _findLocationNearPhone(recognizedText, phone);
+      
+      if (name.isNotEmpty) {
+        attendees.add(ScannedAttendee(
+          name: name,
+          phoneNumber: phone,
+          location: location.isNotEmpty ? location : 'Unknown',
+          confidence: 0.8,
+          sourceText: 'Image Scan',
+        ));
+      }
+    }
+    
+    return attendees;
+  }
+
+  /// Find name near a phone number in the recognized text
+  String _findNameNearPhone(RecognizedText recognizedText, String phone) {
+    // Look through text blocks to find the phone number
+    for (final block in recognizedText.blocks) {
+      if (block.text.contains(phone)) {
+        // Check lines in this block
+        for (int i = 0; i < block.lines.length; i++) {
+          final line = block.lines[i];
+          
+          if (line.text.contains(phone)) {
+            // Name might be on the same line (before phone)
+            final sameLine = line.text.replaceAll(phone, '').trim();
+            if (_isValidName(sameLine)) {
+              return _cleanName(sameLine);
+            }
+            
+            // Name might be on previous line
+            if (i > 0) {
+              final prevLine = block.lines[i - 1].text.trim();
+              if (_isValidName(prevLine)) {
+                return _cleanName(prevLine);
+              }
+            }
+            
+            // Name might be on next line
+            if (i < block.lines.length - 1) {
+              final nextLine = block.lines[i + 1].text.trim();
+              if (_isValidName(nextLine)) {
+                return _cleanName(nextLine);
+              }
+            }
+          }
+        }
+      }
+    }
+    
+    return 'Unknown';
+  }
+
+  /// Find location near a phone number
+  String _findLocationNearPhone(RecognizedText recognizedText, String phone) {
+    final kenyanLocations = [
+      'Nairobi', 'Mombasa', 'Kisumu', 'Nakuru', 'Eldoret', 'Thika', 'Kitengela',
+      'Athi River', 'Ruiru', 'Kikuyu', 'Ngong', 'Karen', 'Westlands', 'Eastleigh',
+      'Kasarani', 'Embakasi', 'Kahawa', 'Kiambu', 'Machakos', 'Kajiado',
+    ];
+    
+    // Look through text blocks
+    for (final block in recognizedText.blocks) {
+      if (block.text.contains(phone)) {
+        // Check if any location is mentioned in this block
+        for (final location in kenyanLocations) {
+          if (block.text.toLowerCase().contains(location.toLowerCase())) {
+            return location;
+          }
+        }
+      }
+    }
+    
+    return 'Nairobi'; // Default
+  }
+
+  /// Check if text looks like a valid name
+  bool _isValidName(String text) {
+    if (text.length < 3 || text.length > 50) return false;
+    
+    // Should contain letters
+    if (!RegExp(r'[a-zA-Z]').hasMatch(text)) return false;
+    
+    // Should not be mostly numbers
+    final digitCount = RegExp(r'\d').allMatches(text).length;
+    if (digitCount > text.length / 2) return false;
+    
+    // Should not contain too many special characters
+    final specialCount = RegExp(r'[^a-zA-Z\s]').allMatches(text).length;
+    if (specialCount > 3) return false;
+    
+    return true;
+  }
+
+  /// Clean up extracted name
+  String _cleanName(String name) {
+    // Remove common prefixes
+    name = name.replaceAll(RegExp(r'^(Name|Student|Member):\s*', caseSensitive: false), '');
+    
+    // Remove numbers at start
+    name = name.replaceAll(RegExp(r'^\d+\.\s*'), '');
+    
+    // Remove extra whitespace
+    name = name.trim().replaceAll(RegExp(r'\s+'), ' ');
+    
+    // Capitalize properly
+    return name.split(' ').map((word) {
+      if (word.isEmpty) return word;
+      return word[0].toUpperCase() + word.substring(1).toLowerCase();
+    }).join(' ');
   }
 
   /// Enhance image quality for better OCR results

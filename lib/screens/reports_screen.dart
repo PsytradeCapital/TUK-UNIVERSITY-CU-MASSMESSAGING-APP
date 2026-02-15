@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'dart:io';
 import '../services/report_generator.dart';
 import '../models/attendee_model.dart';
 import '../models/service_model.dart';
 import '../repositories/service_repository.dart';
 import '../repositories/attendee_repository.dart';
+import 'filtered_members_screen.dart';
 
 class ReportsScreen extends StatefulWidget {
   const ReportsScreen({Key? key}) : super(key: key);
@@ -448,6 +448,7 @@ class _ReportsScreenState extends State<ReportsScreen> with SingleTickerProvider
                   report.totalAttendees.toString(),
                   Icons.people,
                   Colors.blue,
+                  onTap: () => _navigateToFilteredMembers('All Members', 'active'),
                 ),
               ),
               const SizedBox(width: 8),
@@ -846,8 +847,8 @@ class _ReportsScreenState extends State<ReportsScreen> with SingleTickerProvider
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
-    return Card(
+  Widget _buildStatCard(String title, String value, IconData icon, Color color, {VoidCallback? onTap}) {
+    final card = Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -869,6 +870,29 @@ class _ReportsScreenState extends State<ReportsScreen> with SingleTickerProvider
               textAlign: TextAlign.center,
             ),
           ],
+        ),
+      ),
+    );
+
+    if (onTap != null) {
+      return InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: card,
+      );
+    }
+    return card;
+  }
+
+  void _navigateToFilteredMembers(String title, String filterType, {DateTime? startDate, DateTime? endDate}) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FilteredMembersScreen(
+          title: title,
+          filterType: filterType,
+          startDate: startDate,
+          endDate: endDate,
         ),
       ),
     );

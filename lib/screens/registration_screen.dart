@@ -9,7 +9,9 @@ import '../widgets/cu_logo_widget.dart';
 import '../widgets/sync_status_widget.dart';
 import '../widgets/offline_handler.dart';
 import '../providers/service_session_provider.dart';
+import '../theme/app_theme.dart';
 import 'document_scanner_screen.dart';
+import 'bulk_registration_screen.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({Key? key}) : super(key: key);
@@ -847,6 +849,20 @@ class _RegistrationScreenState extends State<RegistrationScreen> with OfflineCap
                 ],
               ),
             ),
+          ),
+          floatingActionButton: FloatingActionButton.extended(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const BulkRegistrationScreen(),
+                ),
+              );
+            },
+            icon: const Icon(Icons.playlist_add_check),
+            label: const Text('Bulk Register'),
+            backgroundColor: AppTheme.secondaryGreen,
+            tooltip: 'Register multiple members from database',
           ),
         );
       },

@@ -4,8 +4,10 @@ import '../models/scanned_attendee_model.dart';
 import '../models/attendee_model.dart';
 import '../services/analytics_service.dart';
 import '../services/registration_service.dart';
+import '../services/smart_matching_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/phone_validator.dart';
+import '../repositories/hybrid_attendee_repository.dart';
 
 /// Screen for reviewing and editing scanned attendees before saving
 class ScannedAttendeesReviewScreen extends StatefulWidget {
@@ -25,12 +27,16 @@ class ScannedAttendeesReviewScreen extends StatefulWidget {
 class _ScannedAttendeesReviewScreenState extends State<ScannedAttendeesReviewScreen> {
   final AnalyticsService _analyticsService = AnalyticsService();
   final RegistrationService _registrationService = RegistrationService();
+  final HybridAttendeeRepository _attendeeRepository = HybridAttendeeRepository();
+  final SmartMatchingService _matchingService = SmartMatchingService();
   
   late List<ScannedAttendee> _attendees;
   final Set<int> _selectedIndices = {};
   bool _selectAll = true;
   bool _isSaving = false;
+  bool _isMatching = true;
   int _currentServiceId = 1; // Default service ID
+  final Map<int, AttendeeMatch?> _matchedMembers = {};
 
   @override
   void initState() {
@@ -45,6 +51,56 @@ class _ScannedAttendeesReviewScreenState extends State<ScannedAttendeesReviewScr
     }
     
     _trackScreenView();
+    _matchWithDatabase();
+  }
+
+  Future<void> _matchWithDatabase() async {
+    setState(() {
+      _isMatching = true;
+    });
+
+    try {
+      // Use smart matching service
+      final result = await _matchingService.matchAttendees(
+        scannedAttendees: _attendees,
+      );
+      
+      // Map matched members to indices
+      for (final matched in result.matches) {
+        final index = _attendees.indexOf(matched.scannedAttendee);
+        if (index != -1) {
+          _matchedMembers[index] = matched;
+        }
+      }
+
+      // Show matching summary
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Matched ${result.totalMatched} of ${result.totalScanned} attendees '
+              '(${(result.matchRate * 100).toStringAsFixed(0)}% match rate)',
+            ),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error matching with database: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to match attendees: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      setState(() {
+        _isMatching = false;
+      });
+    }
   }
 
   Future<void> _trackScreenView() async {
@@ -112,23 +168,34 @@ class _ScannedAttendeesReviewScreenState extends State<ScannedAttendeesReviewScr
       int errorCount = 0;
       List<String> errors = [];
 
-      for (final attendee in selectedAttendees) {
+      for (int i = 0; i < _attendees.length; i++) {
+        if (!_selectedIndices.contains(i)) continue;
+        
+        final attendee = _attendees[i];
+        final matchedMember = _matchedMembers[i];
+        
         try {
-          // Convert to AttendeeModel format and save
-          final attendeeData = attendee.toAttendeeModel(
-            serviceId: _currentServiceId,
-            category: 'Scanned from ${widget.scanSource}',
-          );
-
-          await _registrationService.registerAttendee(
-            name: attendee.name,
-            phoneNumber: attendee.phoneNumber,
-            location: attendee.location,
-            yearOfStudy: '',
-            category: attendeeData['category'],
-          );
-
-          savedCount++;
+          if (matchedMember != null) {
+            // Returning member - use existing data
+            await _registrationService.registerAttendee(
+              name: matchedMember.existingMember.name,
+              phoneNumber: matchedMember.existingMember.phoneNumber,
+              location: matchedMember.existingMember.location,
+              yearOfStudy: matchedMember.existingMember.yearOfStudy ?? '',
+              category: matchedMember.existingMember.category,
+            );
+            savedCount++;
+          } else {
+            // New member - use scanned data
+            await _registrationService.registerAttendee(
+              name: attendee.name,
+              phoneNumber: attendee.phoneNumber,
+              location: attendee.location,
+              yearOfStudy: '',
+              category: AttendeeCategory.student,
+            );
+            savedCount++;
+          }
         } catch (e) {
           errorCount++;
           errors.add('${attendee.name}: $e');
@@ -289,94 +356,161 @@ class _ScannedAttendeesReviewScreenState extends State<ScannedAttendeesReviewScr
 
           // Attendees list
           Expanded(
-            child: ListView.builder(
-              itemCount: _attendees.length,
-              itemBuilder: (context, index) {
-                final attendee = _attendees[index];
-                final isSelected = _selectedIndices.contains(index);
-                
-                return Card(
-                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  child: ListTile(
-                    leading: Checkbox(
-                      value: isSelected,
-                      onChanged: (value) => _toggleSelection(index),
-                      activeColor: AppTheme.primaryBlue,
-                    ),
-                    title: Row(
+            child: _isMatching
+                ? const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Expanded(
-                          child: Text(
-                            attendee.name,
-                            style: const TextStyle(fontWeight: FontWeight.w500),
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: attendee.confidenceColor.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: attendee.confidenceColor.withOpacity(0.3)),
-                          ),
-                          child: Text(
-                            attendee.confidenceLevel,
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: attendee.confidenceColor,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
+                        CircularProgressIndicator(),
+                        SizedBox(height: 16),
+                        Text('Matching with database...'),
                       ],
                     ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Icon(Icons.phone, size: 14, color: Colors.grey[600]),
-                            const SizedBox(width: 4),
-                            Text(attendee.phoneNumber),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Row(
-                          children: [
-                            Icon(Icons.location_on, size: 14, color: Colors.grey[600]),
-                            const SizedBox(width: 4),
-                            Text(attendee.location),
-                          ],
-                        ),
-                        if (attendee.needsVerification) ...[
-                          const SizedBox(height: 4),
-                          Row(
+                  )
+                : ListView.builder(
+                    itemCount: _attendees.length,
+                    itemBuilder: (context, index) {
+                      final attendee = _attendees[index];
+                      final isSelected = _selectedIndices.contains(index);
+                      final matchedMember = _matchedMembers[index];
+                      final hasMatch = matchedMember != null;
+                      
+                      return Card(
+                        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                        elevation: hasMatch ? 3 : 1,
+                        color: hasMatch ? Colors.green.shade50 : null,
+                        child: ListTile(
+                          leading: Checkbox(
+                            value: isSelected,
+                            onChanged: (value) => _toggleSelection(index),
+                            activeColor: AppTheme.primaryBlue,
+                          ),
+                          title: Row(
                             children: [
-                              Icon(Icons.warning, size: 14, color: Colors.orange),
-                              const SizedBox(width: 4),
-                              Text(
-                                'Needs verification',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.orange[700],
-                                  fontStyle: FontStyle.italic,
+                              Expanded(
+                                child: Text(
+                                  attendee.name,
+                                  style: const TextStyle(fontWeight: FontWeight.w500),
+                                ),
+                              ),
+                              if (hasMatch) ...[
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.green.shade100,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: Colors.green.shade300),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.check_circle, size: 12, color: Colors.green.shade700),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        'MATCH ${(matchedMember.matchConfidence * 100).toInt()}%',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          color: Colors.green.shade700,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                              ],
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: attendee.confidenceColor.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: attendee.confidenceColor.withOpacity(0.3)),
+                                ),
+                                child: Text(
+                                  attendee.confidenceLevel,
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: attendee.confidenceColor,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
                               ),
                             ],
                           ),
-                        ],
-                      ],
-                    ),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.edit),
-                      onPressed: () => _editAttendee(index),
-                      tooltip: 'Edit',
-                    ),
-                    isThreeLine: true,
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  Icon(Icons.phone, size: 14, color: Colors.grey[600]),
+                                  const SizedBox(width: 4),
+                                  Text(attendee.phoneNumber),
+                                ],
+                              ),
+                              const SizedBox(height: 2),
+                              Row(
+                                children: [
+                                  Icon(Icons.location_on, size: 14, color: Colors.grey[600]),
+                                  const SizedBox(width: 4),
+                                  Text(attendee.location),
+                                ],
+                              ),
+                              if (hasMatch) ...[
+                                const SizedBox(height: 4),
+                                Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.green.shade100,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.person, size: 14, color: Colors.green.shade700),
+                                      const SizedBox(width: 4),
+                                      Expanded(
+                                        child: Text(
+                                          'Returning member: ${matchedMember.existingMember.name}',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.green.shade700,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                              if (attendee.needsVerification) ...[
+                                const SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    Icon(Icons.warning, size: 14, color: Colors.orange),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'Needs verification',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.orange[700],
+                                        fontStyle: FontStyle.italic,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ],
+                          ),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.edit),
+                            onPressed: () => _editAttendee(index),
+                            tooltip: 'Edit',
+                          ),
+                          isThreeLine: true,
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           ),
 
           // Bottom action bar
