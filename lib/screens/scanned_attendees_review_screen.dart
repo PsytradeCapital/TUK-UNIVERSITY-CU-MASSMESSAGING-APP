@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../models/scanned_attendee_model.dart';
 import '../models/attendee_model.dart';
 import '../services/analytics_service.dart';
@@ -7,7 +6,7 @@ import '../services/registration_service.dart';
 import '../services/smart_matching_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/phone_validator.dart';
-import '../repositories/hybrid_attendee_repository.dart';
+import '../repositories/offline_first_attendee_repository.dart';
 
 /// Screen for reviewing and editing scanned attendees before saving
 class ScannedAttendeesReviewScreen extends StatefulWidget {
@@ -27,7 +26,7 @@ class ScannedAttendeesReviewScreen extends StatefulWidget {
 class _ScannedAttendeesReviewScreenState extends State<ScannedAttendeesReviewScreen> {
   final AnalyticsService _analyticsService = AnalyticsService();
   final RegistrationService _registrationService = RegistrationService();
-  final HybridAttendeeRepository _attendeeRepository = HybridAttendeeRepository();
+  final OfflineFirstAttendeeRepository _attendeeRepository = OfflineFirstAttendeeRepository();
   final SmartMatchingService _matchingService = SmartMatchingService();
   
   late List<ScannedAttendee> _attendees;

@@ -19,7 +19,7 @@ dependencies:
   cloud_firestore: ^4.13.6
   firebase_storage: ^11.5.6
   firebase_analytics: ^10.7.4
-  firebase_crashlytics: ^3.4.9
+  # firebase_crashlytics: ^3.4.9  # Temporarily disabled due to build issue
   
   # Database
   sqflite: ^2.3.0

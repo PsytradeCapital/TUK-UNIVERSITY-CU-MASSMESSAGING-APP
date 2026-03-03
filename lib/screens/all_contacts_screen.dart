@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/attendee_model.dart';
-import '../repositories/hybrid_attendee_repository.dart';
+import '../repositories/offline_first_attendee_repository.dart';
 import '../services/sms_manager.dart';
 import '../theme/app_theme.dart';
 import '../widgets/sync_status_widget.dart';
@@ -13,7 +13,7 @@ class AllMembersScreen extends StatefulWidget {
 }
 
 class _AllMembersScreenState extends State<AllMembersScreen> {
-  final _attendeeRepository = HybridAttendeeRepository();
+  final _attendeeRepository = OfflineFirstAttendeeRepository();
   final _smsManager = SMSManager();
   final _searchController = TextEditingController();
   final _searchFocusNode = FocusNode();

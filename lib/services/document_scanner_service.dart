@@ -8,6 +8,7 @@ import 'package:file_picker/file_picker.dart';
 import '../models/scanned_attendee_model.dart';
 import '../models/attendee_model.dart';
 import 'analytics_service.dart';
+import 'enhanced_ocr_service.dart';
 
 /// Service for scanning and processing attendance sheets
 /// Extracts names, phone numbers, and regions from physical documents
@@ -19,6 +20,7 @@ class DocumentScannerService {
   final ImagePicker _imagePicker = ImagePicker();
   final TextRecognizer _textRecognizer = TextRecognizer();
   final AnalyticsService _analyticsService = AnalyticsService();
+  final EnhancedOCRService _enhancedOCR = EnhancedOCRService();
 
   /// Scan attendance sheet from camera
   Future<ScanResult> scanFromCamera() async {
@@ -329,7 +331,7 @@ class DocumentScannerService {
     final startTime = DateTime.now();
     
     try {
-      debugPrint('Starting image processing...');
+      debugPrint('Starting image processing with Enhanced OCR...');
       
       // Load image directly without enhancement (faster)
       final inputImage = InputImage.fromFilePath(imageFile.path);
@@ -345,10 +347,10 @@ class DocumentScannerService {
             },
           );
       
-      debugPrint('Text recognized, extracting attendee data...');
+      debugPrint('Text recognized, extracting ALL attendees with Enhanced OCR...');
       
-      // Extract attendee data from recognized text
-      final attendees = await _extractAttendeeDataFast(recognizedText);
+      // USE ENHANCED OCR to extract ALL attendees (not just one)
+      final attendees = await _enhancedOCR.extractAllAttendees(recognizedText);
       
       final duration = DateTime.now().difference(startTime);
       

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/attendee_model.dart';
-import '../repositories/hybrid_attendee_repository.dart';
+import '../repositories/offline_first_attendee_repository.dart';
 import '../providers/service_session_provider.dart';
 import '../services/registration_service.dart';
 import '../theme/app_theme.dart';
@@ -14,7 +14,7 @@ class BulkRegistrationScreen extends StatefulWidget {
 }
 
 class _BulkRegistrationScreenState extends State<BulkRegistrationScreen> {
-  final _attendeeRepository = HybridAttendeeRepository();
+  final _attendeeRepository = OfflineFirstAttendeeRepository();
   final _registrationService = RegistrationService();
   final _searchController = TextEditingController();
   

@@ -1,10 +1,10 @@
 import '../models/scanned_attendee_model.dart';
 import '../models/attendee_model.dart';
-import '../repositories/attendee_repository.dart';
+import '../repositories/offline_first_attendee_repository.dart';
 
 /// Service for smart matching of scanned attendees with existing database records
 class SmartMatchingService {
-  final AttendeeRepository _attendeeRepository = AttendeeRepository();
+  final OfflineFirstAttendeeRepository _attendeeRepository = OfflineFirstAttendeeRepository();
 
   /// Match scanned attendees with existing members in the database
   Future<MatchingResult> matchAttendees({

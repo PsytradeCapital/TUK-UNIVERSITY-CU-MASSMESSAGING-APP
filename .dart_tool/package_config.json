@@ -212,18 +212,6 @@
       "languageVersion": "3.2"
     },
     {
-      "name": "firebase_crashlytics",
-      "rootUri": "file:///C:/Users/Martin%20Mbugua/AppData/Local/Pub/Cache/hosted/pub.dev/firebase_crashlytics-3.4.18",
-      "packageUri": "lib/",
-      "languageVersion": "2.18"
-    },
-    {
-      "name": "firebase_crashlytics_platform_interface",
-      "rootUri": "file:///C:/Users/Martin%20Mbugua/AppData/Local/Pub/Cache/hosted/pub.dev/firebase_crashlytics_platform_interface-3.6.25",
-      "packageUri": "lib/",
-      "languageVersion": "2.18"
-    },
-    {
       "name": "firebase_storage",
       "rootUri": "file:///C:/Users/Martin%20Mbugua/AppData/Local/Pub/Cache/hosted/pub.dev/firebase_storage-11.6.9",
       "packageUri": "lib/",
@@ -746,7 +734,7 @@
       "languageVersion": "3.0"
     }
   ],
-  "generated": "2026-02-15T13:21:54.198592Z",
+  "generated": "2026-03-03T20:37:43.961662Z",
   "generator": "pub",
   "generatorVersion": "3.2.3"
 }

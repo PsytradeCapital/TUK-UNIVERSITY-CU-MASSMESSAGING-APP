@@ -1,5 +1,5 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+// import 'package:firebase_crashlytics/firebase_crashlytics.dart'; // Temporarily disabled
 
 /// Service for handling Firebase Analytics and Crashlytics
 /// Tracks user events and system errors for monitoring and improvement
@@ -9,7 +9,7 @@ class AnalyticsService {
   AnalyticsService._internal();
 
   late FirebaseAnalytics _analytics;
-  late FirebaseCrashlytics _crashlytics;
+  // late FirebaseCrashlytics _crashlytics; // Temporarily disabled
   bool _initialized = false;
 
   /// Initialize Firebase Analytics and Crashlytics
@@ -17,10 +17,10 @@ class AnalyticsService {
     if (_initialized) return;
 
     _analytics = FirebaseAnalytics.instance;
-    _crashlytics = FirebaseCrashlytics.instance;
+    // _crashlytics = FirebaseCrashlytics.instance; // Temporarily disabled
     
     // Enable Crashlytics collection
-    await _crashlytics.setCrashlyticsCollectionEnabled(true);
+    // await _crashlytics.setCrashlyticsCollectionEnabled(true); // Temporarily disabled
     
     _initialized = true;
   }
@@ -29,7 +29,7 @@ class AnalyticsService {
   FirebaseAnalytics get analytics => _analytics;
 
   /// Get Firebase Crashlytics instance
-  FirebaseCrashlytics get crashlytics => _crashlytics;
+  // FirebaseCrashlytics get crashlytics => _crashlytics; // Temporarily disabled
 
   // User Authentication Events (Requirements 8.1, 8.2)
 
@@ -230,14 +230,14 @@ class AnalyticsService {
   }) async {
     if (!_initialized) return;
 
-    // Log to Crashlytics
-    await _crashlytics.recordError(
-      error,
-      stackTrace,
-      reason: context,
-      information: additionalData?.entries.map((e) => '${e.key}: ${e.value}').toList() ?? [],
-      fatal: false,
-    );
+    // Log to Crashlytics - Temporarily disabled
+    // await _crashlytics.recordError(
+    //   error,
+    //   stackTrace,
+    //   reason: context,
+    //   information: additionalData?.entries.map((e) => '${e.key}: ${e.value}').toList() ?? [],
+    //   fatal: false,
+    // );
 
     // Log to Analytics
     await _analytics.logEvent(
@@ -338,14 +338,14 @@ class AnalyticsService {
   Future<void> setCrashlyticsUserId(String userId) async {
     if (!_initialized) return;
 
-    await _crashlytics.setUserIdentifier(userId);
+    // await _crashlytics.setUserIdentifier(userId); // Temporarily disabled
   }
 
   /// Add custom key-value pairs to crash reports
   Future<void> setCrashlyticsCustomKey(String key, String value) async {
     if (!_initialized) return;
 
-    await _crashlytics.setCustomKey(key, value);
+    // await _crashlytics.setCustomKey(key, value); // Temporarily disabled
   }
 
   // Screen Tracking
@@ -435,6 +435,6 @@ class AnalyticsService {
   Future<void> setCrashlyticsEnabled(bool enabled) async {
     if (!_initialized) return;
 
-    await _crashlytics.setCrashlyticsCollectionEnabled(enabled);
+    // await _crashlytics.setCrashlyticsCollectionEnabled(enabled); // Temporarily disabled
   }
 }

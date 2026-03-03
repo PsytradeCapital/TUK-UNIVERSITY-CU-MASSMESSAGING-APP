@@ -17,6 +17,7 @@ import 'services/cloud_sync_service.dart';
 import 'services/real_time_sync_service.dart';
 import 'services/analytics_service.dart';
 import 'services/auth_service.dart';
+import 'services/background_sync_service.dart';
 import 'theme/app_theme.dart';
 
 /// Configure Firestore settings for offline persistence and performance
@@ -104,6 +105,11 @@ void main() {
         final realTimeSyncService = RealTimeSyncService();
         await realTimeSyncService.initialize();
         debugPrint('RealTimeSyncService initialized successfully');
+        
+        // START BACKGROUND SYNC SERVICE (NEW - for offline-first architecture)
+        final backgroundSyncService = BackgroundSyncService();
+        backgroundSyncService.start();
+        debugPrint('BackgroundSyncService started successfully');
       } else {
         debugPrint('Cloud services disabled - Firebase not available');
       }

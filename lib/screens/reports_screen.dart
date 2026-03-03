@@ -4,7 +4,7 @@ import '../services/report_generator.dart';
 import '../models/attendee_model.dart';
 import '../models/service_model.dart';
 import '../repositories/service_repository.dart';
-import '../repositories/attendee_repository.dart';
+import '../repositories/offline_first_attendee_repository.dart';
 import 'filtered_members_screen.dart';
 
 class ReportsScreen extends StatefulWidget {
@@ -17,7 +17,7 @@ class ReportsScreen extends StatefulWidget {
 class _ReportsScreenState extends State<ReportsScreen> with SingleTickerProviderStateMixin {
   final ReportGenerator _reportGenerator = ReportGenerator();
   final ServiceRepository _serviceRepository = ServiceRepository();
-  final AttendeeRepository _attendeeRepository = AttendeeRepository();
+  final OfflineFirstAttendeeRepository _attendeeRepository = OfflineFirstAttendeeRepository();
   
   late TabController _tabController;
   

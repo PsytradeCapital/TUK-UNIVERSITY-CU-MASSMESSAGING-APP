@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/attendee_model.dart';
-import '../repositories/attendee_repository.dart';
+import '../repositories/offline_first_attendee_repository.dart';
 
 class FilteredMembersScreen extends StatelessWidget {
   final String title;
@@ -23,7 +23,7 @@ class FilteredMembersScreen extends StatelessWidget {
         title: Text(title),
       ),
       body: FutureBuilder<List<AttendeeModel>>(
-        future: AttendeeRepository().getAllAttendees(),
+        future: OfflineFirstAttendeeRepository().getAllAttendees(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));

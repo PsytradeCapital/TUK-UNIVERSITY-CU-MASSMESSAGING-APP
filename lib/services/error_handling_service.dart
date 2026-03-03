@@ -149,17 +149,17 @@ class ErrorHandlingService {
     debugPrint('Unhandled exception: $error');
     debugPrint('Stack trace: $stackTrace');
     
-    // Log fatal error to Crashlytics
-    try {
-      await _analyticsService.crashlytics.recordError(
-        error,
-        stackTrace,
-        reason: 'Unhandled Exception',
-        fatal: true,
-      );
-    } catch (e) {
-      debugPrint('Failed to log fatal error to Crashlytics: $e');
-    }
+    // Log fatal error to Crashlytics - Temporarily disabled
+    // try {
+    //   await _analyticsService.crashlytics.recordError(
+    //     error,
+    //     stackTrace,
+    //     reason: 'Unhandled Exception',
+    //     fatal: true,
+    //   );
+    // } catch (e) {
+    //   debugPrint('Failed to log fatal error to Crashlytics: $e');
+    // }
     
     await handleError(
       error, 
@@ -470,21 +470,23 @@ class CrashReportingService {
     StackTrace stackTrace, {
     Map<String, dynamic>? metadata,
   }) async {
-    try {
-      await _analyticsService.crashlytics.recordError(
-        error,
-        stackTrace,
-        reason: 'Application Crash',
-        information: metadata?.entries.map((e) => '${e.key}: ${e.value}').toList() ?? [],
-        fatal: true,
-      );
-      
-      debugPrint('Crash reported to Firebase Crashlytics: $error');
-    } catch (e) {
-      debugPrint('Failed to report crash to Firebase Crashlytics: $e');
-      debugPrint('Original crash: $error');
-      debugPrint('Metadata: $metadata');
-    }
+    // Temporarily disabled - Crashlytics removed
+    // try {
+    //   await _analyticsService.crashlytics.recordError(
+    //     error,
+    //     stackTrace,
+    //     reason: 'Application Crash',
+    //     information: metadata?.entries.map((e) => '${e.key}: ${e.value}').toList() ?? [],
+    //     fatal: true,
+    //   );
+    //   
+    //   debugPrint('Crash reported to Firebase Crashlytics: $error');
+    // } catch (e) {
+    //   debugPrint('Failed to report crash to Firebase Crashlytics: $e');
+    //   debugPrint('Original crash: $error');
+    //   debugPrint('Metadata: $metadata');
+    // }
+    debugPrint('Crash reported (Crashlytics disabled): $error');
   }
 
   /// Report non-fatal error to Firebase Crashlytics
@@ -493,21 +495,23 @@ class CrashReportingService {
     StackTrace? stackTrace, {
     Map<String, dynamic>? metadata,
   }) async {
-    try {
-      await _analyticsService.crashlytics.recordError(
-        error,
-        stackTrace,
-        reason: 'Non-fatal Error',
-        information: metadata?.entries.map((e) => '${e.key}: ${e.value}').toList() ?? [],
-        fatal: false,
-      );
-      
-      debugPrint('Error reported to Firebase Crashlytics: $error');
-    } catch (e) {
-      debugPrint('Failed to report error to Firebase Crashlytics: $e');
-      debugPrint('Original error: $error');
-      debugPrint('Metadata: $metadata');
-    }
+    // Temporarily disabled - Crashlytics removed
+    // try {
+    //   await _analyticsService.crashlytics.recordError(
+    //     error,
+    //     stackTrace,
+    //     reason: 'Non-fatal Error',
+    //     information: metadata?.entries.map((e) => '${e.key}: ${e.value}').toList() ?? [],
+    //     fatal: false,
+    //   );
+    //   
+    //   debugPrint('Error reported to Firebase Crashlytics: $error');
+    // } catch (e) {
+    //   debugPrint('Failed to report error to Firebase Crashlytics: $e');
+    //   debugPrint('Original error: $error');
+    //   debugPrint('Metadata: $metadata');
+    // }
+    debugPrint('Error reported (Crashlytics disabled): $error');
   }
 
   /// Set user identifier for crash reports
