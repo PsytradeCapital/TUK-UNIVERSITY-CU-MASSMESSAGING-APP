@@ -5,6 +5,7 @@ import 'messaging_screen.dart';
 import 'reports_screen.dart';
 import 'settings_screen.dart';
 import 'all_contacts_screen.dart';
+import 'bulk_text_import_screen.dart';
 import '../providers/service_session_provider.dart';
 import '../providers/navigation_provider.dart';
 import '../providers/app_state_provider.dart';
@@ -169,6 +170,20 @@ class _HomeScreenState extends State<HomeScreen> {
               backgroundColor: AppTheme.primaryBlue,
               foregroundColor: Colors.white,
               actions: [
+                // Bulk text import button (NEW)
+                if (navigationProvider.currentIndex == 0) // Show only on Registration tab
+                  IconButton(
+                    icon: const Icon(Icons.text_fields),
+                    tooltip: 'Bulk Text Import',
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const BulkTextImportScreen(),
+                        ),
+                      );
+                    },
+                  ),
                 // Sync status indicator in app bar
                 Padding(
                   padding: const EdgeInsets.only(right: 8.0),

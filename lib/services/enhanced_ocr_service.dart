@@ -14,6 +14,11 @@ class EnhancedOCRService {
     final allAttendees = <ScannedAttendee>[];
     final processedPhones = <String>{};
 
+    print('=== ENHANCED OCR DEBUG ===');
+    print('Total blocks: ${recognizedText.blocks.length}');
+    print('Full text length: ${recognizedText.text.length}');
+    print('Full text preview: ${recognizedText.text.substring(0, recognizedText.text.length > 200 ? 200 : recognizedText.text.length)}');
+
     // Strategy 1: Process each text block independently
     for (final block in recognizedText.blocks) {
       final attendees = await _extractAttendeesFromBlock(block);
@@ -26,11 +31,20 @@ class EnhancedOCRService {
       }
     }
 
+    print('Strategy 1 (blocks): Found ${allAttendees.length} attendees');
+
     // Strategy 2: Process entire text as table/list
-    if (allAttendees.isEmpty) {
-      final tableAttendees = await _extractFromTableFormat(recognizedText);
-      allAttendees.addAll(tableAttendees);
+    final tableAttendees = await _extractFromTableFormat(recognizedText);
+    for (final attendee in tableAttendees) {
+      if (!processedPhones.contains(attendee.phoneNumber)) {
+        allAttendees.add(attendee);
+        processedPhones.add(attendee.phoneNumber);
+      }
     }
+
+    print('Strategy 2 (table): Found ${tableAttendees.length} new attendees');
+    print('Total attendees found: ${allAttendees.length}');
+    print('=== END DEBUG ===');
 
     return allAttendees;
   }
@@ -105,7 +119,11 @@ class EnhancedOCRService {
     // Split into lines
     final lines = allText.split('\n');
     
-    for (final line in lines) {
+    print('Processing ${lines.length} lines for table format...');
+    
+    for (int i = 0; i < lines.length; i++) {
+      final line = lines[i];
+      
       // Skip empty lines
       if (line.trim().isEmpty) continue;
       
@@ -113,12 +131,30 @@ class EnhancedOCRService {
       final phone = _extractPhoneNumber(line);
       if (phone == null) continue;
       
+      print('Line $i: Found phone $phone in: ${line.substring(0, line.length > 50 ? 50 : line.length)}');
+      
       // Extract name (everything before phone number)
-      final name = _extractNameFromLine(line, phone);
-      if (name == null || name.isEmpty) continue;
+      String? name = _extractNameFromLine(line, phone);
+      
+      // If no name in current line, check previous/next lines
+      if (name == null || name.isEmpty) {
+        if (i > 0) {
+          name = _extractName(lines[i - 1]);
+        }
+        if ((name == null || name.isEmpty) && i < lines.length - 1) {
+          name = _extractName(lines[i + 1]);
+        }
+      }
+      
+      if (name == null || name.isEmpty) {
+        print('  -> No name found, skipping');
+        continue;
+      }
       
       // Extract location (everything after phone number)
       final location = _extractLocationFromLine(line, phone) ?? 'Unknown';
+      
+      print('  -> Extracted: $name | $phone | $location');
       
       attendees.add(ScannedAttendee(
         name: name,
@@ -134,11 +170,12 @@ class EnhancedOCRService {
 
   /// Extract phone number from text
   String? _extractPhoneNumber(String text) {
-    // Kenyan phone patterns
+    // Kenyan phone patterns - more flexible
     final patterns = [
       RegExp(r'(?:254|0)?([17]\d{8})'),  // 0712345678 or 254712345678
       RegExp(r'\+?254\s?([17]\d{8})'),   // +254 712345678
       RegExp(r'0([17]\d{8})'),            // 0712345678
+      RegExp(r'([17]\d{8})'),             // 712345678 (without leading 0)
     ];
     
     for (final pattern in patterns) {
@@ -149,7 +186,10 @@ class EnhancedOCRService {
         if (!phone.startsWith('0')) {
           phone = '0$phone';
         }
-        return phone;
+        // Validate length
+        if (phone.length == 10 && (phone.startsWith('07') || phone.startsWith('01'))) {
+          return phone;
+        }
       }
     }
     
@@ -162,15 +202,22 @@ class EnhancedOCRService {
     String cleaned = text.replaceAll(RegExp(r'[0-9+\-()]'), '');
     cleaned = cleaned.trim();
     
-    // Must have at least 2 words (first and last name)
-    final words = cleaned.split(RegExp(r'\s+'));
-    if (words.length < 2) return null;
+    // Must have at least 2 characters (can be single word for testing)
+    if (cleaned.length < 2) return null;
     
     // Must not be too long (likely not a name)
     if (cleaned.length > 50) return null;
     
+    // Split into words
+    final words = cleaned.split(RegExp(r'\s+'));
+    
+    // Filter out empty words and very short words
+    final validWords = words.where((word) => word.length >= 2).toList();
+    
+    if (validWords.isEmpty) return null;
+    
     // Capitalize properly
-    return words.map((word) {
+    return validWords.map((word) {
       if (word.isEmpty) return word;
       return word[0].toUpperCase() + word.substring(1).toLowerCase();
     }).join(' ');

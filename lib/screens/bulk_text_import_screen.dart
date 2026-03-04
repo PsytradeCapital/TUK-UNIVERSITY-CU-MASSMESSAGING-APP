@@ -93,6 +93,7 @@ class _BulkTextImportScreenState extends State<BulkTextImportScreen> {
             phoneNumber: parsed.phoneNumber,
             location: parsed.location,
             category: AttendeeCategory.student,
+            yearOfStudy: '',
           ));
           savedCount++;
         }

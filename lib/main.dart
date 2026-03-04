@@ -107,9 +107,16 @@ void main() {
         debugPrint('RealTimeSyncService initialized successfully');
         
         // START BACKGROUND SYNC SERVICE (NEW - for offline-first architecture)
-        final backgroundSyncService = BackgroundSyncService();
-        backgroundSyncService.start();
-        debugPrint('BackgroundSyncService started successfully');
+        // Delayed start to prevent crashes on startup
+        Future.delayed(const Duration(seconds: 5), () {
+          try {
+            final backgroundSyncService = BackgroundSyncService();
+            backgroundSyncService.start();
+            debugPrint('BackgroundSyncService started successfully (delayed)');
+          } catch (e) {
+            debugPrint('BackgroundSyncService start error: $e');
+          }
+        });
       } else {
         debugPrint('Cloud services disabled - Firebase not available');
       }
