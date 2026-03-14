@@ -6,6 +6,7 @@ import '../models/service_model.dart';
 import '../repositories/service_repository.dart';
 import '../repositories/offline_first_attendee_repository.dart';
 import 'filtered_members_screen.dart';
+import 'messaging_screen.dart';
 
 class ReportsScreen extends StatefulWidget {
   const ReportsScreen({Key? key}) : super(key: key);
@@ -183,6 +184,32 @@ class _ReportsScreenState extends State<ReportsScreen> with SingleTickerProvider
     }
   }
 
+  /// Resend message to specific service attendees
+  Future<void> _resendMessageToService(ServiceModel service) async {
+    try {
+      // Load attendees for this service
+      final attendees = await _serviceRepository.getServiceAttendees(service.serviceId!);
+      
+      if (attendees.isEmpty) {
+        _showErrorSnackBar('No attendees found for this service');
+        return;
+      }
+      
+      // Navigate to messaging screen with pre-selected attendees
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MessagingScreen(
+            attendees: attendees,
+            serviceId: service.serviceId!,
+          ),
+        ),
+      );
+    } catch (e) {
+      _showErrorSnackBar('Failed to load service attendees: $e');
+    }
+  }
+
   void _showExportSuccessDialog(String fileName, String filePath) {
     showDialog(
       context: context,
@@ -298,6 +325,18 @@ class _ReportsScreenState extends State<ReportsScreen> with SingleTickerProvider
                 _exportServiceAttendees(service.serviceId!);
               },
               child: const Text('Export Attendees'),
+            ),
+          if (service.serviceId != null)
+            ElevatedButton.icon(
+              icon: const Icon(Icons.send),
+              label: const Text('Resend Message'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _resendMessageToService(service);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+              ),
             ),
         ],
       ),

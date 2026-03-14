@@ -92,21 +92,35 @@ class _BulkTextImportScreenState extends State<BulkTextImportScreen> {
         AttendeeModel? savedAttendee;
         
         if (existing != null) {
-          // Show confirmation dialog
-          final shouldUpdate = await _showDuplicateDialog(existing, parsed);
+          // Check if data actually differs
+          final dataDiffers = existing.name != parsed.name || 
+                             existing.location != parsed.location;
           
-          if (shouldUpdate == true) {
-            // Update existing
+          if (dataDiffers) {
+            // Data is different, ask user if they want to update
+            final shouldUpdate = await _showDuplicateDialog(existing, parsed);
+            
+            if (shouldUpdate == true) {
+              // Update existing with new data
+              final updated = existing.copyWith(
+                name: parsed.name,
+                location: parsed.location,
+                attendanceCount: existing.attendanceCount + 1,
+              );
+              await _repository.updateAttendee(updated);
+              savedAttendee = updated;
+              savedCount++;
+            } else {
+              skippedCount++;
+            }
+          } else {
+            // Data is identical, just increment attendance silently
             final updated = existing.copyWith(
-              name: parsed.name,
-              location: parsed.location,
-              attendanceCount: existing.attendanceCount + 1, // Increment attendance
+              attendanceCount: existing.attendanceCount + 1,
             );
             await _repository.updateAttendee(updated);
             savedAttendee = updated;
             savedCount++;
-          } else {
-            skippedCount++;
           }
         } else {
           // Create new

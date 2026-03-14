@@ -102,21 +102,22 @@ void main() {
         await cloudSyncService.initialize();
         debugPrint('CloudSyncService initialized successfully');
 
-        final realTimeSyncService = RealTimeSyncService();
-        await realTimeSyncService.initialize();
-        debugPrint('RealTimeSyncService initialized successfully');
+        // DISABLED: Real-time sync causes permission errors and delays
+        // final realTimeSyncService = RealTimeSyncService();
+        // await realTimeSyncService.initialize();
+        // debugPrint('RealTimeSyncService initialized successfully');
         
-        // START BACKGROUND SYNC SERVICE (NEW - for offline-first architecture)
-        // Delayed start to prevent crashes on startup
-        Future.delayed(const Duration(seconds: 5), () {
-          try {
-            final backgroundSyncService = BackgroundSyncService();
-            backgroundSyncService.start();
-            debugPrint('BackgroundSyncService started successfully (delayed)');
-          } catch (e) {
-            debugPrint('BackgroundSyncService start error: $e');
-          }
-        });
+        // DISABLED: Background sync causes permission errors
+        // Uncomment when Firebase permissions are fixed
+        // final backgroundSyncService = BackgroundSyncService();
+        // Future.delayed(const Duration(seconds: 5), () {
+        //   try {
+        //     backgroundSyncService.start();
+        //     debugPrint('BackgroundSyncService started successfully (delayed)');
+        //   } catch (e) {
+        //     debugPrint('BackgroundSyncService start error: $e');
+        //   }
+        // });
       } else {
         debugPrint('Cloud services disabled - Firebase not available');
       }

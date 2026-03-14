@@ -163,16 +163,91 @@ class SMSManager {
       throw Exception('SMS permissions not granted');
     }
 
-    // Initialize sending state
+    // CRITICAL: Validate and filter attendees before sending
+    final validAttendees = <AttendeeModel>[];
+    final invalidAttendees = <String>[];
+    
+    for (final attendee in attendees) {
+      final phone = attendee.phoneNumber.trim().replaceAll(RegExp(r'\s+'), '');
+      
+      // Validate phone number format - accept both 07/01 and +254 formats
+      bool isValid = false;
+      String reason = '';
+      
+      if (phone.isEmpty) {
+        reason = 'Empty phone number';
+      }
+      // Check +254 format (13 characters: +254xxxxxxxxx)
+      else if (phone.startsWith('+254')) {
+        if (phone.length == 13 && RegExp(r'^\+254[17]\d{8}$').hasMatch(phone)) {
+          isValid = true;
+        } else {
+          reason = 'Invalid +254 format (expected +254xxxxxxxxx, got $phone)';
+        }
+      }
+      // Check 07 format (10 digits)
+      else if (phone.startsWith('07')) {
+        if (phone.length == 10 && RegExp(r'^07\d{8}$').hasMatch(phone)) {
+          isValid = true;
+        } else {
+          reason = 'Invalid 07 format (expected 07xxxxxxxx, got $phone)';
+        }
+      }
+      // Check 01 format (10 digits)
+      else if (phone.startsWith('01')) {
+        if (phone.length == 10 && RegExp(r'^01\d{8}$').hasMatch(phone)) {
+          isValid = true;
+        } else {
+          reason = 'Invalid 01 format (expected 01xxxxxxxx, got $phone)';
+        }
+      }
+      else {
+        reason = 'Invalid format (must be 07xxxxxxxx, 01xxxxxxxx, or +254xxxxxxxxx)';
+      }
+      
+      if (isValid) {
+        validAttendees.add(attendee);
+      } else {
+        invalidAttendees.add('${attendee.name}: $reason');
+      }
+    }
+    
+    // Log validation results
+    debugPrint('📊 SMS Validation Results:');
+    debugPrint('   ✅ Valid attendees: ${validAttendees.length}');
+    debugPrint('   ❌ Invalid attendees: ${invalidAttendees.length}');
+    
+    if (invalidAttendees.isNotEmpty) {
+      debugPrint('   Invalid phone numbers:');
+      for (final invalid in invalidAttendees) {
+        debugPrint('      - $invalid');
+      }
+    }
+    
+    if (validAttendees.isEmpty) {
+      throw Exception('No valid phone numbers found. All ${attendees.length} attendees have invalid phone numbers.');
+    }
+    
+    // Show warning if some attendees were filtered out
+    if (invalidAttendees.isNotEmpty) {
+      debugPrint('⚠️  WARNING: ${invalidAttendees.length} attendees will be skipped due to invalid phone numbers');
+    }
+
+    // Show warning if some attendees were filtered out
+    if (invalidAttendees.isNotEmpty) {
+      debugPrint('⚠️  WARNING: ${invalidAttendees.length} attendees will be skipped due to invalid phone numbers');
+    }
+
+    // Initialize sending state with VALID attendees only
     _isSending = true;
     _isPaused = false;
     _isCancelled = false;
-    _currentRecipients = attendees;
+    _currentRecipients = validAttendees; // Use validated list
     _currentMessage = message;
     _currentIndex = 0;
 
     _currentProgress = SMSProgress(
-      totalMessages: attendees.length,
+      totalMessages: validAttendees.length, // Use validated count
       sentMessages: 0,
       failedMessages: 0,
       currentIndex: 0,
@@ -181,7 +256,7 @@ class SMSManager {
     _progressController.add(_currentProgress);
 
     try {
-      await _sendMessagesSequentially(attendees, message, onMessageSent, onMessageFailed);
+      await _sendMessagesSequentially(validAttendees, message, onMessageSent, onMessageFailed);
     } finally {
       _isSending = false;
       _currentRecipients = null;
@@ -371,26 +446,66 @@ class SMSManager {
   /// Send a single SMS message
   Future<void> _sendSingleSMS(String phoneNumber, String message) async {
     try {
-      // Normalize phone number to ensure proper format
-      final normalizedPhone = AttendeeModel.normalizePhoneNumber(phoneNumber);
+      // Get the phone number in the format needed for SMS sending
+      // SMS in Kenya works with both 07xxxxxxxx and +254xxxxxxxxx formats
+      String smsPhone = phoneNumber.trim();
+      
+      // Remove any whitespace
+      smsPhone = smsPhone.replaceAll(RegExp(r'\s+'), '');
+      
+      // CRITICAL VALIDATION: Ensure phone number is valid
+      if (smsPhone.isEmpty) {
+        throw Exception('Phone number is empty');
+      }
+      
+      // Validate phone number format - accept both 07/01 and +254 formats
+      bool isValid = false;
+      String displayFormat = smsPhone;
+      
+      // Check +254 format (13 characters: +254xxxxxxxxx)
+      if (smsPhone.startsWith('+254')) {
+        if (smsPhone.length == 13 && RegExp(r'^\+254[17]\d{8}$').hasMatch(smsPhone)) {
+          isValid = true;
+          displayFormat = smsPhone;
+        }
+      }
+      // Check 07 format (10 digits)
+      else if (smsPhone.startsWith('07')) {
+        if (smsPhone.length == 10 && RegExp(r'^07\d{8}$').hasMatch(smsPhone)) {
+          isValid = true;
+          displayFormat = smsPhone;
+        }
+      }
+      // Check 01 format (10 digits)
+      else if (smsPhone.startsWith('01')) {
+        if (smsPhone.length == 10 && RegExp(r'^01\d{8}$').hasMatch(smsPhone)) {
+          isValid = true;
+          displayFormat = smsPhone;
+        }
+      }
+      
+      if (!isValid) {
+        throw Exception('Invalid phone number format: $smsPhone (must be 07xxxxxxxx, 01xxxxxxxx, or +254xxxxxxxxx)');
+      }
+      
+      debugPrint('📱 Sending SMS to: $displayFormat (original: $phoneNumber)');
       
       // Check message length - SMS standard is 160 chars for single message
-      // Multipart SMS can be unreliable, so warn if message is too long
       if (message.length > 160) {
-        debugPrint('WARNING: Message length ${message.length} exceeds 160 chars. May fail on some networks.');
+        debugPrint('⚠️  Message length ${message.length} exceeds 160 chars. Will send as multipart.');
       }
       
       // Send SMS using telephony plugin
-      // Note: sendSms handles multipart automatically but may fail silently on some carriers
+      // The plugin accepts both 07xxxxxxxx and +254xxxxxxxxx formats
       await _telephony.sendSms(
-        to: normalizedPhone,
+        to: smsPhone,
         message: message,
-        isMultipart: message.length > 160, // Explicitly mark as multipart if needed
+        isMultipart: message.length > 160,
       );
       
-      debugPrint('SMS sent successfully to $normalizedPhone (${message.length} chars)');
+      debugPrint('✅ SMS sent successfully to $displayFormat (${message.length} chars)');
     } catch (e) {
-      debugPrint('Failed to send SMS to $phoneNumber: $e');
+      debugPrint('❌ Failed to send SMS to $phoneNumber: $e');
       rethrow;
     }
   }
