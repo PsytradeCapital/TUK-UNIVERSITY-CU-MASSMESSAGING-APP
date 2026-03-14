@@ -1,4 +1,5 @@
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:flutter/foundation.dart';
 import '../models/scanned_attendee_model.dart';
 import 'dart:ui';
 
@@ -14,10 +15,10 @@ class EnhancedOCRService {
     final allAttendees = <ScannedAttendee>[];
     final processedPhones = <String>{};
 
-    print('=== ENHANCED OCR DEBUG ===');
-    print('Total blocks: ${recognizedText.blocks.length}');
-    print('Full text length: ${recognizedText.text.length}');
-    print('Full text preview: ${recognizedText.text.substring(0, recognizedText.text.length > 200 ? 200 : recognizedText.text.length)}');
+    debugPrint('=== ENHANCED OCR DEBUG ===');
+    debugPrint('Total blocks: ${recognizedText.blocks.length}');
+    debugPrint('Full text length: ${recognizedText.text.length}');
+    debugPrint('Full text preview: ${recognizedText.text.substring(0, recognizedText.text.length > 200 ? 200 : recognizedText.text.length)}');
 
     // Strategy 1: Process each text block independently
     for (final block in recognizedText.blocks) {
@@ -31,7 +32,7 @@ class EnhancedOCRService {
       }
     }
 
-    print('Strategy 1 (blocks): Found ${allAttendees.length} attendees');
+    debugPrint('Strategy 1 (blocks): Found ${allAttendees.length} attendees');
 
     // Strategy 2: Process entire text as table/list
     final tableAttendees = await _extractFromTableFormat(recognizedText);
@@ -42,9 +43,9 @@ class EnhancedOCRService {
       }
     }
 
-    print('Strategy 2 (table): Found ${tableAttendees.length} new attendees');
-    print('Total attendees found: ${allAttendees.length}');
-    print('=== END DEBUG ===');
+    debugPrint('Strategy 2 (table): Found ${tableAttendees.length} new attendees');
+    debugPrint('Total attendees found: ${allAttendees.length}');
+    debugPrint('=== END DEBUG ===');
 
     return allAttendees;
   }
@@ -119,7 +120,7 @@ class EnhancedOCRService {
     // Split into lines
     final lines = allText.split('\n');
     
-    print('Processing ${lines.length} lines for table format...');
+    debugPrint('Processing ${lines.length} lines for table format...');
     
     for (int i = 0; i < lines.length; i++) {
       final line = lines[i];
@@ -131,7 +132,7 @@ class EnhancedOCRService {
       final phone = _extractPhoneNumber(line);
       if (phone == null) continue;
       
-      print('Line $i: Found phone $phone in: ${line.substring(0, line.length > 50 ? 50 : line.length)}');
+      debugPrint('Line $i: Found phone $phone in: ${line.substring(0, line.length > 50 ? 50 : line.length)}');
       
       // Extract name (everything before phone number)
       String? name = _extractNameFromLine(line, phone);
@@ -147,14 +148,14 @@ class EnhancedOCRService {
       }
       
       if (name == null || name.isEmpty) {
-        print('  -> No name found, skipping');
+        debugPrint('  -> No name found, skipping');
         continue;
       }
       
       // Extract location (everything after phone number)
       final location = _extractLocationFromLine(line, phone) ?? 'Unknown';
       
-      print('  -> Extracted: $name | $phone | $location');
+      debugPrint('  -> Extracted: $name | $phone | $location');
       
       attendees.add(ScannedAttendee(
         name: name,

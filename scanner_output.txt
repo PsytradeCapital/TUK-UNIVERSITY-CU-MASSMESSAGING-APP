@@ -1,0 +1,22 @@
+03-06 10:54:24.012  3425  3444 D nativeloader: Load /data/app/~~nEhQ9xik5DhxPImXQ5EAcw==/com.example.christian_union_attendance_app-S-Nt2RFxk5mfMafYhtWUEg==/base.apk!/lib/arm64-v8a/libflutter.so using class loader ns clns-4 (caller=/data/app/~~nEhQ9xik5DhxPImXQ5EAcw==/com.example.christian_union_attendance_app-S-Nt2RFxk5mfMafYhtWUEg==/base.apk): ok
+03-06 10:54:24.434  3425  3448 I flutter : Firebase initialized successfully
+03-06 10:54:24.434  3425  3448 I flutter : Firestore configuration error: UnimplementedError: enablePersistence() is only available for Web. Use [Settings.persistenceEnabled] for other platforms.
+03-06 10:54:24.434  3425  3448 I flutter : Firestore configured successfully
+03-06 10:54:24.434  3425  3448 I flutter : AnalyticsService initialized successfully
+03-06 10:54:24.447  3425  3448 I flutter : AuthService initialized successfully
+03-06 10:54:24.452  3425  3448 I flutter : ConnectivityService initialized - Current status: Online (ConnectivityResult.wifi)
+03-06 10:54:24.452  3425  3448 I flutter : ConnectivityService initialized successfully
+03-06 10:54:24.453  3425  3448 I flutter : CloudSyncService initialized successfully
+03-06 10:54:24.453  3425  3448 I flutter : RealTimeSyncService initialized successfully
+03-06 10:54:24.475  3425  3448 I flutter : Connectivity changed: ConnectivityResult.wifi -> ConnectivityResult.wifi (Online)
+03-06 10:54:29.461  3425  3448 I flutter : BackgroundSyncService: Starting...
+03-06 10:54:29.461  3425  3448 I flutter : BackgroundSyncService: Started successfully
+03-06 10:54:29.461  3425  3448 I flutter : BackgroundSyncService started successfully (delayed)
+03-06 10:54:31.465  3425  3448 I flutter : BackgroundSyncService: Running initial sync
+03-06 10:54:37.036  3425  3448 I flutter : Loaded active service session with 37 attendees
+03-06 10:54:37.212  3425  3448 I flutter : Loaded 10 recent services
+03-06 10:54:37.212  3425  3448 I flutter : Navigation constraints updated
+03-06 10:54:37.212  3425  3448 I flutter : Creating recovery checkpoint
+03-06 10:54:37.212  3425  3448 I flutter : Saving checkpoint: {timestamp: 2026-03-06T10:54:37.212869, sessionState: {currentServiceId: 11, lastTransition: 2026-03-06T09:39:17.825715, attendeeCount: 37}, appVersion: 1.0.0}
+03-06 10:54:37.213  3425  3448 I flutter : Recovery checkpoint created successfully
+03-06 10:54:37.595  3425  3448 I flutter : Real-time attendee updates error: [cloud_firestore/permission-denied] The caller does not have permission to execute the specified operation.

@@ -27,6 +27,8 @@ class BackgroundSyncService {
 
   /// Start background sync service
   void start() {
+    print('BackgroundSyncService: Starting...');
+    
     // Sync every 30 seconds
     _syncTimer?.cancel();
     _syncTimer = Timer.periodic(const Duration(seconds: 30), (_) {
@@ -38,12 +40,19 @@ class BackgroundSyncService {
     _connectivitySubscription = _connectivity.onConnectivityChanged.listen((result) {
       if (result != ConnectivityResult.none) {
         // Connected to internet, trigger sync
+        print('BackgroundSyncService: Connectivity restored, triggering sync');
         syncPendingChanges();
       }
     });
 
-    // Initial sync
-    syncPendingChanges();
+    // Initial sync after a short delay to ensure database is ready
+    // DISABLED: Causing permission errors and blocking UI
+    // Future.delayed(const Duration(seconds: 2), () {
+    //   print('BackgroundSyncService: Running initial sync');
+    //   syncPendingChanges();
+    // });
+    
+    print('BackgroundSyncService: Started successfully (sync disabled due to permissions)');
   }
 
   /// Stop background sync service

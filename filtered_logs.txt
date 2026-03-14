@@ -1,0 +1,32 @@
+03-06 10:55:01.601  3590  3613 D nativeloader: Load /data/app/~~nEhQ9xik5DhxPImXQ5EAcw==/com.example.christian_union_attendance_app-S-Nt2RFxk5mfMafYhtWUEg==/base.apk!/lib/arm64-v8a/libflutter.so using class loader ns clns-4 (caller=/data/app/~~nEhQ9xik5DhxPImXQ5EAcw==/com.example.christian_union_attendance_app-S-Nt2RFxk5mfMafYhtWUEg==/base.apk): ok
+03-06 10:55:01.980  3590  3616 I flutter : Firebase initialized successfully
+03-06 10:55:01.981  3590  3616 I flutter : Firestore configuration error: UnimplementedError: enablePersistence() is only available for Web. Use [Settings.persistenceEnabled] for other platforms.
+03-06 10:55:01.981  3590  3616 I flutter : Firestore configured successfully
+03-06 10:55:01.981  3590  3616 I flutter : AnalyticsService initialized successfully
+03-06 10:55:01.999  3590  3616 I flutter : AuthService initialized successfully
+03-06 10:55:02.004  3590  3616 I flutter : ConnectivityService initialized - Current status: Online (ConnectivityResult.wifi)
+03-06 10:55:02.004  3590  3616 I flutter : ConnectivityService initialized successfully
+03-06 10:55:02.005  3590  3616 I flutter : CloudSyncService initialized successfully
+03-06 10:55:02.005  3590  3616 I flutter : RealTimeSyncService initialized successfully
+03-06 10:55:02.032  3590  3616 I flutter : Connectivity changed: ConnectivityResult.wifi -> ConnectivityResult.wifi (Online)
+03-06 10:55:02.217  3590  3659 E GoogleApiManager: java.lang.SecurityException: Unknown calling package name 'com.google.android.gms'.
+03-06 10:55:02.217  3590  3659 E GoogleApiManager: 	at android.os.Parcel.createExceptionOrNull(Parcel.java:3039)
+03-06 10:55:02.217  3590  3659 E GoogleApiManager: 	at android.os.Parcel.createException(Parcel.java:3023)
+03-06 10:55:02.217  3590  3659 E GoogleApiManager: 	at android.os.Parcel.readException(Parcel.java:3006)
+03-06 10:55:02.217  3590  3659 E GoogleApiManager: 	at android.os.Parcel.readException(Parcel.java:2948)
+03-06 10:55:02.219  3590  3659 W GoogleApiManager: Not showing notification since connectionResult is not user-facing: ConnectionResult{statusCode=DEVELOPER_ERROR, resolution=null, message=null, clientMethodKey=null}
+03-06 10:55:02.226  3590  3657 W FlagRegistrar: gbqd: 17: 17: API: Phenotype.API is not available on this device. Connection failed with: ConnectionResult{statusCode=DEVELOPER_ERROR, resolution=null, message=null, clientMethodKey=null}
+03-06 10:55:02.226  3590  3657 W FlagRegistrar: Caused by: bezv: 17: API: Phenotype.API is not available on this device. Connection failed with: ConnectionResult{statusCode=DEVELOPER_ERROR, resolution=null, message=null, clientMethodKey=null}
+03-06 10:55:03.664  1058  2549 E TaskPersister: File error accessing recents directory (directory doesn't exist?).
+03-06 10:55:07.085  3590  3616 I flutter : BackgroundSyncService: Starting...
+03-06 10:55:07.086  3590  3616 I flutter : BackgroundSyncService: Started successfully
+03-06 10:55:07.086  3590  3616 I flutter : BackgroundSyncService started successfully (delayed)
+03-06 10:55:07.231  3590  3616 I flutter : Loaded active service session with 37 attendees
+03-06 10:55:07.450  3590  3616 I flutter : Loaded 10 recent services
+03-06 10:55:07.451  3590  3616 I flutter : Navigation constraints updated
+03-06 10:55:07.451  3590  3616 I flutter : Creating recovery checkpoint
+03-06 10:55:07.451  3590  3616 I flutter : Saving checkpoint: {timestamp: 2026-03-06T10:55:07.451062, sessionState: {currentServiceId: 11, lastTransition: 2026-03-06T09:39:17.825715, attendeeCount: 37}, appVersion: 1.0.0}
+03-06 10:55:07.451  3590  3616 I flutter : Recovery checkpoint created successfully
+03-06 10:55:07.816  3590  3616 I flutter : Real-time attendee updates error: [cloud_firestore/permission-denied] The caller does not have permission to execute the specified operation.
+03-06 10:55:09.087  3590  3616 I flutter : BackgroundSyncService: Running initial sync
+03-06 10:55:11.280  3590  3616 I flutter : Navigated to tab 2
