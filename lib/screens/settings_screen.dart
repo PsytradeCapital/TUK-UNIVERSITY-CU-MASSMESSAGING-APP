@@ -5,6 +5,7 @@ import '../services/data_management_service.dart';
 import '../services/auth_service.dart';
 import 'pin_setup_screen.dart';
 import 'user_management_screen.dart';
+import 'phone_number_fix_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -232,6 +233,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
             const SizedBox(height: 16),
+            ListTile(
+              leading: const Icon(Icons.phone_android, color: Colors.orange),
+              title: const Text('Fix Phone Numbers'),
+              subtitle: const Text('Fix invalid phone numbers in database'),
+              trailing: const Icon(Icons.arrow_forward_ios),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const PhoneNumberFixScreen(),
+                  ),
+                );
+              },
+            ),
+            const Divider(),
             ListTile(
               leading: const Icon(Icons.file_download),
               title: const Text('Export Data'),

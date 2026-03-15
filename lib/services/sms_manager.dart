@@ -167,8 +167,13 @@ class SMSManager {
     final validAttendees = <AttendeeModel>[];
     final invalidAttendees = <String>[];
     
+    debugPrint('🔍 Starting phone number validation for ${attendees.length} attendees...');
+    
     for (final attendee in attendees) {
-      final phone = attendee.phoneNumber.trim().replaceAll(RegExp(r'\s+'), '');
+      final originalPhone = attendee.phoneNumber;
+      final phone = originalPhone.trim().replaceAll(RegExp(r'\s+'), '');
+      
+      debugPrint('   Checking: ${attendee.name} - Original: "$originalPhone" - Cleaned: "$phone"');
       
       // Validate phone number format - accept both 07/01 and +254 formats
       bool isValid = false;
@@ -181,28 +186,35 @@ class SMSManager {
       else if (phone.startsWith('+254')) {
         if (phone.length == 13 && RegExp(r'^\+254[17]\d{8}$').hasMatch(phone)) {
           isValid = true;
+          debugPrint('      ✅ Valid +254 format');
         } else {
-          reason = 'Invalid +254 format (expected +254xxxxxxxxx, got $phone)';
+          reason = 'Invalid +254 format (length: ${phone.length}, expected 13)';
+          debugPrint('      ❌ $reason');
         }
       }
       // Check 07 format (10 digits)
       else if (phone.startsWith('07')) {
         if (phone.length == 10 && RegExp(r'^07\d{8}$').hasMatch(phone)) {
           isValid = true;
+          debugPrint('      ✅ Valid 07 format');
         } else {
-          reason = 'Invalid 07 format (expected 07xxxxxxxx, got $phone)';
+          reason = 'Invalid 07 format (length: ${phone.length}, expected 10)';
+          debugPrint('      ❌ $reason');
         }
       }
       // Check 01 format (10 digits)
       else if (phone.startsWith('01')) {
         if (phone.length == 10 && RegExp(r'^01\d{8}$').hasMatch(phone)) {
           isValid = true;
+          debugPrint('      ✅ Valid 01 format');
         } else {
-          reason = 'Invalid 01 format (expected 01xxxxxxxx, got $phone)';
+          reason = 'Invalid 01 format (length: ${phone.length}, expected 10)';
+          debugPrint('      ❌ $reason');
         }
       }
       else {
-        reason = 'Invalid format (must be 07xxxxxxxx, 01xxxxxxxx, or +254xxxxxxxxx)';
+        reason = 'Invalid format (starts with: ${phone.substring(0, phone.length > 4 ? 4 : phone.length)})';
+        debugPrint('      ❌ $reason');
       }
       
       if (isValid) {
@@ -225,7 +237,9 @@ class SMSManager {
     }
     
     if (validAttendees.isEmpty) {
-      throw Exception('No valid phone numbers found. All ${attendees.length} attendees have invalid phone numbers.');
+      final errorMsg = 'No valid phone numbers found. All ${attendees.length} attendees have invalid phone numbers.';
+      debugPrint('❌ CRITICAL ERROR: $errorMsg');
+      throw Exception(errorMsg);
     }
     
     // Show warning if some attendees were filtered out
