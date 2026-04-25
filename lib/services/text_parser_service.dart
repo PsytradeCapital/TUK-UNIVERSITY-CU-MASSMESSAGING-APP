@@ -100,30 +100,24 @@ class TextParserService {
     );
   }
 
-  /// Extract phone number from text
+  /// Extract phone number from text and return in 07/01 local format
   String? _extractPhone(String text) {
-    // Kenyan phone patterns
+    // Kenyan phone patterns — order matters (most specific first)
     final patterns = [
-      RegExp(r'(?:254|0)?([17]\d{8})'),  // 0712345678 or 254712345678
-      RegExp(r'\+?254\s?([17]\d{8})'),   // +254 712345678
-      RegExp(r'0([17]\d{8})'),            // 0712345678
+      RegExp(r'\+254([17]\d{8})'),   // +254712345678
+      RegExp(r'254([17]\d{8})'),     // 254712345678 (no +)
+      RegExp(r'0([17]\d{8})'),       // 0712345678
     ];
-    
+
     for (final pattern in patterns) {
       final match = pattern.firstMatch(text);
       if (match != null) {
-        String phone = match.group(1) ?? match.group(0)!;
-        // Normalize to 07/01 format
-        if (!phone.startsWith('0')) {
-          phone = '0$phone';
-        }
-        // Validate length
-        if (phone.length == 10) {
-          return phone;
-        }
+        final digits = match.group(1)!;
+        final phone = '0$digits'; // normalise to 07/01 format
+        if (phone.length == 10) return phone;
       }
     }
-    
+
     return null;
   }
 }

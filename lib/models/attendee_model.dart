@@ -45,61 +45,62 @@ class AttendeeModel {
        lastUpdated = lastUpdated ?? DateTime.now();
 
   // Phone number validation for Kenyan formats
+  // Accepts: 07xxxxxxxx, 01xxxxxxxx, +2547xxxxxxxx, +2541xxxxxxxx
   static bool isValidKenyanPhone(String phone) {
-    // Remove any whitespace
-    phone = phone.replaceAll(RegExp(r'\s+'), '');
-    
-    // Check for +2547xxxxxxxx format (10 digits after +254)
+    phone = phone.trim().replaceAll(RegExp(r'\s+'), '');
+    if (phone.isEmpty) return false;
+
+    // +254 format: +254 followed by 9 digits starting with 7 or 1
     if (phone.startsWith('+254')) {
-      String digits = phone.substring(4);
-      return digits.length == 9 && 
-             digits.startsWith('7') && 
-             RegExp(r'^\d{9}$').hasMatch(digits);
+      final digits = phone.substring(4);
+      return digits.length == 9 && RegExp(r'^[71]\d{8}$').hasMatch(digits);
     }
-    
-    // Check for 07xxxxxxxx format (10 digits starting with 07)
-    if (phone.startsWith('07')) {
-      return phone.length == 10 && RegExp(r'^07\d{8}$').hasMatch(phone);
+
+    // 07xxxxxxxx or 01xxxxxxxx: exactly 10 digits
+    if (phone.startsWith('07') || phone.startsWith('01')) {
+      return phone.length == 10 && RegExp(r'^0[71]\d{8}$').hasMatch(phone);
     }
-    
-    // Check for 01xxxxxxxx format (10 digits starting with 01)
-    if (phone.startsWith('01')) {
-      return phone.length == 10 && RegExp(r'^01\d{8}$').hasMatch(phone);
-    }
-    
+
     return false;
   }
 
-  // Normalize phone number to +254 format
+  // Normalize phone number to consistent format.
+  // Stores as 07xxxxxxxx / 01xxxxxxxx (local format) for SMS compatibility.
   static String normalizePhoneNumber(String phone) {
-    phone = phone.replaceAll(RegExp(r'\s+'), '');
-    
-    if (phone.startsWith('07')) {
-      return '+254${phone.substring(1)}';
-    } else if (phone.startsWith('01')) {
-      return '+254${phone.substring(1)}';
-    } else if (phone.startsWith('+254')) {
+    phone = phone.trim().replaceAll(RegExp(r'\s+'), '');
+
+    // +254xxxxxxxxx → 0xxxxxxxxx
+    if (phone.startsWith('+254') && phone.length == 13) {
+      return '0${phone.substring(4)}';
+    }
+
+    // Already in 07/01 format
+    if (phone.startsWith('07') || phone.startsWith('01')) {
       return phone;
     }
-    
+
+    // 254xxxxxxxxx (no +) → 0xxxxxxxxx
+    if (phone.startsWith('254') && phone.length == 12) {
+      return '0${phone.substring(3)}';
+    }
+
     return phone; // Return as-is if format not recognized
   }
 
-  // Mask phone number for display (e.g., +254712****56)
+  // Mask phone number for display (e.g., 0712****56)
   static String maskPhoneNumber(String phone) {
     if (phone.length < 4) return phone;
-    
+
     if (phone.startsWith('+254') && phone.length >= 13) {
       return '${phone.substring(0, 7)}****${phone.substring(phone.length - 2)}';
-    } else if (phone.startsWith('07') && phone.length >= 10) {
+    } else if ((phone.startsWith('07') || phone.startsWith('01')) && phone.length >= 10) {
       return '${phone.substring(0, 4)}****${phone.substring(phone.length - 2)}';
     }
-    
-    // For other formats, mask middle digits
+
     if (phone.length >= 6) {
       return '${phone.substring(0, 3)}****${phone.substring(phone.length - 2)}';
     }
-    
+
     return phone;
   }
 
@@ -146,31 +147,31 @@ class AttendeeModel {
     if (name.trim().isEmpty) {
       return 'Name cannot be empty';
     }
-    
+
     if (name.trim().length < 2) {
       return 'Name must be at least 2 characters long';
     }
-    
+
     if (!isValidKenyanPhone(phoneNumber)) {
-      return 'Invalid phone number format. Use +2547xxxxxxxx or 07xxxxxxxx';
+      return 'Invalid phone number format. Use 07xxxxxxxx, 01xxxxxxxx, or +254xxxxxxxxx';
     }
-    
+
     // Year of study is required only for students
     if (category == AttendeeCategory.student) {
       if (yearOfStudy.isEmpty) {
         return 'Year of study is required for students';
       }
-      
-      List<String> validYears = ['1st Year', '2nd Year', '3rd Year', '4th Year', '5th Year', '6th Year'];
+
+      const validYears = ['1st Year', '2nd Year', '3rd Year', '4th Year', '5th Year', '6th Year'];
       if (!validYears.contains(yearOfStudy)) {
         return 'Invalid year of study';
       }
     }
-    
+
     if (location.trim().isEmpty) {
       return 'Location is required';
     }
-    
+
     return null; // No validation errors
   }
 
@@ -291,20 +292,16 @@ class AttendeeModel {
       location: data['location'] ?? '',
       category: categoryFromString(data['category'] ?? 'student'),
       attendanceCount: data['attendanceCount'] ?? 0,
-      firstRegistered: data['firstRegistered'] != null 
-          ? DateTime.parse(data['firstRegistered']) 
+      firstRegistered: data['firstRegistered'] != null
+          ? DateTime.parse(data['firstRegistered'])
           : DateTime.now(),
-      lastUpdated: data['lastUpdated'] != null 
-          ? DateTime.parse(data['lastUpdated']) 
+      lastUpdated: data['lastUpdated'] != null
+          ? DateTime.parse(data['lastUpdated'])
           : DateTime.now(),
       createdBy: data['createdBy'],
-      createdAt: data['createdAt'] != null 
-          ? DateTime.parse(data['createdAt']) 
-          : null,
+      createdAt: data['createdAt'] != null ? DateTime.parse(data['createdAt']) : null,
       modifiedBy: data['modifiedBy'],
-      modifiedAt: data['modifiedAt'] != null 
-          ? DateTime.parse(data['modifiedAt']) 
-          : null,
+      modifiedAt: data['modifiedAt'] != null ? DateTime.parse(data['modifiedAt']) : null,
       isSynced: true, // Data from Firestore is considered synced
       version: data['version'] ?? 1,
     );
@@ -379,6 +376,7 @@ class AttendeeModel {
 
   @override
   int get hashCode {
-    return Object.hash(id, name, phoneNumber, yearOfStudy, location, category, attendanceCount, firestoreId, version);
+    return Object.hash(id, name, phoneNumber, yearOfStudy, location, category,
+        attendanceCount, firestoreId, version);
   }
 }

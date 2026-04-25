@@ -35,32 +35,28 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _initializeApp() async {
-    final appState = context.read<AppStateProvider>();
     final navigationProvider = context.read<NavigationProvider>();
     final sessionProvider = context.read<ServiceSessionProvider>();
 
     try {
-      appState.setGlobalLoading(true);
-      
-      // Load active service session
+      // Load active service session silently — no blocking overlay
       await sessionProvider.loadActiveService();
       
       // Update navigation constraints based on session state
-      navigationProvider.updateNavigationConstraints(
-        canNavigateToMessaging: sessionProvider.hasActiveService && sessionProvider.attendeeCount > 0,
-      );
+      if (mounted) {
+        navigationProvider.updateNavigationConstraints(
+          canNavigateToMessaging: sessionProvider.hasActiveService && sessionProvider.attendeeCount > 0,
+        );
+      }
       
-      // Create recovery checkpoint
+      // Create recovery checkpoint in background
       final recoveryService = RecoveryService();
-      await recoveryService.createRecoveryCheckpoint(sessionProvider: sessionProvider);
+      recoveryService.createRecoveryCheckpoint(sessionProvider: sessionProvider)
+          .catchError((e) => debugPrint('Recovery checkpoint error: $e'));
       
     } catch (e) {
-      appState.setGlobalError('Failed to initialize app: $e', context: 'HomeScreen');
-      
-      // Try recovery if initialization fails
-      await _performRecovery();
-    } finally {
-      appState.setGlobalLoading(false);
+      debugPrint('App initialization error: $e');
+      // Don't block the UI — just log and continue
     }
   }
 
@@ -275,15 +271,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _startNewService(BuildContext context) async {
-    final appState = context.read<AppStateProvider>();
     final sessionProvider = context.read<ServiceSessionProvider>();
     final navigationProvider = context.read<NavigationProvider>();
 
     try {
-      appState.setGlobalLoading(true);
       await sessionProvider.startNewService();
       
-      // Update navigation constraints
       navigationProvider.updateNavigationConstraints(
         canNavigateToMessaging: true,
       );
@@ -297,9 +290,14 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       }
     } catch (e) {
-      appState.setGlobalError('Failed to start new service: $e', context: 'HomeScreen');
-    } finally {
-      appState.setGlobalLoading(false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to start service: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 

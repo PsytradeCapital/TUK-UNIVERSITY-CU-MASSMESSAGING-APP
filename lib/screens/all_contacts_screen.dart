@@ -52,27 +52,26 @@ class _AllMembersScreenState extends State<AllMembersScreen> {
       _isLoading = true;
       _errorMessage = null;
     });
-    
+
     try {
-      // Load attendees in background
+      // Local SQLite — instant read
       final attendees = await _attendeeRepository.getAllAttendees();
-      
+
       if (!mounted) return;
-      
-      // Sort by name A-Z
-      attendees.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
-      
-      // Extract unique locations and years
-      final locations = attendees.map((a) => a.location).toSet().toList();
-      locations.sort();
-      
+
+      attendees.sort(
+          (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+
+      final locations = attendees.map((a) => a.location).toSet().toList()
+        ..sort();
+
       final years = attendees
-          .where((a) => a.yearOfStudy != null && a.yearOfStudy!.isNotEmpty)
-          .map((a) => a.yearOfStudy!)
+          .where((a) => a.yearOfStudy.isNotEmpty)
+          .map((a) => a.yearOfStudy)
           .toSet()
-          .toList();
-      years.sort();
-      
+          .toList()
+        ..sort();
+
       setState(() {
         _allAttendees = attendees;
         _filteredAttendees = attendees;

@@ -972,7 +972,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> with OfflineCap
                 children: [
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: sessionProvider.isLoading ? null : () => _showAttendeeListDialog(sessionProvider),
+                      onPressed: () => _showAttendeeListDialog(sessionProvider),
                       icon: const Icon(Icons.list, size: 16),
                       label: const Text('View All'),
                       style: OutlinedButton.styleFrom(
@@ -983,7 +983,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> with OfflineCap
                   const SizedBox(width: 8),
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: sessionProvider.isLoading ? null : () => _showClearSessionDialog(sessionProvider),
+                      onPressed: () => _showClearSessionDialog(sessionProvider),
                       icon: const Icon(Icons.clear_all, size: 16),
                       label: const Text('Clear Session'),
                       style: OutlinedButton.styleFrom(
@@ -1032,15 +1032,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> with OfflineCap
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: sessionProvider.isLoading ? null : () => _startNewService(sessionProvider),
-                  icon: sessionProvider.isLoading 
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.add_circle),
-                  label: Text(sessionProvider.isLoading ? 'Starting...' : 'Start New Service'),
+                  onPressed: () => _startNewService(sessionProvider),
+                  icon: const Icon(Icons.add_circle),
+                  label: const Text('Start New Service'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
                     foregroundColor: Colors.white,

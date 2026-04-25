@@ -175,25 +175,38 @@ class _ScannedAttendeesReviewScreenState extends State<ScannedAttendeesReviewScr
         
         try {
           if (matchedMember != null) {
-            // Returning member - use existing data
-            await _registrationService.registerAttendee(
-              name: matchedMember.existingMember.name,
-              phoneNumber: matchedMember.existingMember.phoneNumber,
-              location: matchedMember.existingMember.location,
-              yearOfStudy: matchedMember.existingMember.yearOfStudy ?? '',
-              category: matchedMember.existingMember.category,
+            // Returning member — update attendance and register to session
+            final result = await _registrationService.registerReturningAttendee(
+              matchedMember.existingMember,
             );
-            savedCount++;
+            if (result.isSuccess || result.isDuplicate) {
+              savedCount++;
+            } else {
+              errorCount++;
+              errors.add('${attendee.name}: ${result.errorMessage}');
+            }
           } else {
-            // New member - use scanned data
-            await _registrationService.registerAttendee(
+            // New member — normalise phone before saving
+            final normalisedPhone =
+                AttendeeModel.normalizePhoneNumber(attendee.phoneNumber);
+            final result = await _registrationService.registerAttendee(
               name: attendee.name,
-              phoneNumber: attendee.phoneNumber,
+              phoneNumber: normalisedPhone,
               location: attendee.location,
               yearOfStudy: '',
               category: AttendeeCategory.student,
             );
-            savedCount++;
+            if (result.isSuccess) {
+              savedCount++;
+            } else if (result.isDuplicate) {
+              // Already exists — just register for today's service
+              await _registrationService
+                  .registerReturningAttendee(result.attendee!);
+              savedCount++;
+            } else {
+              errorCount++;
+              errors.add('${attendee.name}: ${result.errorMessage}');
+            }
           }
         } catch (e) {
           errorCount++;

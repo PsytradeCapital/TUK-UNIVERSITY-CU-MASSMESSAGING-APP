@@ -2,6 +2,7 @@ import 'package:sqflite/sqflite.dart';
 import '../models/service_model.dart';
 import '../models/attendee_model.dart';
 import '../services/database_manager.dart';
+import '../services/encryption_service.dart';
 
 class ServiceRepository {
   final DatabaseManager _databaseManager = DatabaseManager.instance;
@@ -212,8 +213,11 @@ class ServiceRepository {
         ORDER BY sa.registered_at ASC
       ''', [serviceId]);
 
-      return List.generate(maps.length, (i) {
-        return AttendeeModel.fromMap(maps[i]);
+      // Decrypt each attendee record before building the model
+      final decryptedMaps = await EncryptionService.decryptAttendeeList(maps);
+
+      return List.generate(decryptedMaps.length, (i) {
+        return AttendeeModel.fromMap(decryptedMaps[i]);
       });
     } catch (e) {
       throw ServiceRepositoryException('Failed to get service attendees: $e');

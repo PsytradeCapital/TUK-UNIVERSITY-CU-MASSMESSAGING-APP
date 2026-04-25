@@ -86,47 +86,32 @@ class _BulkTextImportScreenState extends State<BulkTextImportScreen> {
           continue;
         }
 
+        // Normalise phone to 07/01 format before any DB lookup
+        final normalisedPhone = AttendeeModel.normalizePhoneNumber(parsed.phoneNumber);
+
         // Check for duplicates
-        final existing = await _repository.getAttendeeByPhone(parsed.phoneNumber);
+        final existing = await _repository.getAttendeeByPhone(normalisedPhone);
         
         AttendeeModel? savedAttendee;
         
         if (existing != null) {
-          // Check if data actually differs
-          final dataDiffers = existing.name != parsed.name || 
-                             existing.location != parsed.location;
-          
-          if (dataDiffers) {
-            // Data is different, ask user if they want to update
-            final shouldUpdate = await _showDuplicateDialog(existing, parsed);
-            
-            if (shouldUpdate == true) {
-              // Update existing with new data
-              final updated = existing.copyWith(
-                name: parsed.name,
-                location: parsed.location,
-                attendanceCount: existing.attendanceCount + 1,
-              );
-              await _repository.updateAttendee(updated);
-              savedAttendee = updated;
-              savedCount++;
-            } else {
-              skippedCount++;
-            }
-          } else {
-            // Data is identical, just increment attendance silently
-            final updated = existing.copyWith(
-              attendanceCount: existing.attendanceCount + 1,
-            );
-            await _repository.updateAttendee(updated);
-            savedAttendee = updated;
-            savedCount++;
-          }
+          // Always auto-update: merge new data and increment attendance
+          final updated = existing.copyWith(
+            name: parsed.name.isNotEmpty ? parsed.name : existing.name,
+            location: parsed.location.isNotEmpty && parsed.location != 'Unknown'
+                ? parsed.location
+                : existing.location,
+            attendanceCount: existing.attendanceCount + 1,
+            lastUpdated: DateTime.now(),
+          );
+          await _repository.updateAttendee(updated);
+          savedAttendee = updated;
+          savedCount++;
         } else {
           // Create new
           final newAttendee = AttendeeModel(
             name: parsed.name,
-            phoneNumber: parsed.phoneNumber,
+            phoneNumber: normalisedPhone,
             location: parsed.location,
             category: AttendeeCategory.student,
             yearOfStudy: '',
@@ -181,36 +166,7 @@ class _BulkTextImportScreenState extends State<BulkTextImportScreen> {
     }
   }
 
-  Future<bool?> _showDuplicateDialog(AttendeeModel existing, ParsedAttendee parsed) async {
-    return showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Duplicate Found'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Phone number ${parsed.phoneNumber} already exists:'),
-            const SizedBox(height: 8),
-            Text('Existing: ${existing.name}'),
-            Text('New: ${parsed.name}'),
-            const SizedBox(height: 16),
-            const Text('Do you want to update the existing record?'),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Skip'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Update'),
-          ),
-        ],
-      ),
-    );
-  }
+
 
   @override
   Widget build(BuildContext context) {

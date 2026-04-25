@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/report_generator.dart';
+import '../services/sms_manager.dart';
 import '../models/attendee_model.dart';
 import '../models/service_model.dart';
 import '../repositories/service_repository.dart';
@@ -19,6 +20,7 @@ class _ReportsScreenState extends State<ReportsScreen> with SingleTickerProvider
   final ReportGenerator _reportGenerator = ReportGenerator();
   final ServiceRepository _serviceRepository = ServiceRepository();
   final OfflineFirstAttendeeRepository _attendeeRepository = OfflineFirstAttendeeRepository();
+  final SMSManager _smsManager = SMSManager();
   
   late TabController _tabController;
   
@@ -67,19 +69,22 @@ class _ReportsScreenState extends State<ReportsScreen> with SingleTickerProvider
     });
 
     try {
-      final report = await _reportGenerator.generateAttendanceReport();
-      final trends = await _reportGenerator.getAttendanceTrends(months: 6);
-      
+      // Both calls read from local SQLite — should be near-instant
+      final results = await Future.wait([
+        _reportGenerator.generateAttendanceReport(),
+        _reportGenerator.getAttendanceTrends(months: 6),
+      ]);
+
+      if (!mounted) return;
       setState(() {
-        _attendanceReport = report;
-        _attendanceTrends = trends;
+        _attendanceReport = results[0] as AttendanceReport;
+        _attendanceTrends = results[1] as List<AttendanceTrend>;
+        _isLoadingOverview = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
-        _overviewError = 'Failed to load overview data: $e';
-      });
-    } finally {
-      setState(() {
+        _overviewError = 'Failed to load overview: $e';
         _isLoadingOverview = false;
       });
     }
@@ -93,15 +98,15 @@ class _ReportsScreenState extends State<ReportsScreen> with SingleTickerProvider
 
     try {
       final services = await _serviceRepository.getRecentServices(limit: 20);
+      if (!mounted) return;
       setState(() {
         _recentServices = services;
+        _isLoadingServices = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
-        _servicesError = 'Failed to load services data: $e';
-      });
-    } finally {
-      setState(() {
+        _servicesError = 'Failed to load services: $e';
         _isLoadingServices = false;
       });
     }
@@ -116,16 +121,15 @@ class _ReportsScreenState extends State<ReportsScreen> with SingleTickerProvider
     try {
       final attendees = await _attendeeRepository.getAttendeesWithMinAttendance(1);
       attendees.sort((a, b) => b.attendanceCount.compareTo(a.attendanceCount));
-      
+      if (!mounted) return;
       setState(() {
         _topAttendees = attendees.take(50).toList();
+        _isLoadingAttendees = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
-        _attendeesError = 'Failed to load attendees data: $e';
-      });
-    } finally {
-      setState(() {
+        _attendeesError = 'Failed to load attendees: $e';
         _isLoadingAttendees = false;
       });
     }
@@ -877,6 +881,7 @@ class _ReportsScreenState extends State<ReportsScreen> with SingleTickerProvider
                       ),
                     ],
                   ),
+                  onTap: () => _sendMessageToAttendee(attendee),
                 ),
               );
             },
@@ -941,5 +946,74 @@ class _ReportsScreenState extends State<ReportsScreen> with SingleTickerProvider
     if (count >= 10) return Colors.green;
     if (count >= 5) return Colors.orange;
     return Colors.blue;
+  }
+
+  /// Send a message to a single attendee from the Reports > Attendees tab.
+  Future<void> _sendMessageToAttendee(AttendeeModel attendee) async {
+    final messageController = TextEditingController();
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text('Message ${attendee.name}'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Phone: ${attendee.phoneNumber}'),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: messageController,
+                  decoration: const InputDecoration(
+                    labelText: 'Message',
+                    hintText: 'Use {name} to personalise',
+                    border: OutlineInputBorder(),
+                    helperText: 'Keep under 160 chars for reliable delivery',
+                  ),
+                  maxLines: 5,
+                  maxLength: 500,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Send'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (confirmed != true || messageController.text.trim().isEmpty) return;
+
+    try {
+      final msg = _smsManager.personalizeMessage(
+          messageController.text.trim(), attendee.name);
+      await _smsManager.sendBulkSMS([attendee], msg);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Message sent to ${attendee.name}'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to send: ${_smsManager.getUserFriendlyErrorMessage(e.toString())}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }

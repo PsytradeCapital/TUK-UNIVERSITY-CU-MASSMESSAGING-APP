@@ -255,60 +255,42 @@ class AttendeeRepository {
   // Get attendees by year of study
   Future<List<AttendeeModel>> getAttendeesByYear(String yearOfStudy) async {
     try {
+      // year_of_study is NOT encrypted, so direct query works
       final db = await _databaseManager.database;
-      
       final List<Map<String, dynamic>> maps = await db.query(
         'attendees',
         where: 'year_of_study = ?',
         whereArgs: [yearOfStudy],
-        orderBy: 'name ASC',
       );
-
       final decryptedMaps = await EncryptionService.decryptAttendeeList(maps);
-      
-      return List.generate(decryptedMaps.length, (i) {
-        return AttendeeModel.fromMap(decryptedMaps[i]);
-      });
+      return List.generate(decryptedMaps.length, (i) => AttendeeModel.fromMap(decryptedMaps[i]));
     } catch (e) {
       throw AttendeeRepositoryException('Failed to get attendees by year: $e');
     }
   }
 
-  // Get attendees by location
+  // Get attendees by location (location is encrypted — filter in memory)
   Future<List<AttendeeModel>> getAttendeesByLocation(String location) async {
     try {
-      final db = await _databaseManager.database;
-      
-      final List<Map<String, dynamic>> maps = await db.query(
-        'attendees',
-        where: 'location = ?',
-        whereArgs: [location],
-        orderBy: 'name ASC',
-      );
-
-      final decryptedMaps = await EncryptionService.decryptAttendeeList(maps);
-      
-      return List.generate(decryptedMaps.length, (i) {
-        return AttendeeModel.fromMap(decryptedMaps[i]);
-      });
+      final all = await getAllAttendees();
+      return all.where((a) => a.location == location).toList();
     } catch (e) {
       throw AttendeeRepositoryException('Failed to get attendees by location: $e');
     }
   }
 
-  // Get all unique locations from database (including custom "Other" locations)
+  // Get all unique locations from database (decrypted)
   Future<List<String>> getUniqueLocations() async {
     try {
-      final db = await _databaseManager.database;
-      
-      final List<Map<String, dynamic>> maps = await db.query(
-        'attendees',
-        columns: ['location'],
-        distinct: true,
-        orderBy: 'location ASC',
-      );
-
-      return maps.map((map) => map['location'] as String).toList();
+      // Since locations are encrypted, we must load all attendees and extract unique values
+      final allAttendees = await getAllAttendees();
+      final locations = allAttendees
+          .map((a) => a.location)
+          .where((l) => l.isNotEmpty)
+          .toSet()
+          .toList()
+        ..sort();
+      return locations;
     } catch (e) {
       throw AttendeeRepositoryException('Failed to get unique locations: $e');
     }
@@ -343,45 +325,22 @@ class AttendeeRepository {
     List<AttendeeCategory>? categories,
   }) async {
     try {
-      final db = await _databaseManager.database;
-      
-      // Build WHERE clause dynamically
-      List<String> whereClauses = [];
-      List<dynamic> whereArgs = [];
-      
-      if (years != null && years.isNotEmpty) {
-        final placeholders = List.filled(years.length, '?').join(',');
-        whereClauses.add('year_of_study IN ($placeholders)');
-        whereArgs.addAll(years);
-      }
-      
-      if (locations != null && locations.isNotEmpty) {
-        final placeholders = List.filled(locations.length, '?').join(',');
-        whereClauses.add('location IN ($placeholders)');
-        whereArgs.addAll(locations);
-      }
-      
-      if (categories != null && categories.isNotEmpty) {
-        final categoryStrings = categories.map((c) => AttendeeModel.categoryToString(c)).toList();
-        final placeholders = List.filled(categoryStrings.length, '?').join(',');
-        whereClauses.add('category IN ($placeholders)');
-        whereArgs.addAll(categoryStrings);
-      }
-      
-      final whereClause = whereClauses.isNotEmpty ? whereClauses.join(' AND ') : null;
-      
-      final List<Map<String, dynamic>> maps = await db.query(
-        'attendees',
-        where: whereClause,
-        whereArgs: whereArgs.isNotEmpty ? whereArgs : null,
-        orderBy: 'name ASC',
-      );
+      // Load all attendees (decrypted) then filter in memory
+      // This is necessary because name/location/phone are encrypted in SQLite
+      final all = await getAllAttendees();
 
-      final decryptedMaps = await EncryptionService.decryptAttendeeList(maps);
-      
-      return List.generate(decryptedMaps.length, (i) {
-        return AttendeeModel.fromMap(decryptedMaps[i]);
-      });
+      return all.where((a) {
+        if (years != null && years.isNotEmpty && !years.contains(a.yearOfStudy)) {
+          return false;
+        }
+        if (locations != null && locations.isNotEmpty && !locations.contains(a.location)) {
+          return false;
+        }
+        if (categories != null && categories.isNotEmpty && !categories.contains(a.category)) {
+          return false;
+        }
+        return true;
+      }).toList();
     } catch (e) {
       throw AttendeeRepositoryException('Failed to get attendees with filters: $e');
     }
@@ -435,8 +394,9 @@ class AttendeeRepository {
         limit: limit,
       );
 
-      return List.generate(maps.length, (i) {
-        return AttendeeModel.fromMap(maps[i]);
+      final decryptedMaps = await EncryptionService.decryptAttendeeList(maps);
+      return List.generate(decryptedMaps.length, (i) {
+        return AttendeeModel.fromMap(decryptedMaps[i]);
       });
     } catch (e) {
       throw AttendeeRepositoryException('Failed to get recently registered attendees: $e');
