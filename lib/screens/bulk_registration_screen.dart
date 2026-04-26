@@ -48,10 +48,12 @@ class _BulkRegistrationScreenState extends State<BulkRegistrationScreen> {
   }
 
   Future<void> _loadAllAttendees() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
+    if (_allAttendees.isEmpty) {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+    }
 
     try {
       final attendees = await _attendeeRepository.getAllAttendees();
@@ -67,6 +69,7 @@ class _BulkRegistrationScreenState extends State<BulkRegistrationScreen> {
           .toList();
       years.sort();
 
+      if (!mounted) return;
       setState(() {
         _allAttendees = attendees;
         _filteredAttendees = attendees;
@@ -75,6 +78,7 @@ class _BulkRegistrationScreenState extends State<BulkRegistrationScreen> {
         _isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _errorMessage = 'Failed to load members: $e';
         _isLoading = false;

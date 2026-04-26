@@ -17,11 +17,13 @@ import 'message_history_screen.dart';
 class MessagingScreen extends StatefulWidget {
   final List<AttendeeModel> attendees;
   final int serviceId;
+  final String? initialMessage;
 
   const MessagingScreen({
     Key? key,
     required this.attendees,
     required this.serviceId,
+    this.initialMessage,
   }) : super(key: key);
 
   @override
@@ -65,6 +67,11 @@ class _MessagingScreenState extends State<MessagingScreen> with OfflineCapable {
     super.initState();
     _filteredAttendees = widget.attendees;
     _messageController.addListener(_updateCharacterCount);
+    // Pre-fill message if provided (e.g. from resend)
+    if (widget.initialMessage != null && widget.initialMessage!.isNotEmpty) {
+      _messageController.text = widget.initialMessage!;
+      _characterCount = widget.initialMessage!.length;
+    }
     _loadFilterOptions();
     
     // Listen to SMS progress updates

@@ -76,10 +76,12 @@ class _BulkTextImportScreenState extends State<BulkTextImportScreen> {
       for (int i = 0; i < _parsedAttendees.length; i++) {
         final parsed = _parsedAttendees[i];
         
-        // Update progress
-        setState(() {
-          _saveProgress = (i + 1) / _parsedAttendees.length;
-        });
+        // Update progress every 5 items to avoid excessive rebuilds
+        if (i % 5 == 0) {
+          setState(() {
+            _saveProgress = (i + 1) / _parsedAttendees.length;
+          });
+        }
         
         if (!parsed.isValid) {
           skippedCount++;
@@ -115,15 +117,15 @@ class _BulkTextImportScreenState extends State<BulkTextImportScreen> {
             location: parsed.location,
             category: AttendeeCategory.student,
             yearOfStudy: '',
-            attendanceCount: 1, // First attendance
+            attendanceCount: 1,
           );
           final id = await _repository.createAttendee(newAttendee);
-          savedAttendee = newAttendee.copyWith(id: id);
+          savedAttendee = newAttendee.copyWith(id: id); // id is the SQLite row id
           savedCount++;
         }
         
-        // Add to session if option is enabled and session is active
-        if (savedAttendee != null && _registerToSession && hasActiveSession) {
+        // Add to session if option is enabled, session is active, and attendee has a valid id
+        if (savedAttendee != null && savedAttendee.id != null && _registerToSession && hasActiveSession) {
           registeredAttendees.add(savedAttendee);
         }
       }
@@ -143,18 +145,32 @@ class _BulkTextImportScreenState extends State<BulkTextImportScreen> {
       }
 
       if (mounted) {
-        final message = _registerToSession && hasActiveSession
-            ? 'Saved $savedCount attendees to database and registered to current session. Skipped $skippedCount.'
-            : 'Saved $savedCount attendees to database. Skipped $skippedCount.';
-            
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+        final sessionMsg = _registerToSession && hasActiveSession && registeredAttendees.isNotEmpty
+            ? ' Added ${registeredAttendees.length} to active session.'
+            : '';
+        final message = 'Saved $savedCount attendees.$sessionMsg Skipped $skippedCount invalid.';
+
+        // Show a dialog so the result is clearly visible
+        await showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.green),
+                const SizedBox(width: 8),
+                const Text('Import Complete'),
+              ],
+            ),
             content: Text(message),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 4),
+            actions: [
+              ElevatedButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('OK'),
+              ),
+            ],
           ),
         );
-        
+
         Navigator.pop(context, savedCount);
       }
     } catch (e) {

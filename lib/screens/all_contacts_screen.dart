@@ -48,13 +48,15 @@ class _AllMembersScreenState extends State<AllMembersScreen> {
   }
   
   Future<void> _loadAllContacts() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
+    // Don't show full-screen spinner on refresh — only on first load
+    if (_allAttendees.isEmpty) {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+    }
 
     try {
-      // Local SQLite — instant read
       final attendees = await _attendeeRepository.getAllAttendees();
 
       if (!mounted) return;

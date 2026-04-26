@@ -188,24 +188,84 @@ class _ReportsScreenState extends State<ReportsScreen> with SingleTickerProvider
     }
   }
 
-  /// Resend message to specific service attendees
+  /// Resend message to specific service attendees — shows compose dialog first
   Future<void> _resendMessageToService(ServiceModel service) async {
     try {
-      // Load attendees for this service
       final attendees = await _serviceRepository.getServiceAttendees(service.serviceId!);
-      
       if (attendees.isEmpty) {
         _showErrorSnackBar('No attendees found for this service');
         return;
       }
-      
-      // Navigate to messaging screen with pre-selected attendees
+
+      if (!mounted) return;
+
+      // Let user compose / edit the message before sending
+      final messageController = TextEditingController(text: service.messageText ?? '');
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => StatefulBuilder(
+          builder: (ctx, setDialogState) => AlertDialog(
+            title: Text('Message ${attendees.length} Attendees'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Service: ${service.serviceDate.toString().split(' ')[0]}',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 4),
+                  Text('${attendees.length} recipients'),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: messageController,
+                    decoration: InputDecoration(
+                      labelText: 'Message',
+                      hintText: 'Use {name} to personalise',
+                      border: const OutlineInputBorder(),
+                      helperText: messageController.text.length > 160
+                          ? '⚠ Over 160 chars — may fail on some networks'
+                          : 'Keep under 160 chars for reliable delivery',
+                      helperStyle: TextStyle(
+                        color: messageController.text.length > 160 ? Colors.red : Colors.grey,
+                      ),
+                      counterText: '${messageController.text.length}/160',
+                    ),
+                    maxLines: 5,
+                    maxLength: 500,
+                    onChanged: (_) => setDialogState(() {}),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton.icon(
+                icon: const Icon(Icons.send),
+                label: const Text('Send'),
+                onPressed: messageController.text.trim().isEmpty
+                    ? null
+                    : () => Navigator.pop(ctx, true),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      if (confirmed != true || messageController.text.trim().isEmpty || !mounted) return;
+
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => MessagingScreen(
             attendees: attendees,
             serviceId: service.serviceId!,
+            initialMessage: messageController.text.trim(),
           ),
         ),
       );
