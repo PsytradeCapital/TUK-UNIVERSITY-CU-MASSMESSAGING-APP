@@ -121,39 +121,33 @@ class ServiceSessionProvider extends ChangeNotifier {
   }
 
   /// Load existing service session (for app restart recovery)
+  /// Restores ANY unsent service — not just today's
   Future<void> loadActiveService() async {
-    _isLoading = true;
-    notifyListeners();
+    // If we already have a session loaded, don't wipe it
+    if (_currentService != null) {
+      await _loadSessionHistory();
+      return;
+    }
 
     try {
       // Get the most recent service that hasn't sent messages yet
-      final services = await _serviceRepository.getRecentServices(limit: 1);
-      
-      if (services.isNotEmpty) {
-        final latestService = services.first;
-        
-        // Only load if it's from today and hasn't sent messages
-        final today = DateTime.now();
-        final serviceDate = latestService.serviceDate;
-        
-        if (serviceDate.year == today.year &&
-            serviceDate.month == today.month &&
-            serviceDate.day == today.day &&
-            !latestService.messageSent) {
-          
-          _currentService = latestService;
-          _currentAttendees = await _serviceRepository.getServiceAttendees(latestService.serviceId!);
-          _lastSessionTransition = latestService.serviceDate;
-          
-          debugPrint('Loaded active service session with ${_currentAttendees.length} attendees');
+      final services = await _serviceRepository.getRecentServices(limit: 5);
+
+      for (final service in services) {
+        if (!service.messageSent) {
+          _currentService = service;
+          _currentAttendees = await _serviceRepository.getServiceAttendees(service.serviceId!);
+          _lastSessionTransition = service.serviceDate;
+          debugPrint('Restored service session ${service.serviceId} with ${_currentAttendees.length} attendees');
+          break;
         }
       }
-      // Load session history regardless of active service
+
       await _loadSessionHistory();
     } catch (e) {
       debugPrint('Error loading active service: $e');
     } finally {
-      _isLoading = false;
+      // Never set _isLoading here — it causes the spinner on every app resume
       notifyListeners();
     }
   }

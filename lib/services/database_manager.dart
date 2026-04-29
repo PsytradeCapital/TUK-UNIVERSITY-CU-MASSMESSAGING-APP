@@ -2,10 +2,12 @@ import 'dart:io';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
+import '../services/encryption_service.dart';
+import '../models/attendee_model.dart';
 
 class DatabaseManager {
   static const String _databaseName = 'christian_union_attendance.db';
-  static const int _databaseVersion = 6;
+  static const int _databaseVersion = 7; // bumped to trigger decryption migration
   
   static Database? _database;
   static DatabaseManager? _instance;
@@ -232,10 +234,39 @@ class DatabaseManager {
         await db.execute('ALTER TABLE attendees ADD COLUMN modified_at TEXT');
         await db.execute('ALTER TABLE attendees ADD COLUMN is_synced INTEGER DEFAULT 0');
         await db.execute('ALTER TABLE attendees ADD COLUMN version INTEGER DEFAULT 1');
-        await db.execute('CREATE INDEX idx_attendees_firestore_id ON attendees(firestore_id)');
-        await db.execute('CREATE INDEX idx_attendees_is_synced ON attendees(is_synced)');
+        await db.execute('CREATE INDEX IF NOT EXISTS idx_attendees_firestore_id ON attendees(firestore_id)');
+        await db.execute('CREATE INDEX IF NOT EXISTS idx_attendees_is_synced ON attendees(is_synced)');
       }
-      
+
+      // Migration version 7: Decrypt all locally-encrypted attendee rows.
+      // Previous versions encrypted name/phone/location in SQLite which caused
+      // extreme slowness. Version 7 stores plain text locally.
+      if (oldVersion < 7) {
+        try {
+          final rows = await db.query('attendees');
+          for (final row in rows) {
+            try {
+              final decrypted = await EncryptionService.decryptAttendeeData(
+                Map<String, dynamic>.from(row),
+              );
+              // Normalise phone while we're at it
+              final phone = decrypted['phone_number'] as String? ?? '';
+              decrypted['phone_number'] = AttendeeModel.normalizePhoneNumber(phone);
+              // Remove hash column — no longer needed
+              decrypted.remove('phone_hash');
+              await db.update(
+                'attendees',
+                decrypted,
+                where: 'id = ?',
+                whereArgs: [row['id']],
+              );
+            } catch (_) {
+              // Row may already be plain text — skip
+            }
+          }
+        } catch (_) {}
+      }
+
       // Add more migration logic as needed for future versions
     } catch (e) {
       throw DatabaseException('Failed to migrate database schema: $e');

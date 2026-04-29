@@ -4,6 +4,7 @@ import '../models/attendee_model.dart';
 import '../repositories/offline_first_attendee_repository.dart';
 import '../repositories/service_repository.dart';
 import '../services/text_parser_service.dart';
+import '../services/sms_manager.dart';
 import '../providers/service_session_provider.dart';
 
 /// Bulk Text Import Screen
@@ -150,28 +151,51 @@ class _BulkTextImportScreenState extends State<BulkTextImportScreen> {
             : '';
         final message = 'Saved $savedCount attendees.$sessionMsg Skipped $skippedCount invalid.';
 
-        // Show a dialog so the result is clearly visible
+        // Collect all saved attendees for mass messaging
+        final allSaved = <AttendeeModel>[];
+        for (final parsed in _parsedAttendees) {
+          if (!parsed.isValid) continue;
+          final phone = AttendeeModel.normalizePhoneNumber(parsed.phoneNumber);
+          final found = await _repository.getAttendeeByPhone(phone);
+          if (found != null) allSaved.add(found);
+        }
+
         await showDialog(
           context: context,
           builder: (ctx) => AlertDialog(
-            title: Row(
+            title: const Row(
               children: [
-                const Icon(Icons.check_circle, color: Colors.green),
-                const SizedBox(width: 8),
-                const Text('Import Complete'),
+                Icon(Icons.check_circle, color: Colors.green),
+                SizedBox(width: 8),
+                Text('Import Complete'),
               ],
             ),
             content: Text(message),
             actions: [
-              ElevatedButton(
+              TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text('OK'),
+                child: const Text('Done'),
               ),
+              if (allSaved.isNotEmpty)
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.send),
+                  label: Text('Message All (${allSaved.length})'),
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => _MassMessageScreen(attendees: allSaved),
+                      ),
+                    );
+                  },
+                ),
             ],
           ),
         );
 
-        Navigator.pop(context, savedCount);
+        if (mounted) Navigator.pop(context, savedCount);
       }
     } catch (e) {
       setState(() {
@@ -346,6 +370,108 @@ class _BulkTextImportScreenState extends State<BulkTextImportScreen> {
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// Simple mass-messaging screen for a list of attendees — no session required.
+class _MassMessageScreen extends StatefulWidget {
+  final List<AttendeeModel> attendees;
+  const _MassMessageScreen({required this.attendees});
+
+  @override
+  State<_MassMessageScreen> createState() => _MassMessageScreenState();
+}
+
+class _MassMessageScreenState extends State<_MassMessageScreen> {
+  final _msgController = TextEditingController();
+  final _smsManager = SMSManager();
+  bool _sending = false;
+  String? _result;
+
+  @override
+  void dispose() {
+    _msgController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _send() async {
+    if (_msgController.text.trim().isEmpty) return;
+    setState(() { _sending = true; _result = null; });
+    try {
+      int sent = 0, failed = 0;
+      await _smsManager.sendBulkSMS(
+        widget.attendees,
+        _msgController.text.trim(),
+        onMessageSent: (_) => sent++,
+        onMessageFailed: (_) => failed++,
+      );
+      setState(() {
+        _result = '✅ Sent: $sent${failed > 0 ? '  ❌ Failed: $failed' : ''}';
+      });
+    } catch (e) {
+      setState(() { _result = '❌ Error: $e'; });
+    } finally {
+      setState(() { _sending = false; });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Message ${widget.attendees.length} Contacts'),
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              '${widget.attendees.length} recipients',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _msgController,
+              maxLines: 6,
+              maxLength: 500,
+              decoration: const InputDecoration(
+                labelText: 'Message',
+                hintText: 'Use {name} to personalise',
+                border: OutlineInputBorder(),
+                helperText: 'Keep under 160 chars for reliable delivery',
+              ),
+            ),
+            const SizedBox(height: 16),
+            if (_result != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Text(
+                  _result!,
+                  style: TextStyle(
+                    color: _result!.startsWith('✅') ? Colors.green : Colors.red,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ElevatedButton.icon(
+              onPressed: _sending ? null : _send,
+              icon: _sending
+                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  : const Icon(Icons.send),
+              label: Text(_sending ? 'Sending...' : 'Send to All'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
