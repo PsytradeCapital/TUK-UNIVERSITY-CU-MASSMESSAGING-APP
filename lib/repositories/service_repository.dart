@@ -2,7 +2,6 @@ import 'package:sqflite/sqflite.dart';
 import '../models/service_model.dart';
 import '../models/attendee_model.dart';
 import '../services/database_manager.dart';
-import '../services/encryption_service.dart';
 
 class ServiceRepository {
   final DatabaseManager _databaseManager = DatabaseManager.instance;
@@ -52,7 +51,7 @@ class ServiceRepository {
     }
   }
 
-  // Get all services with pagination
+  // Get all services — metadata only (no attendee loading for speed)
   Future<List<ServiceModel>> getAllServices({int? limit, int? offset}) async {
     try {
       final db = await _databaseManager.database;
@@ -64,27 +63,15 @@ class ServiceRepository {
         offset: offset,
       );
 
-      List<ServiceModel> services = [];
-      for (final map in maps) {
-        final service = ServiceModel.fromMap(map);
-        // Load attendees for each service
-        final attendees = await getServiceAttendees(service.serviceId!);
-        services.add(service.copyWith(attendees: attendees));
-      }
-      
-      return services;
+      return maps.map((m) => ServiceModel.fromMap(m)).toList();
     } catch (e) {
       throw ServiceRepositoryException('Failed to get all services: $e');
     }
   }
 
-  // Get recent services
+  // Get recent services — metadata only
   Future<List<ServiceModel>> getRecentServices({int limit = 10}) async {
-    try {
-      return await getAllServices(limit: limit);
-    } catch (e) {
-      throw ServiceRepositoryException('Failed to get recent services: $e');
-    }
+    return getAllServices(limit: limit);
   }
 
   // Get services by date range
@@ -200,7 +187,7 @@ class ServiceRepository {
     }
   }
 
-  // Get attendees for a specific service
+  // Get attendees for a specific service — plain text, no decryption needed
   Future<List<AttendeeModel>> getServiceAttendees(int serviceId) async {
     try {
       final db = await _databaseManager.database;
@@ -213,12 +200,7 @@ class ServiceRepository {
         ORDER BY sa.registered_at ASC
       ''', [serviceId]);
 
-      // Decrypt each attendee record before building the model
-      final decryptedMaps = await EncryptionService.decryptAttendeeList(maps);
-
-      return List.generate(decryptedMaps.length, (i) {
-        return AttendeeModel.fromMap(decryptedMaps[i]);
-      });
+      return maps.map((m) => AttendeeModel.fromMap(m)).toList();
     } catch (e) {
       throw ServiceRepositoryException('Failed to get service attendees: $e');
     }

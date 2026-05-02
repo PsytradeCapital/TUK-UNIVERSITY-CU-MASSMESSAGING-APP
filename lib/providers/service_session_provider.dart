@@ -26,13 +26,13 @@ class ServiceSessionProvider extends ChangeNotifier {
   DateTime? get lastSessionTransition => _lastSessionTransition;
 
   /// Start a new service session
-  Future<void> startNewService() async {
+  Future<void> startNewService({String serviceName = 'Sunday Service'}) async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      // Create new service in database
       final service = ServiceModel(
+        serviceName: serviceName,
         serviceDate: DateTime.now(),
         totalAttendees: 0,
         messageSent: false,
@@ -45,10 +45,9 @@ class ServiceSessionProvider extends ChangeNotifier {
       _currentAttendees = [];
       _lastSessionTransition = DateTime.now();
       
-      // Load session history
       await _loadSessionHistory();
       
-      debugPrint('Started new service session with ID: $serviceId');
+      debugPrint('Started new service session "$serviceName" with ID: $serviceId');
     } catch (e) {
       debugPrint('Error starting new service: $e');
       rethrow;
@@ -331,30 +330,21 @@ class ServiceSessionProvider extends ChangeNotifier {
     };
   }
 
-  /// Refresh session data (reload from database)
+  /// Refresh session data (reload from database) — no loading spinner
   Future<void> refreshSession() async {
-    _isLoading = true;
-    notifyListeners();
-
     try {
       if (_currentService != null) {
-        // Reload current service data
         final updatedService = await _serviceRepository.getServiceById(_currentService!.serviceId!);
         if (updatedService != null) {
           _currentService = updatedService;
           _currentAttendees = await _serviceRepository.getServiceAttendees(_currentService!.serviceId!);
         }
       }
-      
-      // Reload session history
       await _loadSessionHistory();
-      
-      debugPrint('Session data refreshed successfully');
+      notifyListeners();
+      debugPrint('Session data refreshed: ${_currentAttendees.length} attendees');
     } catch (e) {
       debugPrint('Error refreshing session: $e');
-    } finally {
-      _isLoading = false;
-      notifyListeners();
     }
   }
 

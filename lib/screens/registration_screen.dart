@@ -884,7 +884,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> with OfflineCap
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  sessionProvider.hasActiveService ? 'Active Service Session' : 'No Active Session',
+                  sessionProvider.hasActiveService
+                      ? sessionProvider.currentService!.serviceName
+                      : 'No Active Session',
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 const Spacer(),
@@ -1054,11 +1056,67 @@ class _RegistrationScreenState extends State<RegistrationScreen> with OfflineCap
   }
 
   Future<void> _startNewService(ServiceSessionProvider sessionProvider) async {
+    // Ask for service name first
+    final nameController = TextEditingController(text: 'Sunday Service');
+    final commonNames = ['Sunday Service', 'Bible Study', 'Cell Group', 'Prayer Meeting', 'Youth Service', 'Other'];
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setS) => AlertDialog(
+          title: const Text('Start New Service'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Service / Meeting Name:'),
+              const SizedBox(height: 8),
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  hintText: 'e.g. Sunday Service, Bible Study...',
+                ),
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 6,
+                runSpacing: 4,
+                children: commonNames.map((n) => ActionChip(
+                  label: Text(n, style: const TextStyle(fontSize: 12)),
+                  onPressed: () { nameController.text = n; setS(() {}); },
+                )).toList(),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+            ElevatedButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Start')),
+          ],
+        ),
+      ),
+    );
+
+    if (confirmed != true) return;
+
     try {
-      await sessionProvider.startNewService();
-      _showSuccessSnackBar('New service session started successfully!');
+      await sessionProvider.startNewService(
+        serviceName: nameController.text.trim().isEmpty ? 'Sunday Service' : nameController.text.trim(),
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Started: ${nameController.text.trim()}'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
     } catch (e) {
-      _showErrorSnackBar('Failed to start new service: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to start service: $e'), backgroundColor: Colors.red),
+        );
+      }
     }
   }
 

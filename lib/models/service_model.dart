@@ -2,6 +2,7 @@ import 'attendee_model.dart';
 
 class ServiceModel {
   final int? serviceId;
+  final String serviceName; // e.g. "Sunday Service", "Bible Study", "Cell Group"
   final DateTime serviceDate;
   final int totalAttendees;
   final bool messageSent;
@@ -11,6 +12,7 @@ class ServiceModel {
 
   ServiceModel({
     this.serviceId,
+    this.serviceName = 'Sunday Service',
     DateTime? serviceDate,
     this.totalAttendees = 0,
     this.messageSent = false,
@@ -69,6 +71,7 @@ class ServiceModel {
   Map<String, dynamic> toMap() {
     return {
       'service_id': serviceId,
+      'service_name': serviceName,
       'service_date': serviceDate.toIso8601String(),
       'total_attendees': totalAttendees,
       'message_sent': messageSent ? 1 : 0,
@@ -81,18 +84,19 @@ class ServiceModel {
   factory ServiceModel.fromMap(Map<String, dynamic> map) {
     return ServiceModel(
       serviceId: map['service_id'],
+      serviceName: map['service_name'] as String? ?? 'Sunday Service',
       serviceDate: DateTime.parse(map['service_date']),
       totalAttendees: map['total_attendees'] ?? 0,
       messageSent: (map['message_sent'] ?? 0) == 1,
       messageText: map['message_text'],
       createdAt: DateTime.parse(map['created_at']),
-      // Note: attendees will be loaded separately via join queries
     );
   }
 
   // Copy with method for updating fields
   ServiceModel copyWith({
     int? serviceId,
+    String? serviceName,
     DateTime? serviceDate,
     int? totalAttendees,
     bool? messageSent,
@@ -102,6 +106,7 @@ class ServiceModel {
   }) {
     return ServiceModel(
       serviceId: serviceId ?? this.serviceId,
+      serviceName: serviceName ?? this.serviceName,
       serviceDate: serviceDate ?? this.serviceDate,
       totalAttendees: totalAttendees ?? this.totalAttendees,
       messageSent: messageSent ?? this.messageSent,

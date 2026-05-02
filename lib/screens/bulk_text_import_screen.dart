@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:sqflite/sqflite.dart';
 import '../models/attendee_model.dart';
 import '../repositories/offline_first_attendee_repository.dart';
 import '../repositories/service_repository.dart';
@@ -70,35 +71,29 @@ class _BulkTextImportScreenState extends State<BulkTextImportScreen> {
     });
 
     try {
+      // Pre-load all existing attendees once — avoids N individual DB queries
+      final allExisting = await _repository.getAllAttendees();
+      final phoneMap = <String, AttendeeModel>{};
+      for (final a in allExisting) {
+        phoneMap[AttendeeModel.normalizePhoneNumber(a.phoneNumber)] = a;
+      }
+
       int savedCount = 0;
       int skippedCount = 0;
-      final List<AttendeeModel> registeredAttendees = [];
-      
-      for (int i = 0; i < _parsedAttendees.length; i++) {
-        final parsed = _parsedAttendees[i];
-        
-        // Update progress every 5 items to avoid excessive rebuilds
-        if (i % 5 == 0) {
-          setState(() {
-            _saveProgress = (i + 1) / _parsedAttendees.length;
-          });
-        }
-        
-        if (!parsed.isValid) {
-          skippedCount++;
-          continue;
-        }
+      final List<AttendeeModel> savedAttendees = [];
 
-        // Normalise phone to 07/01 format before any DB lookup
-        final normalisedPhone = AttendeeModel.normalizePhoneNumber(parsed.phoneNumber);
+      final valid = _parsedAttendees.where((p) => p.isValid).toList();
+      final invalid = _parsedAttendees.where((p) => !p.isValid).length;
+      skippedCount = invalid;
 
-        // Check for duplicates
-        final existing = await _repository.getAttendeeByPhone(normalisedPhone);
-        
-        AttendeeModel? savedAttendee;
-        
+      for (int i = 0; i < valid.length; i++) {
+        final parsed = valid[i];
+        final normPhone = AttendeeModel.normalizePhoneNumber(parsed.phoneNumber);
+        final existing = phoneMap[normPhone];
+
+        AttendeeModel saved;
         if (existing != null) {
-          // Always auto-update: merge new data and increment attendance
+          // Auto-update name/location, increment attendance
           final updated = existing.copyWith(
             name: parsed.name.isNotEmpty ? parsed.name : existing.name,
             location: parsed.location.isNotEmpty && parsed.location != 'Unknown'
@@ -108,98 +103,93 @@ class _BulkTextImportScreenState extends State<BulkTextImportScreen> {
             lastUpdated: DateTime.now(),
           );
           await _repository.updateAttendee(updated);
-          savedAttendee = updated;
-          savedCount++;
+          saved = updated;
+          phoneMap[normPhone] = updated; // keep map fresh
         } else {
-          // Create new
           final newAttendee = AttendeeModel(
             name: parsed.name,
-            phoneNumber: normalisedPhone,
+            phoneNumber: normPhone,
             location: parsed.location,
             category: AttendeeCategory.student,
             yearOfStudy: '',
             attendanceCount: 1,
           );
           final id = await _repository.createAttendee(newAttendee);
-          savedAttendee = newAttendee.copyWith(id: id); // id is the SQLite row id
-          savedCount++;
+          saved = newAttendee.copyWith(id: id);
+          phoneMap[normPhone] = saved;
         }
-        
-        // Add to session if option is enabled, session is active, and attendee has a valid id
-        if (savedAttendee != null && savedAttendee.id != null && _registerToSession && hasActiveSession) {
-          registeredAttendees.add(savedAttendee);
+
+        savedAttendees.add(saved);
+        savedCount++;
+
+        // Update progress bar every 5 items
+        if (i % 5 == 0 || i == valid.length - 1) {
+          setState(() { _saveProgress = (i + 1) / valid.length; });
         }
       }
-      
-      // Register all attendees to current session
-      if (registeredAttendees.isNotEmpty && hasActiveSession) {
-        final serviceId = sessionProvider.currentService!.serviceId;
-        for (final attendee in registeredAttendees) {
-          await _serviceRepository.addAttendeeToService(
-            serviceId!,
-            attendee.id!,
-          );
-        }
-        
-        // Update session provider
-        await sessionProvider.loadActiveService();
+
+      // Register to session in one batch
+      if (_registerToSession && hasActiveSession) {
+        final serviceId = sessionProvider.currentService!.serviceId!;
+        final db = await _repository.getDatabase();
+        await db.transaction((txn) async {
+          for (final a in savedAttendees) {
+            if (a.id == null) continue;
+            await txn.insert(
+              'service_attendees',
+              {
+                'service_id': serviceId,
+                'attendee_id': a.id,
+                'registered_at': DateTime.now().toIso8601String(),
+              },
+              conflictAlgorithm: ConflictAlgorithm.ignore,
+            );
+          }
+        });
+        // Force refresh the in-memory session attendee list
+        await sessionProvider.refreshSession();
       }
 
-      if (mounted) {
-        final sessionMsg = _registerToSession && hasActiveSession && registeredAttendees.isNotEmpty
-            ? ' Added ${registeredAttendees.length} to active session.'
-            : '';
-        final message = 'Saved $savedCount attendees.$sessionMsg Skipped $skippedCount invalid.';
+      if (!mounted) return;
 
-        // Collect all saved attendees for mass messaging
-        final allSaved = <AttendeeModel>[];
-        for (final parsed in _parsedAttendees) {
-          if (!parsed.isValid) continue;
-          final phone = AttendeeModel.normalizePhoneNumber(parsed.phoneNumber);
-          final found = await _repository.getAttendeeByPhone(phone);
-          if (found != null) allSaved.add(found);
-        }
+      final sessionMsg = _registerToSession && hasActiveSession && savedAttendees.isNotEmpty
+          ? ' Added ${savedAttendees.length} to active session.'
+          : '';
 
-        await showDialog(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: const Row(
-              children: [
-                Icon(Icons.check_circle, color: Colors.green),
-                SizedBox(width: 8),
-                Text('Import Complete'),
-              ],
-            ),
-            content: Text(message),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('Done'),
+      await showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Row(children: [
+            Icon(Icons.check_circle, color: Colors.green),
+            SizedBox(width: 8),
+            Text('Import Complete'),
+          ]),
+          content: Text('Saved $savedCount attendees.$sessionMsg Skipped $skippedCount invalid.'),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Done')),
+            if (savedAttendees.isNotEmpty)
+              ElevatedButton.icon(
+                icon: const Icon(Icons.send),
+                label: Text('Message All (${savedAttendees.length})'),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => _MassMessageScreen(attendees: savedAttendees),
+                    ),
+                  );
+                },
               ),
-              if (allSaved.isNotEmpty)
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.send),
-                  label: Text('Message All (${allSaved.length})'),
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-                  onPressed: () {
-                    Navigator.pop(ctx);
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => _MassMessageScreen(attendees: allSaved),
-                      ),
-                    );
-                  },
-                ),
-            ],
-          ),
-        );
+          ],
+        ),
+      );
 
-        if (mounted) Navigator.pop(context, savedCount);
-      }
+      if (mounted) Navigator.pop(context, savedCount);
     } catch (e) {
       setState(() {
-        _errorMessage = 'Failed to save attendees: $e';
+        _errorMessage = 'Failed to save: $e';
         _isSaving = false;
         _saveProgress = 0.0;
       });

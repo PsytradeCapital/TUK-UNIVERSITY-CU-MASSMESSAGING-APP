@@ -798,7 +798,7 @@ class _ReportsScreenState extends State<ReportsScreen> with SingleTickerProvider
                     ),
                   ),
                   title: Text(
-                    service.serviceDate.toString().split(' ')[0],
+                    '${service.serviceName} — ${service.serviceDate.toString().split(' ')[0]}',
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   subtitle: Column(

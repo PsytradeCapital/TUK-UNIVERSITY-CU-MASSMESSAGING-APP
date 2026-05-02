@@ -40,6 +40,10 @@ class DatabaseManager {
         onOpen: (db) async {
           // Enable foreign key constraints
           await db.execute('PRAGMA foreign_keys = ON');
+          // Ensure service_name column exists (safe to run every time)
+          try {
+            await db.execute("ALTER TABLE services ADD COLUMN service_name TEXT DEFAULT 'Sunday Service'");
+          } catch (_) {} // already exists — ignore
         },
       );
     } catch (e) {
@@ -77,6 +81,7 @@ class DatabaseManager {
       await db.execute('''
         CREATE TABLE services (
           service_id INTEGER PRIMARY KEY AUTOINCREMENT,
+          service_name TEXT DEFAULT 'Sunday Service',
           service_date TEXT NOT NULL,
           total_attendees INTEGER DEFAULT 0,
           message_sent INTEGER DEFAULT 0,
@@ -238,10 +243,16 @@ class DatabaseManager {
         await db.execute('CREATE INDEX IF NOT EXISTS idx_attendees_is_synced ON attendees(is_synced)');
       }
 
-      // Migration version 7: Decrypt all locally-encrypted attendee rows.
-      // Previous versions encrypted name/phone/location in SQLite which caused
-      // extreme slowness. Version 7 stores plain text locally.
+      // Migration version 7: Add service_name column + decrypt attendees
       if (oldVersion < 7) {
+        // Add service_name to services table (ignore if already exists)
+        try {
+          await db.execute("ALTER TABLE services ADD COLUMN service_name TEXT DEFAULT 'Sunday Service'");
+        } catch (_) {}
+
+        // Decrypt all locally-encrypted attendee rows.
+        // Previous versions encrypted name/phone/location in SQLite.
+        // Version 7 stores plain text locally for instant reads.
         try {
           final rows = await db.query('attendees');
           for (final row in rows) {
@@ -249,10 +260,8 @@ class DatabaseManager {
               final decrypted = await EncryptionService.decryptAttendeeData(
                 Map<String, dynamic>.from(row),
               );
-              // Normalise phone while we're at it
               final phone = decrypted['phone_number'] as String? ?? '';
               decrypted['phone_number'] = AttendeeModel.normalizePhoneNumber(phone);
-              // Remove hash column — no longer needed
               decrypted.remove('phone_hash');
               await db.update(
                 'attendees',

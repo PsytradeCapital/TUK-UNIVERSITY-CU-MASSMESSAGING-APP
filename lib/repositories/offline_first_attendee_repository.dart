@@ -1,4 +1,6 @@
+import 'package:sqflite/sqflite.dart';
 import '../models/attendee_model.dart';
+import '../services/database_manager.dart';
 import 'attendee_repository.dart';
 
 /// Offline-First Attendee Repository
@@ -6,6 +8,11 @@ import 'attendee_repository.dart';
 /// Loads from SQLite database instantly
 class OfflineFirstAttendeeRepository {
   final AttendeeRepository _localRepo = AttendeeRepository();
+
+  /// Expose raw DB for batch operations
+  Future<Database> getDatabase() async {
+    return await DatabaseManager.instance.database;
+  }
 
   /// Get all attendees - INSTANT (from local DB only)
   Future<List<AttendeeModel>> getAllAttendees() async {
